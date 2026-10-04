@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20260427a">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261004-plate-f">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261004-plate-g">
   <script type="importmap">
   {
     "imports": {
@@ -38,6 +38,7 @@
   <div class="orbit-setup is-leaving" id="orbitSetup" role="dialog" aria-modal="true" aria-label="Set up your orbit" aria-hidden="true" inert>
     <header class="setup-header">
       <span class="setup-wordmark" id="setupWordmark">Orbiting</span>
+      <span class="setup-tagline">what orbits you</span>
       <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
       <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
       <span class="setup-progress-label" id="setupProgressLabel">plate i of iv</span>
@@ -105,7 +106,7 @@
         <section class="setup-panel" data-setup-panel="1" data-source-stage="pick" hidden>
           <p class="setup-eyebrow">build your orbit</p>
           <h1>What orbits you?</h1>
-          <p class="setup-intro">Choose the public posts, collections, or links you want to share. Their photos will form the rings in your live preview.</p>
+          <p class="setup-intro">Everything you love has a pull. Bring it into your gravity, and each place it comes from becomes a ring around you.</p>
           <ol class="source-stages" aria-label="Steps in what’s in my orbit">
               <li><button type="button" data-source-stage-go="pick" aria-current="step">a Pick a platform</button></li>
               <li><button type="button" data-source-stage-go="link">b Point us to it</button></li>
@@ -123,7 +124,8 @@
             <button class="source-option" type="button" data-source="instagram" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Instagram</strong><small>public profile, post or Reel</small></span><em>choose</em></button>
             <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>My Photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
           </div>
-          <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Choose a source above to begin. Only public content you select will appear in your orbit.</p>
+          <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Where should we look for signals first? Nothing enters your orbit unless you pull it in.</p>
+          <button class="setup-text-action source-launch-empty" id="launchEmptySky" type="button">Launch with an empty sky</button>
           <div class="source-sharing" id="sourceSharing"></div>
           <div class="source-sharing-card photo-sharing" id="photoSharing" hidden>
             <h2>Add your photos</h2>
@@ -137,10 +139,10 @@
             <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
             <button class="source-list-action" id="clearPhotos" type="button" hidden>Remove all photos</button>
           </div>
-            <button class="source-link-approve" id="finishSources" type="button">Done choosing sources</button>
+            <button class="source-link-approve" id="finishSources" type="button">Continue →</button>
           </details>
           <section class="source-rings" aria-labelledby="sourceRingsTitle">
-            <h2 id="sourceRingsTitle" tabindex="-1">Define your orbit.</h2>
+            <h2 id="sourceRingsTitle" tabindex="-1"><span class="op-setup-only">Which ring sits closest to you? <em>Move it inward.</em></span><span class="op-edit-only">Define your orbit.</span></h2>
             <p>Your In My Orbit chart shows what fills each ring. Select a label to highlight its photos. Name each ring below and choose whether to combine its sources.</p>
             <div class="setup-orbit-key" id="setupOrbitKey" hidden>
               <span class="orbit-key-trigger">in my orbit</span>
@@ -149,7 +151,7 @@
             <div class="ring-builder" id="ringBuilder"></div>
             <p class="setup-note">Use move up or move down to set the order of your rings.</p>
             <p class="sr-only" id="ringOrderStatus" role="status" aria-live="polite"></p>
-            <p class="ring-builder-empty" id="ringBuilderEmpty">No shared rings yet. Choose public items to share or add your photos.</p>
+            <p class="ring-builder-empty" id="ringBuilderEmpty">Nothing in orbit yet. Just you and open space.</p>
             <button class="add-ring" id="addRing" type="button">+ add a ring</button>
               <button class="setup-text-action source-add-platform" type="button" data-source-stage-go="pick">+ add another platform</button>
             <p class="ring-validation" id="ringValidation" role="alert" hidden></p>
@@ -820,7 +822,7 @@
   <script src="js/friend-search.js?v=20261004-pages"></script>
   <script src="js/shared-sky.js?v=2"></script>
   <script src="js/following-cosmos.js?v=20261004-plate-f"></script>
-  <script src="js/orbiting-prototype.js?v=20261004-plate-f"></script>
+  <script src="js/orbiting-prototype.js?v=20261004-plate-g"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>

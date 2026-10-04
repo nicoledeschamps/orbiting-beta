@@ -131,6 +131,7 @@
   const birthInputs = ['birthDate', 'birthTime', 'birthPlace'].map((id) => document.getElementById(id));
   const selectedSources = new Set();
   let activeSource = null;
+  const sourceUnits = { arena: 'channels', cosmos: 'collections', pinterest: 'boards', spotify: 'playlists', instagram: 'posts' };
   // Setup shows "what's in my orbit" one move at a time: pick a platform, point us to it, choose, arrange.
   const sourcePanel = document.querySelector('[data-setup-panel="1"]');
   let sourceStageAdvance = false;
@@ -482,7 +483,7 @@
           ? `${choice.name}: ${choice.options.length} public choice${choice.options.length === 1 ? '' : 's'} found. Select what enters your orbit.`
           : choice.items.length
             ? `${choice.name}: ${choice.items.length} public image${choice.items.length === 1 ? '' : 's'} found.${sourceIsApproved(source) ? ' They are now in your ring preview.' : ' Choose what to share to see the ring.'}${failed ? ` ${failed} link group${failed === 1 ? '' : 's'} could not be read.` : ''}`
-            : `${choice.name}: ${first?.note || 'No public images could be displayed from this link.'}`;
+            : `No signal yet. There are no public ${sourceUnits[source] || 'images'} here.`;
       } catch (error) {
         if (choice.url !== url) return;
         hasCurrentResult = true;
@@ -491,7 +492,7 @@
         choice.options = [];
         if (source === activeSource) sourceAuthStatus.textContent = source === 'instagram'
           ? 'Instagram public posts could not be read right now. Private posts cannot be imported; add your own copies through My Photos.'
-          : `${choice.name}: ${error.message || 'The public page could not be read.'} Try a direct public item link.`;
+          : `Couldn’t reach that link. Try a full link, like ${choice.example}.`;
       }
     }));
     if (!hasCurrentResult) return;
@@ -523,7 +524,7 @@
       const header = document.createElement('div');
       header.className = 'source-sharing-header';
       const heading = document.createElement('h2');
-      heading.textContent = `Add ${choice.name}`;
+      heading.textContent = `Point us to your ${choice.name}.`;
       const removeSource = document.createElement('button');
       removeSource.type = 'button';
       removeSource.className = 'source-list-action';
@@ -562,7 +563,7 @@
       button.type = 'button';
       button.className = 'source-link-approve';
       button.dataset.approveSource = source;
-      button.textContent = source === 'instagram' ? choice.approved ? 'Check for recent public posts again' : 'Find my public posts' : choice.approved ? 'Refresh public choices' : 'Find public choices';
+      button.textContent = source === 'instagram' ? choice.approved ? 'Check for recent public posts again' : 'Find my public posts' : choice.approved ? 'Scan again' : 'Scan for signals';
       card.append(button);
       if (choice.approved && choice.url && !sourceIsProfile(source, choice.url)) {
         const share = document.createElement('button');
@@ -578,7 +579,7 @@
         prompt.className = 'source-container-heading';
         prompt.textContent = source === 'instagram'
           ? `${choice.options.length} recent public posts found · ${choice.selectedUrls.length} selected`
-          : `${choice.options.length} public choices found · ${choice.selectedUrls.length} selected`;
+          : `${choice.options.length} ${sourceUnits[source] || 'choices'} picked up. Which ones fall into your orbit? · ${choice.selectedUrls.length} in orbit`;
         card.append(prompt);
         const actions = document.createElement('div');
         actions.className = 'source-choice-actions';
@@ -1371,7 +1372,7 @@
     backButton.disabled = currentStep === 0;
     nextButton.textContent = currentStep === stepCount - 1
       ? (settingsMode ? 'save changes' : accountTestingMode ? 'enter my orbit' : signedInUser ? 'save my orbit' : accountConnected ? (accountMode === 'signup' ? 'create account' : 'sign in') : 'preview my orbit')
-      : 'continue';
+      : !settingsMode && currentStep === 1 ? 'Set them in motion →' : 'continue';
     if (accountConnected) {
       const authenticated = Boolean(signedInUser);
       document.querySelector('.account-mode').hidden = authenticated;
@@ -2337,7 +2338,7 @@
       choice.previewLoading = true;
       choice.items = [];
       if (source === 'instagram' && sourceIsProfile(source, nextUrl)) choice.extraOpen = false;
-      sourceAuthStatus.textContent = `Checking public ${choice.name} choices…`;
+      sourceAuthStatus.textContent = `Scanning your ${choice.name}…`;
       renderSourceSharing();
       updateSourcePreview();
       await refreshPublicSources(source);
@@ -2697,6 +2698,7 @@
   });
 
   sourcePanel.addEventListener('click', (event) => {
+    if (event.target.closest('#launchEmptySky')) { showStep(2); return; }
     const go = event.target.closest('[data-source-stage-go]');
     if (!go) return;
     const stage = go.dataset.sourceStageGo;
