@@ -7,6 +7,8 @@
   const dialog = document.getElementById('followedOrbit');
   const world = document.getElementById('followedOrbitPlanet');
   const title = document.getElementById('followedOrbitTitle');
+  const nameLine = document.getElementById('followedOrbitName');
+  const bioLine = document.getElementById('followedOrbitBio');
   const worldStatus = document.getElementById('followedOrbitStatus');
   const close = document.getElementById('closeFollowedOrbit');
   if (!sky || !window.OrbitingAccount) return;
@@ -36,7 +38,10 @@
           seen.add(item.src); return true;
         }));
       }));
-      return { failed, portraitAsset: orbit.portraitAsset, rings: (orbit.rings || []).map(ring => ({
+      const t = orbit.title && typeof orbit.title === 'object' ? orbit.title : {};
+      const text = (value, max) => typeof value === 'string' ? value.trim().slice(0, max) : '';
+      const skyTitle = { first: text(t.first, 32), second: text(t.second, 32), secondColor: /^#[0-9a-f]{6}$/i.test(t.secondColor || '') ? t.secondColor : '', bio: text(t.bio, 80) };
+      return { failed, portraitAsset: orbit.portraitAsset, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
         items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
       })) };
@@ -79,6 +84,8 @@
     kill(worldTweens); world.replaceChildren();
     title.textContent = `@${person.username}’s orbit`;
     worldStatus.textContent = 'Loading shared rings…';
+    if (nameLine) nameLine.hidden = true;
+    if (bioLine) bioLine.hidden = true;
     dialog.hidden = false;
     document.getElementById('hero').inert = true;
     close.focus();
@@ -86,6 +93,14 @@
       const snapshot = await sharedOrbit(person);
       if (job !== portalJob || dialog.hidden) return;
       drawOrbit(world, snapshot, person, false, worldTweens);
+      const skyTitle = snapshot.title || {};
+      if (nameLine && (skyTitle.first || skyTitle.second)) {
+        nameLine.children[0].textContent = skyTitle.first;
+        nameLine.children[1].textContent = skyTitle.second;
+        nameLine.children[1].style.color = skyTitle.secondColor || '';
+        nameLine.hidden = false;
+      }
+      if (bioLine) { bioLine.textContent = skyTitle.bio || ''; bioLine.hidden = !skyTitle.bio; }
       worldStatus.textContent = snapshot.rings.map(ring => ring.name + (ring.items.length ? '' : ' (no images available)')).join(' · ') || 'No rings shared with everyone yet.';
       if (snapshot.failed) worldStatus.textContent += ' · Some source images could not load. Refresh your cosmos to retry.';
     } catch (_) { if (job === portalJob) worldStatus.textContent = 'This orbit could not load. Return to your cosmos and refresh to retry.'; }
@@ -119,6 +134,10 @@
       sharedOrbit(person).then(snapshot => {
         if (job !== sequence) return;
         drawOrbit(sphere, snapshot, person, true, nearTweens);
+        if (snapshot.title?.bio) {
+          const bio = document.createElement('span'); bio.className = 'following-cosmos__bio'; bio.textContent = snapshot.title.bio;
+          planet.append(bio);
+        }
         if (snapshot.failed) status.textContent = 'Some shared images could not load. Refresh to retry.';
       }).catch(() => { if (job === sequence) status.textContent = 'A shared orbit could not load. Refresh to retry.'; });
     });

@@ -85,6 +85,8 @@
   const skyTitleFirst = document.getElementById('skyTitleFirst');
   const skyTitleSecond = document.getElementById('skyTitleSecond');
   const skyTitleSecondColor = document.getElementById('skyTitleSecondColor');
+  const skyBio = document.getElementById('skyBio');
+  const heroBio = document.getElementById('heroBio');
   const skyTitleSecondColorValue = document.getElementById('skyTitleSecondColorValue');
   const setupSkyTitle = document.getElementById('setupSkyTitle');
   const heroTitleFirst = document.getElementById('heroTitleFirst');
@@ -129,6 +131,18 @@
   const birthInputs = ['birthDate', 'birthTime', 'birthPlace'].map((id) => document.getElementById(id));
   const selectedSources = new Set();
   let activeSource = null;
+  // Setup shows "what's in my orbit" one move at a time: pick a platform, point us to it, choose, arrange.
+  const sourcePanel = document.querySelector('[data-setup-panel="1"]');
+  let sourceStageAdvance = false;
+  function setSourceStage(stage) {
+    sourcePanel.dataset.sourceStage = stage;
+    if (stage !== 'link') sourceStageAdvance = false;
+    if (!settingsMode) document.getElementById('sourceAccordion').open = true;
+    sourcePanel.querySelectorAll('.source-stages [data-source-stage-go]').forEach((button) => {
+      if (button.dataset.sourceStageGo === stage) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
+    });
+  }
   const sourcePreviewTimers = new Map();
   const sourceChoices = {
     cosmos: { name: 'Cosmos', kind: 'public profile or collection', example: 'https://www.cosmos.so/yourname', prefix: 'https://www.cosmos.so/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null },
@@ -496,6 +510,8 @@
   }
 
   function renderSourceSharing() {
+    const advanceToChoose = sourceStageAdvance && !settingsMode && activeSource && activeSource !== 'photos' && sourceChoices[activeSource]?.options.length > 0;
+    if (advanceToChoose) { sourceStageAdvance = false; sourceChoices[activeSource].pickerOpen = true; setSourceStage('choose'); }
     sourceSharing.replaceChildren();
     photoSharing.hidden = activeSource !== 'photos';
     if (!activeSource || !selectedSources.has(activeSource)) return;
@@ -795,6 +811,10 @@
     heroTitleSecond.style.color = secondColor;
     heroTitleSecond.hidden = !second;
     skyTitleSecondColorValue.value = secondColor.toUpperCase();
+    const bio = skyBio.value.trim().slice(0, 80);
+    setupSkyTitle.children[2].textContent = bio;
+    heroBio.textContent = bio;
+    heroBio.hidden = !bio;
   }
 
   const ringSources = { arena: 'Are.na', cosmos: 'Cosmos', pinterest: 'Pinterest', spotify: 'Spotify', instagram: 'Instagram', photos: 'my photos' };
@@ -1326,7 +1346,9 @@
       ? 'Save changes to update sharing. Birth details and hidden messages stay private.'
       : 'Sign in to share your zodiac signs. Birth details and hidden messages stay private.';
     const stepCount = settingsMode ? panels.length - 1 : panels.length;
+    const previousStep = currentStep;
     currentStep = Math.max(0, Math.min(index, stepCount - 1));
+    if (currentStep === 1 && previousStep !== 1 && !settingsMode) setSourceStage(selectedSources.size || localPhotoUrls.length ? 'arrange' : 'pick');
     setup.dataset.activeStep = String(currentStep);
     panels.forEach((panel, panelIndex) => { panel.hidden = panelIndex !== currentStep; });
     stepButtons.forEach((button, buttonIndex) => {
@@ -1335,7 +1357,7 @@
       if (buttonIndex === currentStep) button.setAttribute('aria-current', settingsMode ? 'page' : 'step');
       else button.removeAttribute('aria-current');
     });
-    progressLabel.textContent = settingsMode ? 'your orbit, live' : `your planet · ${currentStep + 1} of ${stepCount}`;
+    progressLabel.textContent = settingsMode ? 'your orbit, live' : `plate ${['i', 'ii', 'iii', 'iv'][currentStep] || currentStep + 1} of ${['i', 'ii', 'iii', 'iv'][stepCount - 1] || stepCount}`;
     if (settingsMode) {
       panels.slice(0, 3).forEach((panel, panelIndex) => {
         panel.querySelector('h1').textContent = editorTitles[panelIndex];
@@ -1385,7 +1407,8 @@
       title: {
         first: skyTitleFirst.value.slice(0, 32),
         second: skyTitleSecond.value.slice(0, 32),
-        secondColor: skyTitleSecondColor.value
+        secondColor: skyTitleSecondColor.value,
+        bio: skyBio.value.trim().slice(0, 80)
       },
       birth: Object.fromEntries(['date', 'time', 'place'].map((key, index) => [key, birthInputs[index].value.slice(0, 100)])),
       placements: chartPlacements.map(({ name, featured, interactive, strength, opacity, reveal }) => ({
@@ -1447,6 +1470,7 @@
     skyTitleFirst.value = String(saved.title?.first || '').slice(0, 32);
     skyTitleSecond.value = String(saved.title?.second || '').slice(0, 32);
     if (/^#[0-9a-f]{6}$/i.test(saved.title?.secondColor || '')) skyTitleSecondColor.value = saved.title.secondColor;
+    skyBio.value = String(saved.title?.bio || '').slice(0, 80);
     updateSkyTitle();
     const birth = saved.birth || {};
     [birth.date, birth.time, birth.place].forEach((value, index) => { birthInputs[index].value = String(value || '').slice(0, 100); });
@@ -2145,6 +2169,8 @@
     syncSourceButtons();
     const choice = sourceChoices[source];
     sourceAuthStatus.textContent = choice.approved ? `${choice.name}: ${choice.selectedUrls.length} public choices selected.` : source === 'instagram' ? 'Enter your public Instagram username below.' : `Enter your public ${choice.name} username or link below.`;
+    sourceStageAdvance = false;
+    setSourceStage('link');
     renderSourceSharing();
     sourceSharing.querySelector(`[data-source-url="${source}"]`)?.focus();
     updateSourcePreview();
@@ -2153,6 +2179,7 @@
   photosSourceButton.addEventListener('click', () => {
     activeSource = 'photos';
     syncSourceButtons();
+    setSourceStage('link');
     renderSourceSharing();
     sourceAuthStatus.textContent = 'Choose image files or a folder below. Your photos stay on this device.';
     document.getElementById('choosePhotoFiles').focus();
@@ -2195,6 +2222,7 @@
       choice.url = ''; choice.approved = false; choice.baseShared = false; choice.previewLoading = false; choice.items = []; choice.options = []; choice.selectedUrls = []; choice.nextPage = null; choice.pickerOpen = false; choice.extraOpen = false;
       activeSource = null;
       sourceAuthStatus.textContent = `${choice.name} removed. Choose another source above, or continue.`;
+      setSourceStage('pick');
       syncSourceButtons();
       renderSourceSharing();
       updateSourcePreview();
@@ -2292,6 +2320,7 @@
     const source = button.dataset.approveSource;
     const choice = sourceChoices[source];
     const input = sourceSharing.querySelector(`[data-source-url="${source}"]`);
+    sourceStageAdvance = true;
     try {
       clearTimeout(sourcePreviewTimers.get(source));
       const nextUrl = sourceInputUrl(source, input.value);
@@ -2532,6 +2561,7 @@
 
   skyTitleFirst.addEventListener('input', updateSkyTitle);
   skyTitleSecond.addEventListener('input', updateSkyTitle);
+  skyBio.addEventListener('input', updateSkyTitle);
   skyTitleSecondColor.addEventListener('input', updateSkyTitle);
   skyTitleSecondColor.addEventListener('change', updateSkyTitle);
   lightUpSpace.addEventListener('change', () => {
@@ -2661,8 +2691,18 @@
   });
 
   document.getElementById('finishSources').addEventListener('click', () => {
-    document.getElementById('sourceAccordion').open = false;
+    if (settingsMode) document.getElementById('sourceAccordion').open = false;
+    else setSourceStage('arrange');
     document.getElementById('sourceRingsTitle').focus();
+  });
+
+  sourcePanel.addEventListener('click', (event) => {
+    const go = event.target.closest('[data-source-stage-go]');
+    if (!go) return;
+    const stage = go.dataset.sourceStageGo;
+    setSourceStage(stage);
+    if (stage === 'pick') sourcePanel.querySelector('.source-option')?.focus();
+    if (stage === 'arrange') document.getElementById('sourceRingsTitle').focus();
   });
 
   syncRingRows();
@@ -2695,7 +2735,7 @@
     setupWordmark.textContent = 'Orbit editor';
     setup.setAttribute('aria-label', 'Edit your orbit');
     document.querySelector('.setup-steps').setAttribute('aria-label', 'Edit sections');
-    stepButtons[1].querySelector('small').textContent = 'connections';
+    stepButtons[1].querySelector('.op-step-edit').textContent = 'connections';
     document.querySelector('.sky-title-builder p').textContent = 'Give your sky a two-line title. The second line can have its own color.';
     skipButton.textContent = 'save changes';
     setup.inert = false;

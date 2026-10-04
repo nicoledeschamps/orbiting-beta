@@ -1,7 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap');
-:root{color-scheme:dark;font-family:Palatino,'Palatino Linotype',Georgia,serif;background:#08090d;color:#171a20}
-*{box-sizing:border-box}body{margin:0;min-height:100svh;background:radial-gradient(ellipse at 25% 45%,#29202c 0,transparent 55%),#08090d}
-.login-shell{min-height:100svh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:50px;max-width:1100px;margin:auto;padding:56px 32px}
-.orbit-art{position:relative;aspect-ratio:1;width:100%;max-width:440px}.orbit-art span{position:absolute;inset:10%;border:1px solid #dadbdd55;border-radius:50%;transform:rotate(-28deg) scaleY(.53)}.orbit-art span:nth-child(2){inset:22%;transform:rotate(32deg) scaleY(.72);border-color:#ab7d8b}.orbit-art span:nth-child(3){inset:35%;transform:none;background:radial-gradient(circle at 32% 30%,#a6808d,#422a3a 60%,#0c0b13);box-shadow:0 0 70px #7c405040;border:0}.orbit-art i{position:absolute;left:18%;top:58%;color:#dadbdd;font-size:30px;font-style:normal}
-.login-card{background:#dadbdd;border:1px solid #ffffff44;border-radius:24px;padding:42px;color-scheme:light;box-shadow:0 24px 80px #0004}.wordmark{font:11px Arial,sans-serif;letter-spacing:5px;color:#7c4050;margin:0 0 28px}h1{font:400 clamp(32px,4vw,42px)/1.15 'Playfair Display',Georgia,serif;letter-spacing:-1px;margin:0 0 16px}.intro{font-size:17px;line-height:1.5;color:#535760;margin:0 0 30px}label{display:block;font:14px Arial,sans-serif;margin:0 0 9px}input{width:100%;border:1px solid #a9acb3;background:#ececee;border-radius:10px;padding:14px;font:16px Arial,sans-serif;color:#171a20;min-height:48px}input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #7c4050;outline-offset:3px}.password-label{display:flex;align-items:center;justify-content:space-between;margin-top:22px}.password-label button{border:0;background:none;color:#7c4050;font:13px Arial,sans-serif;cursor:pointer;padding:8px;margin-top:-8px}.text-action{display:block;border:0;background:none;color:#6d3444;text-decoration:underline;padding:14px 0;font:13px Arial,sans-serif;cursor:pointer}#loginStatus{font-size:15px;line-height:1.4;margin:0 0 12px}#loginStatus:empty{display:none}.primary{width:100%;border:0;border-radius:10px;background:#7c4050;color:#fff;padding:16px;font:16px Arial,sans-serif;cursor:pointer;min-height:50px}.primary:hover{background:#693443}button:disabled{opacity:.6;cursor:wait}.new-account{text-align:center;font-size:16px;margin:25px 0 0}a{color:#6d3444;text-underline-offset:3px}.invite-note{border-top:1px solid #bfc1c6;padding-top:20px;font:12px/1.6 Arial,sans-serif;color:#60646b;margin:24px 0 0}
-@media(max-width:720px){.login-shell{grid-template-columns:1fr;gap:0;max-width:500px;padding:28px 20px}.orbit-art{width:110px;justify-self:center;margin-bottom:18px}.login-card{padding:30px 25px;border-radius:20px}.wordmark{margin-bottom:22px}}
+/* Log-in and beta-invite pages: the framed Orbit Plate look (colors and controls come from orbit-plate.css). */
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; padding: 20px; display: flex; font-family: var(--op-read); }
+
+.login-frame { flex-grow: 1; display: flex; flex-direction: column; }
+.login-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 28px; border-bottom: 1px solid var(--op-line); }
+.login-wordmark { display: flex; flex-direction: column; margin: 0; font: 400 26px/.88 var(--op-title); text-transform: uppercase; }
+.login-tagline { font-style: italic; font-size: 16px; color: var(--op-soft); }
+.new-account { margin: 0; font: 400 14px var(--op-ui); color: var(--op-soft); }
+.new-account a { color: var(--op-silver); }
+.new-account[hidden] { display: none; }
+
+.login-shell { flex-grow: 1; display: flex; flex-wrap: wrap; }
+.orbit-art { position: relative; flex: 1 1 520px; min-height: 480px; }
+.orbit-art span { position: absolute; top: 50%; left: 50%; border-radius: 50%; transform: translate(-50%, -50%) rotate(-10deg) scaleY(.21); border: 1px solid rgba(237,241,244,.28); }
+.orbit-art span:nth-child(1) { width: min(60vw, 520px); height: min(60vw, 520px); }
+.orbit-art span:nth-child(2) { width: min(44vw, 390px); height: min(44vw, 390px); border-color: rgba(211,154,168,.45); }
+.orbit-art span:nth-child(3) { width: min(32vw, 280px); height: min(32vw, 280px); border-style: dashed; }
+.orbit-art span:nth-child(4) { width: min(20vw, 190px); height: min(20vw, 190px); transform: translate(-50%, -50%); border: 1px solid rgba(237,241,244,.22); background: radial-gradient(circle at 34% 28%, #3b3e46 0%, #16171c 52%, #050506 100%); box-shadow: 0 0 120px rgba(120,22,34,.35); }
+
+.login-card { flex: 1 1 380px; max-width: 480px; padding: 48px 32px; border-left: 1px solid var(--op-line); display: flex; flex-direction: column; gap: 18px; }
+.login-card h1 { font-size: clamp(28px, 3vw, 34px); }
+.intro { margin: 0; font-size: 17px; line-height: 1.55; color: var(--op-soft); }
+.login-card form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.login-card label { font: 400 13px var(--op-ui); color: var(--op-soft); }
+.password-label { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px; }
+.password-label button { font-size: 13px; }
+.text-action { align-self: flex-start; font-size: 13px; }
+#loginStatus, .access-status { margin: 4px 0; font: 400 14px/1.45 var(--op-ui); color: var(--op-silver); }
+#loginStatus:empty { display: none; }
+.primary { align-self: flex-start; padding: 0 28px; margin-top: 8px; }
+button:disabled { opacity: .6; cursor: wait; }
+.invite-note { margin: 8px 0 0; }
+.op-sky :focus-visible { outline: 2px solid var(--op-rose); outline-offset: 2px; }
+
+@media (max-width: 720px) {
+  body { padding: 10px; }
+  .login-header { padding: 12px 14px; }
+  .login-wordmark { font-size: 18px; }
+  .login-tagline { display: none; }
+  .orbit-art { flex-basis: 100%; min-height: 150px; }
+  .orbit-art span:nth-child(1) { width: 300px; height: 300px; }
+  .orbit-art span:nth-child(2) { width: 220px; height: 220px; }
+  .orbit-art span:nth-child(3) { width: 160px; height: 160px; }
+  .orbit-art span:nth-child(4) { width: 96px; height: 96px; }
+  .login-card { max-width: none; padding: 20px 16px 28px; border-left: 0; border-top: 1px solid var(--op-line); }
+}

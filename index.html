@@ -12,8 +12,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20260427a">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261004-pages">
-  <link rel="stylesheet" href="css/account-settings.css">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261004-plate-d">
+  <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261004-plate-f">
   <script type="importmap">
   {
     "imports": {
@@ -24,7 +25,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
   <a href="#elevator-section" class="sr-only">Skip to main content</a>
@@ -39,21 +40,21 @@
       <span class="setup-wordmark" id="setupWordmark">Orbiting</span>
       <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
       <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
-      <span class="setup-progress-label" id="setupProgressLabel">your planet · 1 of 4</span>
+      <span class="setup-progress-label" id="setupProgressLabel">plate i of iv</span>
     </header>
 
     <div class="setup-layout">
       <main class="setup-workspace">
         <nav class="setup-steps" aria-label="Setup progress">
-          <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small>portrait</small></button>
-          <button class="setup-step" type="button" data-setup-step="1"><span>2</span><small>sources + rings</small></button>
-          <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small>stars</small></button>
-          <button class="setup-step" type="button" data-setup-step="3"><span>4</span><small>sign up</small></button>
+          <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small><span class="op-step-setup">the center</span><span class="op-step-edit">portrait + title</span></small></button>
+          <button class="setup-step" type="button" data-setup-step="1"><span>2</span><small><span class="op-step-setup">what’s in my orbit</span><span class="op-step-edit">sources + rings</span></small></button>
+          <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small><span class="op-step-setup">waking up the sky</span><span class="op-step-edit">stars</span></small></button>
+          <button class="setup-step" type="button" data-setup-step="3"><span>4</span><small><span class="op-step-setup">enter my orbit</span><span class="op-step-edit">sign up</span></small></button>
         </nav>
 
         <section class="setup-panel" data-setup-panel="0">
           <p class="setup-eyebrow">center of your planet</p>
-          <h1 id="setupTitle">You are the center of your orbit.</h1>
+          <h1 id="setupTitle">every universe needs a center.</h1>
           <p class="setup-intro">Your face is its gravitational center. Choose a photo, then shape the world around you.</p>
           <div class="portrait-actions">
             <label class="setup-file-action setup-file-action--picker">choose from your library
@@ -94,17 +95,24 @@
               <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" autocomplete="off"></label>
               <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="ing" autocomplete="off"></label>
             </div>
+            <label class="sky-bio-field">Short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
             <label class="sky-title-color">Second-line color
               <span class="sky-title-color__control"><input id="skyTitleSecondColor" type="color" value="#ffffff" aria-label="Choose second-line title color"><output id="skyTitleSecondColorValue" for="skyTitleSecondColor">#FFFFFF</output></span>
             </label>
           </div>
         </section>
 
-        <section class="setup-panel" data-setup-panel="1" hidden>
+        <section class="setup-panel" data-setup-panel="1" data-source-stage="pick" hidden>
           <p class="setup-eyebrow">build your orbit</p>
-          <h1>What moves around you?</h1>
+          <h1>What orbits you?</h1>
           <p class="setup-intro">Choose the public posts, collections, or links you want to share. Their photos will form the rings in your live preview.</p>
-          <details class="source-accordion" id="sourceAccordion" open>
+          <ol class="source-stages" aria-label="Steps in what’s in my orbit">
+              <li><button type="button" data-source-stage-go="pick" aria-current="step">a Pick a platform</button></li>
+              <li><button type="button" data-source-stage-go="link">b Point us to it</button></li>
+              <li><button type="button" data-source-stage-go="choose">c Choose what falls in</button></li>
+              <li><button type="button" data-source-stage-go="arrange">d Arrange your rings</button></li>
+            </ol>
+            <details class="source-accordion" id="sourceAccordion" open>
             <summary><strong>Your sources</strong><span id="sourceSummary">Choose what to share</span></summary>
           <button class="source-list-action" id="refreshSources" type="button">↻ Refresh sources</button><p class="setup-status" id="refreshSourcesStatus" role="status"></p>
           <div class="source-list" id="sourceList">
@@ -143,6 +151,7 @@
             <p class="sr-only" id="ringOrderStatus" role="status" aria-live="polite"></p>
             <p class="ring-builder-empty" id="ringBuilderEmpty">No shared rings yet. Choose public items to share or add your photos.</p>
             <button class="add-ring" id="addRing" type="button">+ add a ring</button>
+              <button class="setup-text-action source-add-platform" type="button" data-source-stage-go="pick">+ add another platform</button>
             <p class="ring-validation" id="ringValidation" role="alert" hidden></p>
           </section>
         </section>
@@ -225,7 +234,7 @@
       <aside class="setup-preview" aria-label="Live preview of your planet">
         <div class="setup-preview-stars" aria-hidden="true"></div>
         <div class="setup-preview-meta"><span>live preview</span><span id="previewState">portrait ready</span></div>
-        <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span>ing</span></div>
+        <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span>ing</span><span class="setup-sky-bio"></span></div>
         <div class="setup-constellation" id="setupConstellation" aria-label="Interactive preview of your birth sky">
           <svg viewBox="0 0 120 90">
             <g class="constellation-lines"><line x1="15" y1="65" x2="42" y2="32"/><line x1="42" y1="32" x2="66" y2="50"/><line x1="66" y1="50" x2="96" y2="18"/><line x1="66" y1="50" x2="103" y2="72"/></g>
@@ -395,6 +404,7 @@
     </button>
 
     <section class="following-cosmos" id="followingCosmos" aria-label="Friends in the cosmos" hidden inert>
+      <h2 class="following-cosmos__title">Your cosmos.</h2>
       <div class="following-cosmos__planets" id="followingPlanets"></div>
       <p id="followingCosmosStatus" role="status" aria-live="polite"></p>
       <button id="refreshFollowingCosmos" type="button">refresh your cosmos</button>
@@ -451,6 +461,7 @@
     <div class="hero-title">
       <h1 class="title-main" id="heroTitleFirst">Orbit</h1>
       <h1 class="title-main title-saturn" id="heroTitleSecond">ing</h1>
+      <p class="hero-bio" id="heroBio" hidden></p>
     </div>
 
     <button class="cosmos-depth-control" id="cosmosDepthControl" type="button" aria-label="Pull back to see people in your orbit">
@@ -508,6 +519,8 @@
   <section id="followedOrbit" class="followed-orbit" role="dialog" aria-modal="true" aria-labelledby="followedOrbitTitle" hidden>
     <button id="closeFollowedOrbit" type="button">← back to your cosmos</button>
     <h2 id="followedOrbitTitle"></h2>
+    <p class="followed-orbit__name" id="followedOrbitName" hidden><span></span><span></span></p>
+    <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
     <div id="followedOrbitPlanet" class="followed-orbit__planet"></div>
     <p id="followedOrbitStatus" role="status"></p>
   </section>
@@ -806,8 +819,8 @@
   <script src="js/orbiting-account.js?v=20261004-pages"></script>
   <script src="js/friend-search.js?v=20261004-pages"></script>
   <script src="js/shared-sky.js?v=2"></script>
-  <script src="js/following-cosmos.js?v=20261004-pages"></script>
-  <script src="js/orbiting-prototype.js?v=20261004-pages"></script>
+  <script src="js/following-cosmos.js?v=20261004-plate-f"></script>
+  <script src="js/orbiting-prototype.js?v=20261004-plate-f"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>

@@ -1,5 +1,40 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your Orbiting account</title>
-<style>body{margin:0;background:#08090d;color:#171a20;font:17px/1.6 Palatino,Georgia,serif;min-height:100vh;display:grid;place-items:center}main{background:#dadbdd;border-radius:20px;padding:36px;width:min(420px,calc(100vw - 100px))}h1{font-weight:normal;line-height:1.15}label{display:block;margin:20px 0}input,button{box-sizing:border-box;width:100%;padding:14px;border:1px solid #7c4050;border-radius:6px;font:16px Arial,sans-serif}button{background:#7c4050;color:white;cursor:pointer}button:disabled{opacity:.5}a{color:#7c4050}p{margin:12px 0}.eyebrow{font:12px Arial,sans-serif;letter-spacing:3px;color:#7c4050}</style></head>
-<body><main><p class="eyebrow">ORBITING</p><h1>Make this space yours.</h1><p id="accessStatus" role="status">Checking your account link…</p><form id="accessForm" hidden><label>Create your password<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label><label>Repeat your password<input id="repeatPassword" type="password" minlength="8" autocomplete="new-password" required></label><button id="savePassword">Save password and continue</button></form><p><a href="login.html">Back to sign in</a></p></main>
-<script src="js/orbiting-account.js?v=20261004-pages"></script><script src="js/account-access.js?v=20261004-pages"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>Your Orbiting account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261004-plate-c">
+  <link rel="stylesheet" href="css/login.css?v=20261004-plate-c">
+</head>
+<body class="op-sky">
+  <div class="login-frame op-frame">
+    <header class="login-header">
+      <p class="login-wordmark" aria-label="Orbiting"><span>Orbit</span><span>ing</span></p>
+      <span class="login-tagline">what orbits you</span>
+    </header>
+    <main class="login-shell">
+      <div class="orbit-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <section class="login-card" aria-labelledby="accessTitle">
+        <p class="op-eyebrow">Your invitation</p>
+        <h1 id="accessTitle" class="op-title">Make this space yours.</h1>
+        <p class="access-status" id="accessStatus" role="status">Checking your account link…</p>
+        <form id="accessForm" hidden>
+          <label for="newPassword">Create your password</label>
+          <input class="op-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+          <label for="repeatPassword" style="margin-top: 16px">Repeat your password</label>
+          <input class="op-input" id="repeatPassword" type="password" minlength="8" autocomplete="new-password" required>
+          <button class="op-btn primary" id="savePassword">Save password and continue</button>
+        </form>
+        <a class="op-link" href="login.html">Back to sign in</a>
+      </section>
+    </main>
+  </div>
+  <script src="js/orbiting-account.js?v=20261004-pages"></script>
+  <script src="js/account-access.js?v=20261004-pages"></script>
+</body>
+</html>
