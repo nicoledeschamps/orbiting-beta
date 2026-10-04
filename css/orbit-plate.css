@@ -314,3 +314,13 @@
 .orbit-setup[data-active-step="1"] .setup-preview-rings:empty::after { content: ''; position: absolute; top: 50%; left: 50%; border: 1px dashed rgba(237,241,244,.3); border-radius: 50%; transform: translate(-50%, -50%) rotate(-10deg); }
 .orbit-setup[data-active-step="1"] .setup-preview-rings:empty::before { width: 104%; height: 22%; }
 .orbit-setup[data-active-step="1"] .setup-preview-rings:empty::after { width: 140%; height: 30%; border-color: rgba(237,241,244,.18); }
+
+/* Friend planets stay visible on the black sky, and on phones they sit below your planet instead of across its rings. */
+.following-cosmos__core { background: radial-gradient(circle at 34% 28%, #575b64 0%, #23252b 50%, #0b0c0f 100%); box-shadow: inset 0 0 0 1px rgba(237,241,244,.45), 0 0 26px rgba(237,241,244,.14); }
+@media (max-width: 680px) {
+  .following-cosmos { top: 60%; bottom: 11%; left: 4%; right: 4%; }
+  .following-cosmos__title { display: none; }
+  .following-cosmos__planets { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); justify-items: center; }
+  .following-cosmos__sphere { width: 72px; font-size: 1.6rem; }
+  .following-cosmos__name { font-size: 15px; }
+}
