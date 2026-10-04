@@ -1,0 +1,146 @@
+/* Populate followed planets from the server-filtered, everyone-visible orbit. */
+(() => {
+  const sky = document.getElementById('followingCosmos');
+  const planets = document.getElementById('followingPlanets');
+  const status = document.getElementById('followingCosmosStatus');
+  const refresh = document.getElementById('refreshFollowingCosmos');
+  const dialog = document.getElementById('followedOrbit');
+  const world = document.getElementById('followedOrbitPlanet');
+  const title = document.getElementById('followedOrbitTitle');
+  const worldStatus = document.getElementById('followedOrbitStatus');
+  const close = document.getElementById('closeFollowedOrbit');
+  if (!sky || !window.OrbitingAccount) return;
+  let sequence = 0, loaded = false, activePlanet, portalJob = 0;
+  let nearTweens = [], worldTweens = [];
+  const cache = new Map();
+  const providers = new Set(['cosmos','arena','pinterest','spotify','instagram']);
+  const kill = tweens => { tweens.forEach(tween => tween?.kill()); tweens.length = 0; };
+
+  async function sharedOrbit(person) {
+    if (cache.has(person.followed_user_id)) return cache.get(person.followed_user_id);
+    const promise = (async () => {
+      const orbit = await window.OrbitingAccount.loadVisibleFollowedOrbit(person.followed_user_id);
+      if (!orbit) return { rings: [], failed: false };
+      const sources = new Map();
+      let failed = false;
+      await Promise.all((orbit.sources || []).filter(source => providers.has(source.provider)).map(async source => {
+        const selections = Array.isArray(source.selectedUrls) ? source.selectedUrls : [];
+        const batches = selections.length ? Array.from({length: Math.ceil(selections.length / 5)}, (_, i) => selections.slice(i * 5, i * 5 + 5)) : [[]];
+        const results = await Promise.allSettled(batches.map((batch, index) => window.OrbitingAccount.previewPublicSource(source.provider, source.url, batch, {
+          discover: false, includeBase: index === 0 && (source.baseShared === true || !selections.length)
+        })));
+        failed ||= results.some(result => result.status === 'rejected');
+        const seen = new Set();
+        sources.set(source.provider, results.flatMap(result => result.status === 'fulfilled' ? result.value.items || [] : []).filter(item => {
+          if (typeof item.src !== 'string' || !item.src.startsWith('https://') || seen.has(item.src)) return false;
+          seen.add(item.src); return true;
+        }));
+      }));
+      return { failed, portraitAsset: orbit.portraitAsset, rings: (orbit.rings || []).map(ring => ({
+        name: ring.words || ring.source || 'Shared ring',
+        items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
+      })) };
+    })();
+    cache.set(person.followed_user_id, promise);
+    try { return await promise; } catch (error) { cache.delete(person.followed_user_id); throw error; }
+  }
+
+  function drawOrbit(container, snapshot, person, near, tweens) {
+    container.replaceChildren();
+    const core = document.createElement('span');
+    core.className = 'following-cosmos__core';
+    if (typeof snapshot.portraitAsset === 'string' && /^assets\/portraits\/[a-z0-9_-]+\.jpg$/.test(snapshot.portraitAsset)) {
+      const portrait = document.createElement('img');
+      portrait.src = snapshot.portraitAsset;
+      portrait.alt = `${person.username}'s portrait`;
+      // A site copy may leave a supplied portrait out; fall back to the initial instead of a broken image.
+      portrait.onerror = () => { core.replaceChildren(); core.textContent = person.username.slice(0, 1).toUpperCase(); };
+      core.append(portrait);
+    } else core.textContent = person.username.slice(0, 1).toUpperCase();
+    container.append(core);
+    const width = container.getBoundingClientRect().width || (near ? 64 : 240);
+    // Rings without images are listed in the status text but never take an orbital path.
+    const filled = snapshot.rings.filter(ring => ring.items.length);
+    filled.forEach((ring, index) => {
+      const back = document.createElement('span'), front = document.createElement('span');
+      back.className = 'saturn-ring-back'; front.className = 'saturn-ring-front';
+      container.append(back, front);
+      const ratio = window.HuesOrbit?.ringRadiusRatio(index, filled.length) || .5;
+      const tween = window.HuesOrbit?.buildRing(ring.items.slice(0, near ? 8 : 20), back, front, width * ratio,
+        near ? [16, 22] : [34, 48], [65 + index * 20, 85 + index * 20], ring.items,
+        { previewOnly: true, startAngle: index * 120 });
+      if (tween) tweens.push(tween);
+    });
+  }
+
+  async function enter(person, planet) {
+    const job = ++portalJob;
+    activePlanet = planet;
+    kill(worldTweens); world.replaceChildren();
+    title.textContent = `@${person.username}’s orbit`;
+    worldStatus.textContent = 'Loading shared rings…';
+    dialog.hidden = false;
+    document.getElementById('hero').inert = true;
+    close.focus();
+    try {
+      const snapshot = await sharedOrbit(person);
+      if (job !== portalJob || dialog.hidden) return;
+      drawOrbit(world, snapshot, person, false, worldTweens);
+      worldStatus.textContent = snapshot.rings.map(ring => ring.name + (ring.items.length ? '' : ' (no images available)')).join(' · ') || 'No rings shared with everyone yet.';
+      if (snapshot.failed) worldStatus.textContent += ' · Some source images could not load. Refresh your cosmos to retry.';
+    } catch (_) { if (job === portalJob) worldStatus.textContent = 'This orbit could not load. Return to your cosmos and refresh to retry.'; }
+  }
+  function leave() {
+    ++portalJob; kill(worldTweens); dialog.hidden = true;
+    document.getElementById('hero').inert = false;
+    activePlanet?.focus();
+  }
+  close.addEventListener('click', leave);
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !dialog.hidden) leave(); });
+  world.addEventListener('click', event => {
+    const tile = event.target.closest('.ring-image');
+    if (tile) window.openRingLightbox?.(tile._mediaEl.src, tile._isVideo, tile._source, tile._boardUrl, tile._metadata);
+  });
+
+  function render(connections) {
+    const job = sequence;
+    kill(nearTweens); planets.replaceChildren();
+    const following = connections.filter(person => person.followed_user_id && typeof person.username === 'string');
+    following.forEach((person, index) => {
+      const planet = document.createElement('button');
+      planet.type = 'button'; planet.className = 'following-cosmos__planet';
+      planet.dataset.userId = person.followed_user_id;
+      planet.style.setProperty('--planet-hue', String(260 + index * 37 % 100));
+      const sphere = document.createElement('span'); sphere.className = 'following-cosmos__sphere';
+      sphere.textContent = person.username.slice(0, 1).toUpperCase(); sphere.setAttribute('aria-hidden', 'true');
+      const name = document.createElement('span'); name.className = 'following-cosmos__name'; name.textContent = `@${person.username}`;
+      planet.append(sphere, name); planet.setAttribute('aria-label', `Enter @${person.username}’s orbit`);
+      planet.addEventListener('click', () => enter(person, planet)); planets.append(planet);
+      sharedOrbit(person).then(snapshot => {
+        if (job !== sequence) return;
+        drawOrbit(sphere, snapshot, person, true, nearTweens);
+        if (snapshot.failed) status.textContent = 'Some shared images could not load. Refresh to retry.';
+      }).catch(() => { if (job === sequence) status.textContent = 'A shared orbit could not load. Refresh to retry.'; });
+    });
+    loaded = true;
+    status.textContent = following.length ? '' : 'Your cosmos is waiting. Find someone through search in Wander.';
+  }
+  async function load() {
+    const job = ++sequence;
+    status.textContent = loaded ? 'Refreshing your cosmos…' : 'Looking for friends in your cosmos…';
+    try {
+      if (!await window.OrbitingAccount.isConfigured() || !await window.OrbitingAccount.getSession()) {
+        if (job === sequence) status.textContent = 'Sign in to see friends in your cosmos.'; return;
+      }
+      const connections = await window.OrbitingAccount.listFollowing();
+      if (job === sequence) render(connections);
+    } catch (_) { if (job === sequence) status.textContent = 'Your cosmos could not refresh. Try again.'; }
+  }
+  refresh.addEventListener('click', () => { cache.clear(); return load(); });
+  window.addEventListener('orbiting:following-changed', event => { ++sequence; render(event.detail.following || []); });
+  window.addEventListener('orbiting:depth-changed', event => {
+    const visible = event.detail.active && !event.detail.demo;
+    sky.hidden = !visible; sky.inert = !visible;
+    if (visible && !loaded) load();
+  });
+})();

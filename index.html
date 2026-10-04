@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORBITING — prototype</title>
+  <meta name="description" content="Orbiting — a quiet social universe built from Hues of Saturn">
+  <meta property="og:title" content="Orbiting">
+  <meta property="og:description" content="See what is moving through the lives and minds of the people you care about">
+  <meta property="og:image" content="assets/saturn-face-transparent.webp">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=20260427a">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261004-pages">
+  <link rel="stylesheet" href="css/account-settings.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+    }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <a href="#elevator-section" class="sr-only">Skip to main content</a>
+
+  <section id="profileLoading" class="profile-loading" role="status" aria-live="polite" hidden>
+    <p id="profileLoadingMessage">Opening your profile…</p>
+    <button id="retryProfileLoad" type="button" hidden>Try again</button>
+    <a id="profileLoadSignIn" href="login.html" hidden>Back to sign in</a>
+  </section>
+  <div class="orbit-setup is-leaving" id="orbitSetup" role="dialog" aria-modal="true" aria-label="Set up your orbit" aria-hidden="true" inert>
+    <header class="setup-header">
+      <span class="setup-wordmark" id="setupWordmark">Orbiting</span>
+      <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
+      <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
+      <span class="setup-progress-label" id="setupProgressLabel">your planet · 1 of 4</span>
+    </header>
+
+    <div class="setup-layout">
+      <main class="setup-workspace">
+        <nav class="setup-steps" aria-label="Setup progress">
+          <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small>portrait</small></button>
+          <button class="setup-step" type="button" data-setup-step="1"><span>2</span><small>sources + rings</small></button>
+          <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small>stars</small></button>
+          <button class="setup-step" type="button" data-setup-step="3"><span>4</span><small>sign up</small></button>
+        </nav>
+
+        <section class="setup-panel" data-setup-panel="0">
+          <p class="setup-eyebrow">center of your planet</p>
+          <h1 id="setupTitle">You are the center of your orbit.</h1>
+          <p class="setup-intro">Your face is its gravitational center. Choose a photo, then shape the world around you.</p>
+          <div class="portrait-actions">
+            <label class="setup-file-action setup-file-action--picker">choose from your library
+              <input class="setup-file-input" id="setupPortraitInput" type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif">
+            </label>
+            <button class="setup-text-action" id="useDemoPortrait" type="button">use the demo portrait</button>
+            <button class="setup-text-action" id="tryDemoCutout" type="button">try cutout with demo photo</button>
+          </div>
+          <p class="setup-status" id="portraitStatus" aria-live="polite">Demo portrait ready. Uploading another photo replaces it.</p>
+          <div class="portrait-position">
+            <label>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="50" max="200" value="100"></label>
+            <label>Horizontal position<input id="portraitX" type="range" min="-50" max="50" value="0"></label>
+            <label>Vertical position<input id="portraitY" type="range" min="-50" max="50" value="0"></label>
+            <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
+          </div>
+          <div class="portrait-refine" id="portraitRefine" hidden>
+            <button class="setup-text-action" id="portraitRemoveBackground" type="button" disabled>remove background</button>
+            <label for="portraitEdge">Refine the cutout edge <span id="portraitEdgeValue">balanced</span></label>
+            <input id="portraitEdge" type="range" min="15" max="75" value="45" step="5">
+            <button class="setup-text-action" id="portraitOriginal" type="button" aria-pressed="false">show original photo</button>
+            <button class="setup-text-action" id="portraitLassoOpen" type="button">draw a custom cutout</button>
+            <button class="setup-text-action" id="portraitLassoReset" type="button" hidden>return to automatic cutout</button>
+            <div class="portrait-lasso" id="portraitLasso" hidden>
+              <p>Draw around the part of your photo you want to keep. Release to close the shape.</p>
+              <label><input id="portraitMagicLasso" type="checkbox" disabled> Refine my outline automatically (magic lasso)</label>
+              <canvas id="portraitLassoCanvas" aria-label="Draw a freehand cutout around your portrait"></canvas>
+              <div class="portrait-lasso__actions">
+                <button type="button" id="portraitLassoClear">start over</button>
+                <button type="button" id="portraitLassoApply" disabled>use this cutout</button>
+                <button type="button" id="portraitLassoCancel">cancel</button>
+              </div>
+            </div>
+          </div>
+          <div class="sky-title-builder">
+            <strong>Title for your sky</strong>
+            <p>Write your name, a phrase, or anything that feels like yours. It will appear in two lines across your sky.</p>
+            <div class="sky-title-fields">
+              <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" autocomplete="off"></label>
+              <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="ing" autocomplete="off"></label>
+            </div>
+            <label class="sky-title-color">Second-line color
+              <span class="sky-title-color__control"><input id="skyTitleSecondColor" type="color" value="#ffffff" aria-label="Choose second-line title color"><output id="skyTitleSecondColorValue" for="skyTitleSecondColor">#FFFFFF</output></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="setup-panel" data-setup-panel="1" hidden>
+          <p class="setup-eyebrow">build your orbit</p>
+          <h1>What moves around you?</h1>
+          <p class="setup-intro">Choose the public posts, collections, or links you want to share. Their photos will form the rings in your live preview.</p>
+          <details class="source-accordion" id="sourceAccordion" open>
+            <summary><strong>Your sources</strong><span id="sourceSummary">Choose what to share</span></summary>
+          <button class="source-list-action" id="refreshSources" type="button">↻ Refresh sources</button><p class="setup-status" id="refreshSourcesStatus" role="status"></p>
+          <div class="source-list" id="sourceList">
+            <button class="source-option" type="button" data-source="cosmos" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Cosmos</strong><small>public profile or collection</small></span><em>choose</em></button>
+            <button class="source-option" type="button" data-source="arena" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Are.na</strong><small>public channels</small></span><em>choose</em></button>
+            <button class="source-option" type="button" data-source="pinterest" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Pinterest</strong><small>public boards</small></span><em>choose</em></button>
+            <button class="source-option" type="button" data-source="spotify" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Spotify</strong><small>public playlist covers</small></span><em>choose</em></button>
+            <button class="source-option" type="button" data-source="instagram" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Instagram</strong><small>public profile, post or Reel</small></span><em>choose</em></button>
+            <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>My Photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
+          </div>
+          <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Choose a source above to begin. Only public content you select will appear in your orbit.</p>
+          <div class="source-sharing" id="sourceSharing"></div>
+          <div class="source-sharing-card photo-sharing" id="photoSharing" hidden>
+            <h2>Add your photos</h2>
+            <p class="source-input-hint">Choose individual images or a folder. Images stay on this device and are not saved with your orbit. Choose again to refresh after adding files to a folder.</p>
+            <div class="photo-sharing-actions">
+              <button class="source-link-approve" id="choosePhotoFiles" type="button">Choose files</button>
+              <button class="source-link-approve source-link-approve--secondary" id="choosePhotoFolder" type="button">Choose a folder</button>
+            </div>
+            <input class="setup-file-input" id="setupAlbumInput" type="file" accept="image/*" multiple>
+            <input class="setup-file-input" id="setupFolderInput" type="file" accept="image/*" webkitdirectory directory multiple>
+            <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
+            <button class="source-list-action" id="clearPhotos" type="button" hidden>Remove all photos</button>
+          </div>
+            <button class="source-link-approve" id="finishSources" type="button">Done choosing sources</button>
+          </details>
+          <section class="source-rings" aria-labelledby="sourceRingsTitle">
+            <h2 id="sourceRingsTitle" tabindex="-1">Define your orbit.</h2>
+            <p>Your In My Orbit chart shows what fills each ring. Select a label to highlight its photos. Name each ring below and choose whether to combine its sources.</p>
+            <div class="setup-orbit-key" id="setupOrbitKey" hidden>
+              <span class="orbit-key-trigger">in my orbit</span>
+              <div class="orbit-key-chart" id="setupOrbitChart" aria-label="Preview your orbit rings"></div>
+            </div>
+            <div class="ring-builder" id="ringBuilder"></div>
+            <p class="setup-note">Use move up or move down to set the order of your rings.</p>
+            <p class="sr-only" id="ringOrderStatus" role="status" aria-live="polite"></p>
+            <p class="ring-builder-empty" id="ringBuilderEmpty">No shared rings yet. Choose public items to share or add your photos.</p>
+            <button class="add-ring" id="addRing" type="button">+ add a ring</button>
+            <p class="ring-validation" id="ringValidation" role="alert" hidden></p>
+          </section>
+        </section>
+
+        <section class="setup-panel" data-setup-panel="2" hidden>
+          <p class="setup-eyebrow">your sky</p>
+          <h1>Light up your night sky.</h1>
+          <p class="setup-intro">Add any birth details you know. Then choose which stars reveal pieces of you, and which hold a message for someone curious enough to find it.</p>
+          <label class="light-space-toggle"><input id="lightUpSpace" type="checkbox" checked> <span>Light up my space with this sky</span></label>
+          <div class="birth-fields">
+            <label><span>Birth date <small>optional</small></span><input id="birthDate" type="date"></label>
+            <label><span>Birth time <small>if known</small></span><input id="birthTime" type="time"></label>
+            <label class="birth-place"><span>Birth place <small>optional</small></span><input id="birthPlace" type="text" placeholder="City, state or country"></label>
+          </div>
+          <div class="constellation-picker" id="constellationPicker" aria-live="polite">
+            <div class="constellation-picker__heading">
+              <span>Placements from your birth chart</span>
+              <small id="skyCalculationNote">Date reveals the planets. Time and place unlock Rising, Midheaven, and houses.</small>
+            </div>
+            <section class="featured-placement-section" aria-labelledby="featuredPlacementTitle">
+              <div class="placement-section-heading">
+                <strong id="featuredPlacementTitle">Featured in your sky</strong>
+                <small id="featuredPlacementCount">0 featured</small>
+              </div>
+              <div id="featuredPlacements"></div>
+            </section>
+            <details class="placement-accordion" id="placementAccordion">
+              <summary><span>All other placements</span><small id="otherPlacementCount">0 placements</small></summary>
+              <div id="otherPlacementGroups"></div>
+            </details>
+          </div>
+          <p class="setup-status">Calculated with <a href="https://www.astro.com/swisseph/swephinfo_e.htm" target="_blank" rel="noreferrer">Swiss Ephemeris</a>. A complete date, time, and place unlocks exact houses and angles; date-only charts are shown at noon UTC.</p>
+          <div class="hidden-star-builder">
+            <label class="hidden-star-toggle"><input id="hiddenStarEnabled" type="checkbox"> <span><strong>Hide messages in your stars</strong><small>Each message can live in a different star. Choose as many as you want.</small></span></label>
+            <details class="sign-themes"><summary>Explore sign themes for inspiration</summary><div id="signThemesList"></div></details>
+            <div class="hidden-star-placement" id="hiddenStarPlacement" hidden>
+              <span>Choose a message, then pick its placement in the live sky</span>
+              <strong id="hiddenStarSelectionStatus" role="status">No stars chosen yet</strong>
+            </div>
+            <div class="hidden-message-list" id="hiddenMessageList" hidden></div>
+            <button class="add-hidden-message" id="addHiddenMessage" type="button" hidden>+ add another message</button>
+          </div>
+          <section class="friend-sky-settings" aria-labelledby="friendSkyTitle">
+            <h2 id="friendSkyTitle">Shared constellations</h2>
+            <label><input id="shareSkyWithFriends" type="checkbox" disabled> <span>Let friends include my zodiac signs in a shared sky<small id="sharedSkyHelp">Sign in to share your zodiac signs. Birth details and hidden messages stay private.</small></span></label>
+            <label><input id="combineSkyWithFriends" type="checkbox" disabled> <span>Combine my sky with friends</span></label>
+            <div class="friend-sky-picker" id="friendSkyPicker" hidden>
+              <div id="friendSkyChoices" role="group" aria-label="Choose friends for your shared sky"></div>
+              <p id="friendSkyStatus" role="status">Sign in, then choose friends who share their skies.</p>
+              <button id="refreshFriendSkies" type="button">refresh friends’ skies</button>
+            </div>
+          </section>
+          <p class="setup-privacy-note" id="birthPrivacyNote">During testing, birth details stay in this browser. Your place name is sent to Open-Meteo to find its coordinates and historical time zone. No account is created.</p>
+        </section>
+
+        <section class="setup-panel setup-panel--account" data-setup-panel="3" hidden>
+          <p class="setup-eyebrow">one last thing</p>
+          <h1>Save your orbit.</h1>
+          <p class="setup-intro">This is the sign-up screen preview. You can try the fields, then enter your orbit. During testing, nothing is submitted and no account is created.</p>
+          <div class="account-mode" role="group" aria-label="Account action" hidden>
+            <button type="button" data-account-mode="signup" aria-pressed="true">create an account</button>
+            <button type="button" data-account-mode="signin" aria-pressed="false">sign in</button>
+          </div>
+          <div class="account-fields">
+            <label for="accountUsername" id="accountUsernameField"><span>Username</span><input id="accountUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname" required><small>3–20 letters, numbers, or underscores.</small></label>
+            <label for="accountEmail"><span>Email</span><input id="accountEmail" type="email" autocomplete="off" placeholder="you@example.com"><small>Preview only. This email is not submitted or saved.</small></label>
+            <label for="accountPassword"><span>Password</span><input id="accountPassword" type="password" minlength="8" autocomplete="off" placeholder="at least 8 characters"><small>Preview only. Use a made-up password; it is not submitted or saved.</small></label>
+          </div>
+          <p class="account-demo-notice" id="accountDemoNotice">Testing preview · Use made-up details if you try these fields. No account is created and no confirmation email is sent.</p>
+          <p class="setup-status" id="accountStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <div class="settings-save-actions"><button class="setup-skip" id="setupSkip" type="button" hidden>save changes</button></div>
+        <div class="setup-actions">
+          <button class="setup-back" id="setupBack" type="button" disabled>back</button>
+          <button class="setup-next" id="setupNext" type="button">continue</button>
+        </div>
+      </main>
+
+      <aside class="setup-preview" aria-label="Live preview of your planet">
+        <div class="setup-preview-stars" aria-hidden="true"></div>
+        <div class="setup-preview-meta"><span>live preview</span><span id="previewState">portrait ready</span></div>
+        <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span>ing</span></div>
+        <div class="setup-constellation" id="setupConstellation" aria-label="Interactive preview of your birth sky">
+          <svg viewBox="0 0 120 90">
+            <g class="constellation-lines"><line x1="15" y1="65" x2="42" y2="32"/><line x1="42" y1="32" x2="66" y2="50"/><line x1="66" y1="50" x2="96" y2="18"/><line x1="66" y1="50" x2="103" y2="72"/></g>
+            <g class="constellation-points"><circle cx="15" cy="65" r="2"/><circle cx="42" cy="32" r="2.4"/><circle cx="66" cy="50" r="2.2"/><circle cx="96" cy="18" r="2"/><circle cx="103" cy="72" r="1.8"/></g>
+          </svg>
+        </div>
+        <div class="hidden-star-choices" id="hiddenStarChoices" role="group" aria-label="Choose stars for your hidden messages" hidden></div>
+        <div class="setup-hidden-thought" id="setupHiddenThought" role="status" hidden></div>
+        <div class="setup-planet" id="setupPlanet" aria-hidden="true">
+          <div class="setup-preview-rings" id="setupPreviewRings"></div>
+          <img id="setupPortraitPreview" src="assets/saturn-face-transparent.webp" alt="">
+        </div>
+        <div class="editor-hotspots" id="editorHotspots" aria-label="Edit parts of your orbit" hidden>
+          <button class="editor-hotspot editor-hotspot--portrait" type="button" data-editor-target="0">portrait + title</button>
+          <button class="editor-hotspot editor-hotspot--sources" type="button" data-editor-target="1">connections</button>
+          <button class="editor-hotspot editor-hotspot--stars" type="button" data-editor-target="2">stars</button>
+          <button class="editor-hotspot editor-hotspot--rings" type="button" data-editor-target="1">rings</button>
+        </div>
+        <p class="setup-preview-note" id="setupPreviewNote">Your portrait becomes the center of the planet.</p>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 1: HERO — SATURN + INSPIRATION RING -->
+  <!-- ============================================ -->
+  <section id="hero" class="hero">
+    <aside class="verification-reminder" id="verificationReminder" hidden aria-label="Email verification">
+      <strong>Your orbit is yours. Make it official.</strong>
+      <p id="verificationStatus" role="status" aria-live="polite"></p>
+      <div><button id="completeVerification" type="button">I’ve verified my email</button><button id="resendVerification" type="button">Send another link</button></div>
+    </aside>
+    <nav class="orbit-page-nav" aria-label="Your orbit pages">
+      <button id="openOrbitSettings" type="button">settings</button>
+      <button id="openOrbitResources" type="button">resources</button>
+      <button id="signOutOrbit" type="button" hidden>sign out</button>
+    </nav>
+    <div class="stars" id="stars"></div>
+    <div class="sparkles" id="sparkles"></div>
+    <div class="constellations">
+      <!-- Cancer (accurate: inverted Y shape) -->
+      <svg class="constellation c-cancer" viewBox="0 0 100 80">
+        <circle cx="20" cy="25" r="1.3"/><circle cx="35" cy="35" r="1.5"/>
+        <circle cx="55" cy="40" r="1.8"/><circle cx="75" cy="35" r="1.5"/>
+        <circle cx="45" cy="60" r="1.3"/>
+        <line x1="20" y1="25" x2="35" y2="35"/><line x1="35" y1="35" x2="55" y2="40"/>
+        <line x1="55" y1="40" x2="75" y2="35"/><line x1="55" y1="40" x2="45" y2="60"/>
+      </svg>
+      <!-- Capricorn (accurate: triangular tail shape) -->
+      <svg class="constellation c-capricorn" viewBox="0 0 110 80">
+        <circle cx="10" cy="30" r="1.3"/><circle cx="28" cy="20" r="1.5"/>
+        <circle cx="50" cy="15" r="1.4"/><circle cx="70" cy="25" r="1.3"/>
+        <circle cx="85" cy="40" r="1.5"/><circle cx="95" cy="60" r="1.3"/>
+        <circle cx="70" cy="65" r="1.4"/><circle cx="50" cy="55" r="1.3"/>
+        <line x1="10" y1="30" x2="28" y2="20"/><line x1="28" y1="20" x2="50" y2="15"/>
+        <line x1="50" y1="15" x2="70" y2="25"/><line x1="70" y1="25" x2="85" y2="40"/>
+        <line x1="85" y1="40" x2="95" y2="60"/><line x1="95" y1="60" x2="70" y2="65"/>
+        <line x1="70" y1="65" x2="50" y2="55"/><line x1="50" y1="55" x2="50" y2="15"/>
+      </svg>
+      <!-- Libra (accurate: scales shape) — interactive: moon placement → About -->
+      <svg class="constellation c-libra is-interactive" viewBox="0 0 90 70"
+           role="button" tabindex="0"
+           data-star-action="about"
+           aria-label="About Nicole — her moon, hidden in plain sight">
+        <!-- Moon halo behind the pivot (bottom center) — only visible on hover/focus -->
+        <circle class="star-halo" cx="45" cy="60" r="6"/>
+        <circle cx="25" cy="40" r="1.4"/>
+        <circle cx="65" cy="40" r="1.4"/><circle cx="15" cy="15" r="1.3"/>
+        <circle cx="75" cy="15" r="1.3"/>
+        <line x1="45" y1="60" x2="25" y2="40"/><line x1="45" y1="60" x2="65" y2="40"/>
+        <line x1="25" y1="40" x2="15" y2="15"/><line x1="65" y1="40" x2="75" y2="15"/>
+        <line x1="25" y1="40" x2="65" y2="40"/>
+        <!-- Pivot star = the moon. Drawn last so it sits above the halo. -->
+        <circle class="moon-star" cx="45" cy="60" r="1.8"/>
+      </svg>
+
+      <!-- Gemini (the twins) — Nicole's Venus, Mars, Mercury live here → HOD -->
+      <svg class="constellation c-gemini is-interactive" viewBox="0 0 82 82"
+           role="button" tabindex="0"
+           data-star-action="hod"
+           aria-label="Hues of Dispositions — enter">
+        <!-- Soft hover halo behind the whole constellation -->
+        <ellipse class="star-halo gemini-halo" cx="41" cy="42" rx="34" ry="38"/>
+
+        <!-- Lines forming the two stick figures + shared arm -->
+        <!-- Castor figure (left twin) -->
+        <line class="gemini-edge" x1="24" y1="8"  x2="26" y2="22"/>
+        <line class="gemini-edge" x1="26" y1="22" x2="28" y2="38"/>
+        <line class="gemini-edge" x1="28" y1="38" x2="28" y2="54"/>
+        <line class="gemini-edge" x1="28" y1="54" x2="22" y2="72"/>
+        <!-- Pollux figure (right twin) -->
+        <line class="gemini-edge" x1="56" y1="12" x2="58" y2="24"/>
+        <line class="gemini-edge" x1="58" y1="24" x2="58" y2="40"/>
+        <line class="gemini-edge" x1="58" y1="40" x2="56" y2="56"/>
+        <line class="gemini-edge" x1="56" y1="56" x2="50" y2="74"/>
+        <!-- Arms across — Castor shoulder to Pollux shoulder -->
+        <line class="gemini-edge" x1="26" y1="22" x2="58" y2="24"/>
+
+        <!-- Ordinary Gemini stars (cream) -->
+        <circle class="gemini-star" cx="26" cy="22" r="1.5"/>
+        <circle class="gemini-star" cx="28" cy="54" r="1.4"/>
+        <circle class="gemini-star" cx="22" cy="72" r="1.3"/>
+        <circle class="gemini-star" cx="58" cy="24" r="1.5"/>
+        <circle class="gemini-star" cx="56" cy="56" r="1.4"/>
+        <circle class="gemini-star" cx="50" cy="74" r="1.3"/>
+
+        <!-- Planet stars — Venus (Castor head), Mars (Pollux head), Mercury (Wasat/torso) -->
+        <circle class="planet-star" data-planet="venus"   cx="24" cy="8"  r="2.0"/>
+        <circle class="planet-star" data-planet="mars"    cx="56" cy="12" r="2.1"/>
+        <circle class="planet-star" data-planet="mercury" cx="58" cy="40" r="1.9"/>
+      </svg>
+
+      <!-- Connect — lone star (reach out) -->
+      <button class="lone-star c-connect is-interactive" type="button"
+              data-star-action="connect"
+              aria-label="Connect with Nicole">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <circle class="star-halo" cx="16" cy="16" r="10"/>
+          <circle class="lone-star-core" cx="16" cy="16" r="2.2"/>
+          <g class="lone-star-rays">
+            <line x1="16" y1="4"  x2="16" y2="9"/>
+            <line x1="16" y1="23" x2="16" y2="28"/>
+            <line x1="4"  y1="16" x2="9"  y2="16"/>
+            <line x1="23" y1="16" x2="28" y2="16"/>
+          </g>
+        </svg>
+        <span class="constellation-label">connect</span>
+      </button>
+
+      <div class="orbiting-hidden-thoughts" id="orbitingHiddenThoughts"></div>
+      <div class="orbiting-birth-sky" id="orbitingBirthSky" aria-label="Your birth sky"></div>
+      <div class="orbiting-shared-sky" id="orbitingSharedSky" aria-label="Your shared night sky" hidden></div>
+    </div>
+
+    <div class="orbit-camera" id="orbitCamera">
+    <div class="saturn-container" id="saturn">
+      <div class="saturn-glow"></div>
+      <div class="saturn-body">
+        <img src="assets/saturn-face-transparent.webp" width="750" height="750" fetchpriority="high" alt="Hues of Saturn" />
+        <div class="saturn-highlight"></div>
+        <div class="saturn-shadow"></div>
+      </div>
+      <!-- Innermost ring — Your art -->
+      <div class="saturn-ring-back ring-art" id="artRingBack"></div>
+      <div class="saturn-ring-front ring-art" id="artRingFront"></div>
+      <!-- Middle ring — Are.na -->
+      <div class="saturn-ring-back ring-arena" id="arenaRingBack"></div>
+      <div class="saturn-ring-front ring-arena" id="arenaRingFront"></div>
+      <!-- Outer ring — Cosmos -->
+      <div class="saturn-ring-back ring-cosmos" id="cosmosRingBack"></div>
+      <div class="saturn-ring-front ring-cosmos" id="cosmosRingFront"></div>
+    </div>
+    </div>
+
+    <button class="cosmos-neighbor" id="brandonPlanet" type="button" aria-label="Enter Brandon Jerman's orbit" tabindex="-1">
+      <span class="cosmos-neighbor__orbit" aria-hidden="true">
+        <span class="saturn-ring-back ring-art" data-brandon-ring="art-back"></span>
+        <span class="saturn-ring-front ring-art" data-brandon-ring="art-front"></span>
+        <span class="saturn-ring-back ring-arena" data-brandon-ring="arena-back"></span>
+        <span class="saturn-ring-front ring-arena" data-brandon-ring="arena-front"></span>
+        <span class="saturn-ring-back ring-cosmos" data-brandon-ring="cosmos-back"></span>
+        <span class="saturn-ring-front ring-cosmos" data-brandon-ring="cosmos-front"></span>
+        <img class="cosmos-neighbor__portrait" src="https://brandon-jerman-world.brandonjerman.chatgpt.site/assets/brandon-head.png" alt="" loading="lazy">
+      </span>
+      <span class="cosmos-neighbor__name">Brandon Jerman</span>
+      <span class="cosmos-neighbor__action">enter his orbit</span>
+    </button>
+
+    <section class="following-cosmos" id="followingCosmos" aria-label="Friends in the cosmos" hidden inert>
+      <div class="following-cosmos__planets" id="followingPlanets"></div>
+      <p id="followingCosmosStatus" role="status" aria-live="polite"></p>
+      <button id="refreshFollowingCosmos" type="button">refresh your cosmos</button>
+    </section>
+    <div class="cosmos-depth-label" id="cosmosDepthLabel" aria-hidden="true">your close orbit <span>✦</span> two worlds in view</div>
+
+    <section class="explore-layer" id="exploreLayer" aria-labelledby="exploreTitle" aria-hidden="true" inert>
+      <div class="explore-layer__heading">
+        <h2 id="exploreTitle">Wander<span>.</span></h2>
+        <p>Welcome to the death of the algorithm.</p>
+      </div>
+      <div class="people-search">
+        <button class="people-search__toggle" id="peopleSearchToggle" type="button" aria-expanded="false" aria-controls="peopleSearchPanel">search ✦</button>
+        <section class="people-search__panel" id="peopleSearchPanel" aria-label="Find people in Orbiting" hidden>
+          <div class="people-search__top"><strong>Find someone</strong><button id="peopleSearchClose" type="button" aria-label="Close people search">×</button></div>
+          <label for="peopleSearchInput">Search by username</label>
+          <input id="peopleSearchInput" type="search" placeholder="start typing a name" autocomplete="off" spellcheck="false" maxlength="20">
+          <div id="peopleSearchResults" class="people-search__results" aria-live="polite"></div>
+          <label class="people-search__discover"><input id="peopleSearchDiscoverable" type="checkbox"> Let people find me by username</label>
+          <button id="peopleSearchFriends" type="button">view friends in the cosmos</button>
+          <p id="peopleSearchStatus" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+      <div class="explore-stage">
+        <div class="explore-planet" id="explorePlanet" aria-label="Rotating planet of clippings from your orbit">
+          <div class="explore-planet__items" id="explorePlanetItems"></div>
+        </div>
+        <div class="wander-adjust">
+        <button id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls">Adjust planet</button>
+        <div class="wander-controls" id="wanderControls" hidden>
+        <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="50" max="1200" value="100" step="10"></label>
+        <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="140" value="100" step="5"></label>
+        </div>
+        </div>
+      </div>
+      <p class="explore-layer__empty" id="wanderEmpty" hidden>Your Wander begins with your own things. Add photos or public links in your orbit to fill this planet.</p>
+      <aside class="explore-detail" id="exploreDetail" role="dialog" aria-modal="true" aria-label="Clipping" hidden>
+        <button class="explore-detail__close" id="exploreDetailClose" type="button" aria-label="Close enlarged image">× Close</button>
+        <div class="explore-detail__card">
+          <img class="explore-detail__image" id="exploreDetailImage" alt="">
+          <div class="explore-detail__caption">
+            <strong id="exploreDetailTitle"></strong>
+            <span id="exploreDetailSource"></span>
+            <div class="explore-detail__actions">
+              <button id="exploreEnterFriend" type="button">enter their orbit ↗</button>
+              <a id="exploreSourceLink" href="#" target="_blank" rel="noopener noreferrer">open source ↗</a>
+            </div>
+            <p class="explore-layer__note">Prototype imagery · not live sharing.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="hero-title">
+      <h1 class="title-main" id="heroTitleFirst">Orbit</h1>
+      <h1 class="title-main title-saturn" id="heroTitleSecond">ing</h1>
+    </div>
+
+    <button class="cosmos-depth-control" id="cosmosDepthControl" type="button" aria-label="Pull back to see people in your orbit">
+      <span class="cosmos-depth-control__symbol" aria-hidden="true">⌁</span>
+      <span id="cosmosDepthControlText">scroll down to pull back</span>
+    </button>
+
+    <div class="orbit-key" id="orbitKey">
+      <div class="orbit-key-row">
+        <button class="orbit-key-trigger" id="orbitKeyTrigger">what's in my orbit</button>
+        <button class="portal-star" id="portalStarBtn" type="button"
+                aria-label="Enter orbit — step inside and spin Saturn with your hands">
+          <span class="portal-star-glyph" aria-hidden="true">✦</span>
+        </button>
+      </div>
+      <div class="orbit-key-chart" id="orbitKeyChart">
+        <svg class="orbit-chart-svg" viewBox="0 0 140 80" aria-hidden="true">
+          <path class="orbit-arc orbit-arc--art"   d="M 10,70 A 30,30 0 0,1 70,70" />
+          <path class="orbit-arc orbit-arc--arena"  d="M 4,70  A 55,55 0 0,1 108,70" />
+          <path class="orbit-arc orbit-arc--cosmos" d="M 0,70  A 70,70 0 0,1 140,70" />
+          <circle class="orbit-chart-center" cx="70" cy="70" r="2.5" />
+        </svg>
+        <button class="orbit-chart-label" data-ring="art"    style="left:18%; bottom:38%">inner works</button>
+        <button class="orbit-chart-label" data-ring="arena"  style="left:4%;  bottom:58%">inspiration</button>
+        <button class="orbit-chart-label" data-ring="cosmos" style="left:0%;  bottom:78%">life</button>
+      </div>
+    </div>
+
+    <div class="scroll-hint" id="scrollHint">
+      <span>scroll down</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <section class="resources-page" id="resourcesPage" role="dialog" aria-modal="true" aria-labelledby="resourcesTitle" hidden>
+    <header class="resources-page__header">
+      <span class="resources-page__wordmark">Orbiting</span>
+      <button id="closeOrbitResources" type="button">← back to your orbit</button>
+    </header>
+    <div class="resources-page__body">
+      <p class="resources-page__eyebrow">a small constellation of places</p>
+      <h2 id="resourcesTitle">Resources<span>.</span></h2>
+      <p class="resources-page__intro">A few places for making, collecting, and getting lost in an idea.</p>
+      <div class="resources-page__list">
+        <a href="https://nicoledeschamps.github.io/cut-it-out/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">01</span><span><strong>Cut It Out</strong><small>a hand-cut digital collage tool</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
+        <a href="https://www.are.na/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">02</span><span><strong>Are.na</strong><small>collect and connect ideas</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
+        <a href="https://www.cosmos.so/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">03</span><span><strong>Cosmos</strong><small>a space for visual inspiration</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
+        <a href="https://www.ideanow.online/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">04</span><span><strong>IDEA</strong><small>an online collection to explore</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
+        <a href="https://www.archivepdf.net/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">05</span><span><strong>ARCHIVE.pdf</strong><small>fashion archives and references</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
+      </div>
+      <p class="resources-page__footnote">These open in a new tab. The list can grow with your orbit.</p>
+    </div>
+  </section>
+
+  <section id="followedOrbit" class="followed-orbit" role="dialog" aria-modal="true" aria-labelledby="followedOrbitTitle" hidden>
+    <button id="closeFollowedOrbit" type="button">← back to your cosmos</button>
+    <h2 id="followedOrbitTitle"></h2>
+    <div id="followedOrbitPlanet" class="followed-orbit__planet"></div>
+    <p id="followedOrbitStatus" role="status"></p>
+  </section>
+  <div class="friend-portal" id="friendPortal" role="dialog" aria-modal="true" aria-label="Brandon Jerman's orbit" hidden>
+    <div class="friend-portal__nav">
+      <button id="friendPortalBack" type="button">← back to your cosmos</button>
+      <span>Brandon Jerman’s orbit</span>
+      <a href="https://brandon-jerman-world.brandonjerman.chatgpt.site/" target="_blank" rel="noopener noreferrer">open directly ↗</a>
+    </div>
+    <div class="friend-portal__world">
+      <div class="friend-portal__sky" aria-hidden="true"></div>
+      <h2>Brandon<br><span>Jerman</span></h2>
+      <p class="friend-portal__role">artist · creative producer · founder</p>
+      <div class="friend-portal__planet" id="brandonFullOrbit">
+        <span class="saturn-ring-back ring-art" data-brandon-ring="art-back"></span>
+        <span class="saturn-ring-front ring-art" data-brandon-ring="art-front"></span>
+        <span class="saturn-ring-back ring-arena" data-brandon-ring="arena-back"></span>
+        <span class="saturn-ring-front ring-arena" data-brandon-ring="arena-front"></span>
+        <span class="saturn-ring-back ring-cosmos" data-brandon-ring="cosmos-back"></span>
+        <span class="saturn-ring-front ring-cosmos" data-brandon-ring="cosmos-front"></span>
+        <img class="friend-portal__portrait" src="https://brandon-jerman-world.brandonjerman.chatgpt.site/assets/brandon-head.png" alt="Cutout portrait of Brandon Jerman">
+      </div>
+      <div class="friend-portal__key"><span>music</span><span>creative work</span><span>made neutral</span></div>
+      <p class="friend-portal__caption">Brandon’s orbit in motion. <a href="https://brandon-jerman-world.brandonjerman.chatgpt.site/" target="_blank" rel="noopener noreferrer">Explore his full interactive world ↗</a></p>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 2: THE ELEVATOR — PORTAL DOORS       -->
+  <!-- ============================================ -->
+  <section id="elevator-section" class="elevator-section">
+    <div class="elevator-container">
+      <!-- Elevator interior walls -->
+      <div class="elevator-wall elevator-wall-left">
+        <div class="wall-handrail"></div>
+      </div>
+      <div class="elevator-wall elevator-wall-right">
+        <div class="wall-handrail"></div>
+      </div>
+      <div class="elevator-ceiling"></div>
+      <div class="elevator-floor-surface"></div>
+      <!-- Ambient lighting overlay -->
+      <div class="elevator-ambient-light"></div>
+
+      <!-- Frame around the doors -->
+      <div class="elevator-frame">
+        <div class="frame-top"></div>
+        <div class="frame-left"></div>
+        <div class="frame-right"></div>
+      </div>
+
+      <!-- Floor indicator display -->
+      <div class="floor-indicator" id="floorIndicator" aria-live="polite" aria-atomic="true">
+        <span class="indicator-arrow" id="indicatorArrow"></span>
+        <span class="indicator-floor">★</span>
+      </div>
+
+      <!-- Behind the doors — text floors -->
+      <div class="elevator-behind" id="elevatorBehind">
+        <div class="behind-content" id="behindText">
+          <h2 class="behind-title">HUES OF DISPOSITIONS</h2>
+          <p class="behind-subtitle">thoughts pending...</p>
+        </div>
+
+        <!-- H.O.D. floor — portal preview -->
+        <div class="behind-hod" id="behindHod">
+          <div class="hod-void"></div>
+          <div class="hod-grain"></div>
+          <div class="hod-portal-inner">
+            <h2 class="hod-title">HUES OF DISPOSITIONS</h2>
+            <p class="hod-tagline">a tool i built to play with the world around me.</p>
+            <p class="hod-description">68 real time effects. audio reactive visuals that move to sound. motion tracking that follows what you follow. layers, blend modes, a timeline to shape it all. everything runs live, right in your browser.</p>
+            <p class="hod-tagline">this is how i see... now you can too. just upload or open your camera and let curiosity drive you.</p>
+            <a class="hod-enter" href="https://nicoledeschamps.github.io/hues-of-dispositions/" target="_blank" rel="noopener">
+              enter <span class="hod-enter-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- About floor -->
+        <div class="behind-about" id="behindAbout">
+          <div class="about-lightcast" id="aboutLightcast"></div>
+          <div class="about-grain"></div>
+          <div class="orb orb-sun" data-orb="sun">
+            <div class="orb-core"></div>
+            <div class="orb-bloom"></div>
+            <div class="orb-haze"></div>
+            <div class="orb-corona"></div>
+          </div>
+          <div class="orb orb-moon" data-orb="moon"></div>
+          <div class="about-inner">
+            <div class="about-text" id="aboutText"></div>
+          </div>
+          <div class="about-hint">drag the orbs</div>
+        </div>
+
+        <!-- Connect floor -->
+        <div class="behind-about behind-connect" id="behindConnect">
+          <div class="about-inner">
+            <div class="connect-text" id="connectText"></div>
+            <div class="connect-links">
+              <a href="https://instagram.com/huesofsaturn" target="_blank" rel="noopener">@huesofsaturn <span class="connect-platform">ig</span></a>
+
+              <a href="https://instagram.com/planetarydispositions" target="_blank" rel="noopener">@planetarydispositions <span class="connect-platform">ig</span></a>
+              <a href="mailto:nicole.deschamps1@gmail.com">nicole.deschamps1@gmail.com</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gallery floor -->
+        <div class="behind-gallery" id="behindGallery">
+          <div class="gallery-hallway" id="galleryHallway">
+            <!-- Three.js WebGL canvas mount -->
+            <div id="galleryViewport"></div>
+            <!-- Loading overlay -->
+            <div class="gallery-loading" id="galleryLoading">
+              <div class="gallery-loading-ring"></div>
+              <p class="gallery-loading-text" id="galleryLoadingText">loading gallery...</p>
+            </div>
+            <!-- Controls HUD (desktop) -->
+            <div class="gallery-controls-hud" id="galleryControlsHud">
+              <span class="hud-item"><kbd>&uarr;</kbd><kbd>&darr;</kbd> or scroll &mdash; walk</span>
+              <span class="hud-divider"></span>
+              <span class="hud-item">click artwork &mdash; view</span>
+            </div>
+            <!-- Mobile D-Pad -->
+            <div class="gallery-dpad" id="galleryDpad">
+              <button class="gallery-dpad-btn" data-dir="up" aria-label="Walk forward">&#9650;</button>
+              <div class="gallery-dpad-row">
+                <button class="gallery-dpad-btn" data-dir="left" aria-label="Look left">&#9664;</button>
+                <button class="gallery-dpad-btn" data-dir="right" aria-label="Look right">&#9654;</button>
+              </div>
+              <button class="gallery-dpad-btn" data-dir="down" aria-label="Walk back">&#9660;</button>
+            </div>
+            <!-- Gallery position indicator -->
+            <div class="gallery-position" id="galleryPosition">
+              <div class="gallery-position-fill"></div>
+              <span class="gallery-position-label">1 / <span class="gallery-position-total"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left door -->
+      <div class="elevator-door door-left" id="doorLeft">
+        <div class="door-surface">
+          <div class="door-scratches"></div>
+          <div class="door-scratches door-scratches-2"></div>
+          <div class="door-gouges"></div>
+          <div class="door-seam door-seam-edge"></div>
+        </div>
+      </div>
+
+      <!-- Button panel — on right side wall -->
+      <div class="button-panel">
+        <div class="panel-surface">
+          <!-- Floor buttons: 4 at top → ★1 at bottom -->
+          <button class="floor-btn" data-floor="contact"><span class="btn-num">4</span><span class="btn-label">CONNECT</span></button>
+          <button class="floor-btn" data-floor="about"><span class="btn-num">3</span><span class="btn-label">ABOUT</span></button>
+          <button class="floor-btn" data-floor="hod"><span class="btn-num">2</span><span class="btn-label">H.O.D</span></button>
+          <button class="floor-btn" data-floor="gallery"><span class="btn-num">*1</span><span class="btn-label">GALLERY</span></button>
+          <div class="panel-divider"></div>
+          <!-- Door controls -->
+          <div class="panel-door-row">
+            <button class="door-btn" data-floor="open" aria-label="Open doors">&#9664;&#9654;</button>
+            <button class="door-btn" data-floor="close" aria-label="Close doors">&#9654;&#9664;</button>
+          </div>
+          <div class="panel-divider"></div>
+          <!-- Alarm -->
+          <button class="alarm-btn" data-floor="help"><span class="bell-icon"></span></button>
+        </div>
+      </div>
+
+      <!-- Right door -->
+      <div class="elevator-door door-right" id="doorRight">
+        <div class="door-surface">
+          <div class="door-scratches door-scratches-3"></div>
+          <div class="door-scratches door-scratches-4"></div>
+          <div class="door-gouges door-gouges-right"></div>
+          <div class="door-seam door-seam-edge"></div>
+        </div>
+      </div>
+
+      <!-- Center seam line -->
+      <div class="door-center-seam"></div>
+
+      <!-- Button panel (inside left door — moves with it) -->
+    </div>
+  </section>
+
+  <!-- Art viewer overlay (global) -->
+  <div class="art-viewer" id="artViewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+    <div class="art-viewer-backdrop"></div>
+    <div class="art-viewer-content">
+      <div class="art-viewer-frame">
+        <div class="art-viewer-media" id="artViewerMedia"></div>
+      </div>
+      <div class="art-viewer-info" id="artViewerInfo">
+        <h3 class="viewer-title" id="viewerTitle"></h3>
+        <p class="viewer-medium"></p>
+        <p class="viewer-description"></p>
+      </div>
+    </div>
+    <button class="art-viewer-prev" id="artViewerPrev" aria-label="Previous artwork">&#8592;</button>
+    <button class="art-viewer-next" id="artViewerNext" aria-label="Next artwork">&#8594;</button>
+    <button class="art-viewer-close" id="artViewerClose" aria-label="Close artwork viewer">&times;</button>
+  </div>
+
+
+  <nav class="mobile-floor-nav" id="mobileFloorNav">
+    <button data-floor="lobby">Lobby</button>
+    <button data-floor="1">Gallery</button>
+    <button data-floor="2">H.O.D.</button>
+    <button data-floor="3">About</button>
+    <button data-floor="4">Connect</button>
+  </nav>
+
+  <!-- ============================================ -->
+  <!-- IMMERSIVE ORBIT — hand-tracked entry portal -->
+  <!-- ============================================ -->
+  <div class="orbit-modal" id="orbitModal" role="dialog" aria-modal="true" aria-labelledby="orbitModalTitle" aria-hidden="true">
+    <div class="orbit-modal-backdrop"></div>
+    <div class="orbit-modal-card">
+      <h2 class="orbit-modal-title" id="orbitModalTitle">enter my orbit?</h2>
+      <div class="orbit-modal-body" id="orbitModalBody">
+        <p class="orbit-modal-beat">your camera becomes a quiet controller.</p>
+        <p class="orbit-modal-beat">nothing is recorded. nothing leaves your browser.</p>
+        <p class="orbit-modal-beat">once you're inside, the first move will show itself.</p>
+      </div>
+      <p class="orbit-modal-hint" id="orbitModalHint"></p>
+      <div class="orbit-modal-actions">
+        <button class="orbit-modal-btn orbit-modal-btn--ghost" id="orbitCancelBtn" type="button">not now</button>
+        <button class="orbit-modal-btn orbit-modal-btn--enter" id="orbitEnterBtn" type="button">enter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- "You're seen" — one-shot flash on first hand detection in immersive mode -->
+  <div class="orbit-seen-flash" id="orbitSeenFlash" aria-hidden="true"></div>
+
+  <!-- Onboarding: 3 progressive cards (swipe → palm → point). Fist lives in the persistent guide rail only. -->
+  <div class="orbit-onboarding" id="orbitOnboarding" aria-hidden="true"></div>
+
+  <!-- Fingertip cursor — follows user's index finger while immersive.
+       Core dot + pinch-strength meter arc (SVG, strokeDashoffset driven). -->
+  <div class="orbit-cursor" id="orbitCursor" aria-hidden="true">
+    <svg class="orbit-cursor-meter" viewBox="0 0 48 48" aria-hidden="true">
+      <circle class="orbit-cursor-meter-track" cx="24" cy="24" r="20"
+              pathLength="100" fill="none" />
+      <circle class="orbit-cursor-meter-fill"  cx="24" cy="24" r="20"
+              pathLength="100" fill="none" />
+    </svg>
+    <div class="orbit-cursor-core"></div>
+    <div class="orbit-cursor-sparkle"></div>
+  </div>
+
+  <div class="orbit-hud" id="orbitHud" aria-hidden="true">
+    <div class="orbit-hud-hint" id="orbitHudHint"></div>
+    <div class="orbit-hud-guide" id="orbitGuide" aria-label="Gesture guide"></div>
+    <div class="orbit-hud-thumb">
+      <video class="orbit-hud-video" id="orbitHudVideo" playsinline muted autoplay></video>
+      <canvas class="orbit-hud-skeleton" id="orbitHudSkeleton" aria-hidden="true"></canvas>
+      <button class="orbit-hud-help" id="orbitHudHelpBtn" type="button" aria-label="Show gesture help">
+        <span aria-hidden="true">?</span>
+      </button>
+      <button class="orbit-hud-exit" id="orbitHudExitBtn" type="button" aria-label="Exit orbit (Esc)">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden camera stream target (feeds MediaPipe) -->
+  <video class="orbit-cam" id="orbitCam" playsinline muted autoplay aria-hidden="true"></video>
+
+  <!-- Star popover (shared, opened by interactive constellations) -->
+  <div class="star-popover" id="starPopover" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="starPopoverTitle">
+    <div class="star-popover-backdrop" id="starPopoverBackdrop"></div>
+    <div class="star-popover-card" id="starPopoverCard">
+      <button class="star-popover-close" id="starPopoverClose" type="button" aria-label="Close">&times;</button>
+      <h3 class="star-popover-title" id="starPopoverTitle"></h3>
+      <div class="star-popover-body" id="starPopoverBody"></div>
+      <div class="star-popover-actions" id="starPopoverActions"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+  <script src="js/arena-loader.js?v=20260405b"></script>
+  <script src="js/gallery-data.js?v=20260407"></script>
+  <script type="module" src="js/gallery-3d.js?v=20260410"></script>
+  <script src="js/main.js?v=20261004-pages"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261002a"></script>
+  <script src="js/brandon-orbit-data.js?v=1"></script>
+  <script src="js/explore-planet.js?v=13"></script>
+  <script src="js/orbiting-account.js?v=20261004-pages"></script>
+  <script src="js/friend-search.js?v=20261004-pages"></script>
+  <script src="js/shared-sky.js?v=2"></script>
+  <script src="js/following-cosmos.js?v=20261004-pages"></script>
+  <script src="js/orbiting-prototype.js?v=20261004-pages"></script>
+<dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
+    <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
+    <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
+    <section><h3>Username</h3><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">Your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">Save username</button></fieldset></form></section>
+    <section><h3>Email</h3><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
+    <section><h3>Password</h3><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
+  </dialog>
+  <script src="js/account-settings.js"></script>
+</body>
+</html>

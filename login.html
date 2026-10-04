@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090d">
+  <title>Log in · Orbiting</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <main class="login-shell">
+    <div class="orbit-art" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div>
+    <section class="login-card" aria-labelledby="loginTitle">
+      <p class="wordmark">ORBITING</p>
+      <h1 id="loginTitle">Return to your orbit.</h1>
+      <p class="intro">Your space. Your people. Everything that orbits you.</p>
+      <form id="loginForm">
+        <label for="loginEmail">Email address</label>
+        <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+        <div class="password-label"><label for="loginPassword">Password</label><button id="togglePassword" type="button" aria-controls="loginPassword" aria-pressed="false">Show</button></div>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button class="text-action" id="forgotPassword" type="button">Forgot your password?</button>
+        <p id="loginStatus" role="status" aria-live="polite"></p>
+        <button class="primary" id="loginSubmit" type="submit">Log in</button>
+      </form>
+      <p class="new-account" id="newAccount" hidden>New here? <a href="./?view=setup">Create your orbit</a></p>
+      <p class="invite-note" id="inviteNote">Invited to the beta? Use your personal setup link to choose a password first.</p>
+    </section>
+  </main>
+  <script src="js/orbiting-account.js?v=20261004-pages"></script>
+  <script src="js/login.js?v=20261004-pages"></script>
+</body>
+</html>
