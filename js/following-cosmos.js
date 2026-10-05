@@ -248,10 +248,33 @@
   planets.addEventListener('focusout', () => { paused = false; });
   window.addEventListener('resize', placeGlobe);
 
+  // Wander mixes in what orbits the people you follow: every image from the rings they share with everyone.
+  let wanderJob = 0;
+  function shareWithWander(following) {
+    const job = ++wanderJob;
+    if (!window.OrbitingExplore?.setFriendImages) return;
+    if (!following.length) { window.OrbitingExplore.setFriendImages([]); return; }
+    Promise.allSettled(following.map(person => sharedOrbit(person).then(snapshot => snapshot.rings.flatMap(ring =>
+      ring.items.map(item => ({ ...item, owner: `@${person.username}`, personId: person.followed_user_id, source: ring.name })))))).then(results => {
+      if (job === wanderJob) window.OrbitingExplore.setFriendImages(results.flatMap(result => result.status === 'fulfilled' ? result.value : []));
+    });
+  }
+  window.OrbitingFriends = {
+    open(personId) {
+      const person = lastFollowing.find(entry => entry.followed_user_id === personId);
+      if (!person) return false;
+      enter(person, [...planets.children].find(planet => planet.dataset.userId === personId));
+      return true;
+    }
+  };
+  let lastFollowing = [];
+
   function render(connections) {
     const job = sequence;
     kill(nearTweens); planets.replaceChildren();
     const following = connections.filter(person => person.followed_user_id && typeof person.username === 'string');
+    lastFollowing = following;
+    shareWithWander(following);
     following.forEach((person, index) => {
       const planet = document.createElement('button');
       planet.type = 'button'; planet.className = 'following-cosmos__planet';
@@ -290,6 +313,8 @@
   refresh.addEventListener('click', () => { cache.clear(); return load(); });
   window.addEventListener('orbiting:following-changed', event => { ++sequence; render(event.detail.following || []); });
   window.addEventListener('orbiting:depth-changed', event => {
+    // Wander sits past the cosmos, so friends load as soon as you start pulling back, ready for both.
+    if (!event.detail.demo && event.detail.depth >= .72 && !loaded) load();
     const visible = event.detail.active && !event.detail.demo;
     sky.hidden = !visible; sky.inert = !visible;
     if (visible && !loaded) load();

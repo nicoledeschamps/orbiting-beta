@@ -2872,8 +2872,10 @@
   friendPortalBack.addEventListener('click', closeFriendPortal);
   if (window.OrbitingExplore) {
     window.OrbitingExplore.onEnterSelf = () => setCosmosDepth(0);
-    window.OrbitingExplore.onEnterFriend = () => {
+    window.OrbitingExplore.onEnterFriend = (item) => {
       setCosmosDepth(1);
+      // A followed friend's clipping opens their orbit; the demo's sample clippings open Brandon's world.
+      if (item?.personId && window.OrbitingFriends?.open?.(item.personId)) return;
       brandonPlanet.click();
     };
   }

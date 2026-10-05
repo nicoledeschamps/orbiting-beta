@@ -1,4 +1,5 @@
-/* Wander uses the visitor's clippings; the direct Wander demo keeps its sample worlds. */
+/* Wander is what orbits you plus what orbits the people you orbit: your clippings and the rings your friends share with everyone.
+   The direct Wander demo keeps its sample worlds. */
 (() => {
   const planet = document.getElementById('explorePlanet');
   const container = document.getElementById('explorePlanetItems');
@@ -29,6 +30,7 @@
   let selectedButton = null;
   let isVisible = false;
   let personalItems = [];
+  let friendItems = [];
 
   function nicoleItems() {
     const data = window.HuesOrbit?.data || {};
@@ -53,7 +55,7 @@
       sourceLink.href = item.boardUrl;
       sourceLink.textContent = `open ${item.source} source ↗`;
     }
-    enterOrbit.textContent = item.ownerKey === 'nicole' ? 'return to my orbit ↗' : 'enter their orbit ↗';
+    enterOrbit.textContent = item.ownerKey === 'nicole' || item.ownerKey === 'self' ? 'return to my orbit ↗' : 'enter their orbit ↗';
     detail.hidden = false;
     planet.inert = true;
     document.body.classList.add('is-explore-detail');
@@ -75,9 +77,10 @@
   function populate() {
     const nicole = demoMode ? nicoleItems() : [];
     const own = demoMode ? [] : personalItems;
-    const hasItems = demoMode ? nicole.length + brandon.length > 0 : own.length > 0;
+    const theirs = demoMode ? [] : friendItems;
+    const hasItems = demoMode ? nicole.length + brandon.length > 0 : own.length + theirs.length > 0;
     emptyNote.hidden = hasItems;
-    planet.setAttribute('aria-label', demoMode ? 'Rotating planet of prototype clippings' : 'Rotating planet of your clippings');
+    planet.setAttribute('aria-label', demoMode ? 'Rotating planet of prototype clippings' : 'Rotating planet of your clippings and your friends’');
     if (!hasItems) {
       container.replaceChildren();
       nodes = [];
@@ -87,16 +90,29 @@
     const fragment = document.createDocumentFragment();
     const nextNodes = [];
     const seen = new Set();
-    const pool = (demoMode ? [...nicole, ...brandon] : own).filter((item) => {
-      if (seen.has(item.src)) return false;
+    const shuffle = (list) => {
+      for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+      return list;
+    };
+    // Deal round-robin across people so every orbit (yours included) gets a fair share when the planet is full.
+    const byOwner = new Map();
+    (demoMode ? [...nicole, ...brandon] : [...own, ...theirs]).forEach((item) => {
+      if (seen.has(item.src)) return;
       seen.add(item.src);
-      return true;
+      const key = item.ownerKey === 'friend' ? `friend:${item.personId}` : item.ownerKey;
+      if (!byOwner.has(key)) byOwner.set(key, []);
+      byOwner.get(key).push(item);
     });
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+    const piles = [...byOwner.values()].map(shuffle);
+    const dealt = [];
+    for (let round = 0; piles.some((pile) => round < pile.length); round += 1) {
+      piles.forEach((pile) => { if (round < pile.length) dealt.push(pile[round]); });
     }
     const capacity = bands.reduce((sum, count) => sum + count, 0);
+    const pool = shuffle(dealt.slice(0, capacity));
     const visibleCount = Math.min(pool.length, capacity);
     const occupied = new Map(Array.from({ length: visibleCount }, (_, index) =>
       [Math.floor((index + .5) * capacity / visibleCount), pool[index]]));
@@ -172,10 +188,10 @@
     if (event.key === 'Escape' && !detail.hidden) closeViewer();
   });
   enterOrbit.addEventListener('click', () => {
-    const ownerKey = selected?.ownerKey;
+    const item = selected;
     closeViewer(false);
-    if (ownerKey === 'nicole' || ownerKey === 'self') window.OrbitingExplore.onEnterSelf?.();
-    else window.OrbitingExplore.onEnterFriend?.();
+    if (item?.ownerKey === 'nicole' || item?.ownerKey === 'self') window.OrbitingExplore.onEnterSelf?.();
+    else window.OrbitingExplore.onEnterFriend?.(item);
   });
   window.OrbitingExplore = {
     onEnterFriend: null,
@@ -184,6 +200,13 @@
     setPersonalImages(items) {
       personalItems = Array.isArray(items) ? items.filter((item) => item?.src && !item.isVideo).map((item) => ({
         ...item, owner: 'you', ownerKey: 'self'
+      })) : [];
+      if (!demoMode) populate();
+    },
+    // Images from the rings the people you follow share with everyone.
+    setFriendImages(items) {
+      friendItems = Array.isArray(items) ? items.filter((item) => item?.src && !item.isVideo && item.personId).map((item) => ({
+        ...item, ownerKey: 'friend'
       })) : [];
       if (!demoMode) populate();
     },
