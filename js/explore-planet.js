@@ -37,6 +37,25 @@
   const ringRow = document.getElementById('wanderRings');
   const emptyDefault = emptyNote?.textContent || '';
   const filter = { person: 'all', ring: '', query: '' };
+  // Filters stay tucked away until "Filter" opens them; the button names an active filter even when closed.
+  const filterToggle = document.getElementById('wanderFilterToggle');
+  let filtersOpen = false;
+  let peopleLabels = new Map();
+  function syncFilterToggle(available) {
+    if (!filterToggle) return;
+    filterToggle.hidden = !available;
+    filterBox.hidden = !available || !filtersOpen;
+    filterBox.classList.toggle('is-open', available && filtersOpen);
+    filterToggle.setAttribute('aria-expanded', String(available && filtersOpen));
+    const active = [filter.person !== 'all' ? peopleLabels.get(filter.person) : '', filter.ring, filter.query ? `“${filter.query}”` : ''].filter(Boolean);
+    filterToggle.textContent = active.length ? `Filter · ${active.join(' · ')}` : 'Filter';
+    filterToggle.classList.toggle('is-active', active.length > 0);
+  }
+  filterToggle?.addEventListener('click', () => {
+    filtersOpen = !filtersOpen;
+    syncFilterToggle(true);
+    if (filtersOpen) searchInput?.focus();
+  });
   let friendItems = [];
   // Images waiting their turn, per person; a person's image leaving the far side makes room for another of theirs,
   // so everyone keeps their share of the planet while their own images rotate through it.
@@ -103,9 +122,10 @@
   }
   function buildFilters(all) {
     if (!filterBox || demoMode) return;
-    filterBox.hidden = !all.length;
     const people = new Map();
     all.forEach((item) => { if (!people.has(ownerOf(item))) people.set(ownerOf(item), item.ownerKey === 'self' ? 'just me' : item.owner); });
+    peopleLabels = people;
+    syncFilterToggle(all.length > 0);
     peopleRow.replaceChildren(
       pill('everyone', filter.person === 'all', () => { filter.person = 'all'; populate(); }),
       ...[...people].sort(([a], [b]) => (a === 'self' ? -1 : b === 'self' ? 1 : 0)).map(([key, label]) =>

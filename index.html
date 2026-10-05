@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20260427a">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-instagram">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-filters-under2">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-filter-toggle">
   <script type="importmap">
   {
     "imports": {
@@ -442,11 +442,14 @@
             <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
           </div>
         </div>
+        <div class="wander-tools">
+        <button class="wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden>Filter</button>
         <div class="wander-adjust">
         <button id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls">Adjust planet</button>
         <div class="wander-controls" id="wanderControls" hidden>
         <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="50" max="1200" value="100" step="10"></label>
         <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="140" value="100" step="5"></label>
+        </div>
         </div>
         </div>
       </div>
@@ -831,7 +834,7 @@
   <script src="js/main.js?v=20261005-friendkey"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261002a"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261005-filters"></script>
+  <script src="js/explore-planet.js?v=20261005-filter-toggle"></script>
   <script src="js/orbiting-account.js?v=20261005-instagram"></script>
   <script src="js/friend-search.js?v=20261004-pages"></script>
   <script src="js/shared-sky.js?v=2"></script>
