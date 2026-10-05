@@ -432,19 +432,12 @@
 .wander-filter-toggle.is-active { border-color: var(--op-silver); background: var(--op-silver); color: #000; }
 .wander-filter-toggle:focus-visible { outline: 2px solid var(--op-rose); outline-offset: 3px; }
 
-/* Friends space: its own title, a "where you are" guide, and the friend card. */
+/* Friends space: its own title in the corner (like Wander), and the friend card. */
 .cosmos-depth-label { display: none; }
-.cosmos-heading { position: absolute; z-index: 5; top: clamp(5.5rem, 15vh, 11rem); left: clamp(1.2rem, 4vw, 4.5rem); max-width: 26rem; opacity: var(--cosmos-label-opacity, 0); pointer-events: none; transition: opacity .3s ease; }
-.cosmos-heading__title { margin: 0; color: var(--op-silver); font: 400 clamp(1.8rem, 3.4vw, 3rem)/1.08 var(--op-title); letter-spacing: .04em; }
-.cosmos-heading__title span { color: var(--op-rose); }
+.cosmos-heading { position: absolute; z-index: 5; top: max(1.25rem, env(safe-area-inset-top)); left: max(1.25rem, env(safe-area-inset-left)); max-width: 26rem; opacity: var(--cosmos-label-opacity, 0); pointer-events: none; transition: opacity .3s ease; }
+.cosmos-heading__title { margin: 0; color: #fff; font: 400 clamp(1.8rem, 3.4vw, 3rem)/1.08 var(--op-title); letter-spacing: .04em; }
 .cosmos-heading__note { margin: .5rem 0 0; color: var(--op-gray); font: 400 12px/1.5 var(--op-ui); letter-spacing: .14em; text-transform: uppercase; }
-.space-guide { position: absolute; z-index: 15; left: 50%; bottom: clamp(1.3rem, 4vh, 2.5rem); display: flex; gap: .25rem; padding: .25rem; border: 1px solid rgba(237, 241, 244, .14); border-radius: 999px; background: rgba(7, 8, 11, .72); transform: translateX(-50%); opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s; }
-body.is-cosmos .space-guide, body.is-explore .space-guide { opacity: 1; visibility: visible; }
-body.friend-entering .space-guide, body.friend-entering .cosmos-heading { opacity: 0; }
-.space-guide button { min-height: 36px; padding: 0 1rem; white-space: nowrap; border: 0; border-radius: 999px; background: transparent; color: var(--op-gray); font: 400 11px var(--op-ui); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
-.space-guide button:hover, .space-guide button:focus-visible { color: #fff; }
-.space-guide button[aria-current] { background: var(--op-silver); color: #000; }
-body.is-cosmos .cosmos-depth-control, body.is-explore .cosmos-depth-control { display: none; }
+body.friend-entering .cosmos-heading { opacity: 0; }
 
 .friend-card { position: absolute; z-index: 16; top: 50%; right: clamp(1rem, 4vw, 3.5rem); width: min(340px, calc(100vw - 2rem)); max-height: calc(100% - 2rem); overflow: auto; padding: 1.5rem; border: 1px solid rgba(237, 241, 244, .14); border-radius: 18px; background: var(--op-panel); color: var(--op-silver); transform: translateY(-50%); box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
 .friend-card[hidden] { display: none; }
@@ -462,11 +455,9 @@ body.is-cosmos .cosmos-depth-control, body.is-explore .cosmos-depth-control { di
 .friend-card__status:empty { display: none; }
 .friend-card__status { margin: .75rem 0 0; color: var(--op-rose); font: 400 12px var(--op-ui); }
 @media (max-width: 767px) {
-  .cosmos-heading { top: 5.2rem; left: 1.3rem; max-width: calc(100vw - 2.6rem); }
+  .cosmos-heading { top: max(1rem, env(safe-area-inset-top)); left: max(1rem, env(safe-area-inset-left)); max-width: calc(100vw - 2rem); }
   .cosmos-heading__title { font-size: clamp(1.4rem, 5.4vw, 2rem); }
-  .space-guide { bottom: max(1rem, env(safe-area-inset-bottom)); }
-  .space-guide button { padding: 0 .75rem; font-size: 10px; letter-spacing: .1em; }
-  .friend-card { top: auto; right: 1rem; left: 1rem; bottom: max(4.5rem, calc(env(safe-area-inset-bottom) + 4rem)); width: auto; max-height: 70%; transform: none; }
+  .friend-card { top: auto; right: 1rem; left: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); width: auto; max-height: 70%; transform: none; }
   .friend-card__planet { width: 120px; margin: .5rem auto; }
 }
 
