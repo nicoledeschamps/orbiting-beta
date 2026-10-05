@@ -439,7 +439,7 @@ function setPersonalImages(rings) {
       { startAngle: slot.index * 120 % 360 }));
   });
 }
-window.HuesOrbit = { ringRadiusRatio: ringRadiusRatio, filledRingSlots: filledRingSlots, buildRing: buildRing, data: null, personalRingVisibleImages: personalRingVisibleImages, setPersonalImages: setPersonalImages, personalSet: false };
+window.HuesOrbit = { ringRadiusRatio: ringRadiusRatio, fittedRingRadius: fittedRingRadius, filledRingSlots: filledRingSlots, buildRing: buildRing, data: null, personalRingVisibleImages: personalRingVisibleImages, setPersonalImages: setPersonalImages, personalSet: false };
 
 // Load and build all three rings
 ArenaLoader.getAllImages().then(function(data) {

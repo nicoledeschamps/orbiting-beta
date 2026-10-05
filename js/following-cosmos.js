@@ -50,6 +50,7 @@
       }
       return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
+        provider: (ring.sources || [ring.source])[0],
         items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
       })) };
     })();
@@ -81,13 +82,88 @@
     filled.forEach((ring, index) => {
       const back = document.createElement('span'), front = document.createElement('span');
       back.className = 'saturn-ring-back'; front.className = 'saturn-ring-front';
+      back.dataset.friendRing = front.dataset.friendRing = String(index);
       container.append(back, front);
-      const ratio = window.HuesOrbit?.ringRadiusRatio(index, filled.length) || .5;
-      const tween = window.HuesOrbit?.buildRing(ring.items.slice(0, near ? 8 : 20), back, front, width * ratio,
-        near ? [16, 22] : [34, 48], [65 + index * 20, 85 + index * 20], ring.items,
-        { previewOnly: true, startAngle: index * 120 });
+      const orbit = window.HuesOrbit || {};
+      const ratio = orbit.ringRadiusRatio?.(index, filled.length) || .5;
+      if (near) {
+        const tween = orbit.buildRing?.(ring.items.slice(0, 8), back, front, width * ratio,
+          [16, 22], [65 + index * 20, 85 + index * 20], ring.items, { previewOnly: true, startAngle: index * 120 });
+        if (tween) tweens.push(tween);
+        return;
+      }
+      // A friend's full orbit uses exactly the rules of your own: same spacing, fit, image count, tile size and speed.
+      const outer = orbit.ringRadiusRatio?.(filled.length - 1, filled.length) || ratio;
+      const radius = orbit.fittedRingRadius ? orbit.fittedRingRadius(width, ratio, outer) : width * ratio;
+      const visible = orbit.personalRingVisibleImages ? orbit.personalRingVisibleImages(ring.items, index) : ring.items.slice(0, 20);
+      const tween = orbit.buildRing?.(visible, back, front, radius, [34, 48], [55 + index * 20, 75 + index * 20], ring.items,
+        { previewOnly: true, startAngle: index * 120 % 360 });
       if (tween) tweens.push(tween);
     });
+  }
+
+  // The same "what's in my orbit" key as your own planet: an arc per shared ring; a ring name lights that ring and dims the rest.
+  const key = document.getElementById('followedOrbitKey');
+  const keyTrigger = document.getElementById('followedOrbitKeyTrigger');
+  const keyChart = document.getElementById('followedOrbitKeyChart');
+  const ringColors = { arena: '#a5b4dc', cosmos: '#a082c8', pinterest: '#c88c9d', spotify: '#9cc8c0', instagram: '#c6b69e' };
+  let litRing = null;
+  function lightRing(index) {
+    litRing = litRing === index ? null : index;
+    world.querySelectorAll('[data-friend-ring]').forEach(el => {
+      el.classList.toggle('ring-highlighted', litRing !== null && el.dataset.friendRing === litRing);
+      el.classList.toggle('ring-dimmed', litRing !== null && el.dataset.friendRing !== litRing);
+    });
+    keyChart.querySelectorAll('[data-ring]').forEach(el => {
+      const on = litRing !== null && el.dataset.ring === litRing;
+      if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(on));
+      else { el.classList.toggle('arc-active', on); el.classList.toggle('arc-dimmed', litRing !== null && !on); }
+    });
+  }
+  function closeKey() {
+    if (!key) return;
+    key.classList.remove('open'); keyTrigger.setAttribute('aria-expanded', 'false');
+    if (litRing !== null) lightRing(litRing);
+  }
+  function buildKey(snapshot) {
+    if (!key || !keyChart || !document.createElementNS) return false;
+    litRing = null; closeKey();
+    const filled = snapshot.rings.filter(ring => ring.items.length);
+    key.hidden = !filled.length;
+    if (!filled.length) return false;
+    const height = Math.max(110, filled.length * 28 + 36), width = height * 2;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'orbit-chart-svg'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    keyChart.style.height = `${height}px`; keyChart.style.width = `${Math.min(360, width)}px`;
+    keyChart.replaceChildren(svg);
+    filled.forEach((ring, index) => {
+      const radius = 36 + index * 28;
+      const arc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      arc.setAttribute('class', 'orbit-arc');
+      arc.setAttribute('d', `M ${height - radius},${height - 8} A ${radius},${radius} 0 0,1 ${height + radius},${height - 8}`);
+      arc.dataset.ring = String(index);
+      arc.style.stroke = ringColors[ring.provider] || '#e8c589';
+      svg.append(arc);
+      const label = document.createElement('button');
+      label.type = 'button'; label.className = 'orbit-chart-label'; label.dataset.ring = String(index);
+      label.textContent = ring.name; label.setAttribute('aria-label', `Show ${ring.name} ring`); label.setAttribute('aria-pressed', 'false');
+      label.style.left = '2%'; label.style.bottom = `${(radius + 3) / height * 100}%`;
+      keyChart.append(label);
+    });
+    return true;
+  }
+  if (key) {
+    keyTrigger.addEventListener('click', event => {
+      event.stopPropagation();
+      const open = !key.classList.contains('open');
+      if (open) { key.classList.add('open'); keyTrigger.setAttribute('aria-expanded', 'true'); } else closeKey();
+    });
+    keyChart.addEventListener('click', event => {
+      const label = event.target.closest('.orbit-chart-label');
+      if (!label) return;
+      event.stopPropagation(); lightRing(label.dataset.ring);
+    });
+    dialog.addEventListener('click', event => { if (!key.contains(event.target)) closeKey(); });
   }
 
   async function enter(person, planet) {
@@ -96,6 +172,7 @@
     kill(worldTweens); world.replaceChildren();
     title.textContent = `@${person.username}’s orbit`;
     worldStatus.textContent = 'Loading shared rings…';
+    if (key) { key.hidden = true; closeKey(); }
     if (nameLine) nameLine.hidden = true;
     if (bioLine) bioLine.hidden = true;
     dialog.hidden = false;
@@ -114,6 +191,8 @@
       }
       if (bioLine) { bioLine.textContent = skyTitle.bio || ''; bioLine.hidden = !skyTitle.bio; }
       worldStatus.textContent = snapshot.rings.map(ring => ring.name + (ring.items.length ? '' : ' (no images available)')).join(' · ') || 'No rings shared with everyone yet.';
+      // With the key in place, the plain list of ring names is only kept for rings that have no images.
+      if (buildKey(snapshot)) worldStatus.textContent = snapshot.rings.filter(ring => !ring.items.length).map(ring => ring.name + ' (no images available)').join(' · ');
       if (snapshot.failed) worldStatus.textContent += ' · Some source images could not load. Refresh your cosmos to retry.';
     } catch (_) { if (job === portalJob) worldStatus.textContent = 'This orbit could not load. Return to your cosmos and refresh to retry.'; }
   }

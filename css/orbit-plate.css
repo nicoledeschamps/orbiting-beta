@@ -363,3 +363,24 @@
 
 /* A friend without a face yet: their planet is outlined and glows in their title color. */
 .following-cosmos__core:not(.has-cutout) { box-shadow: inset 0 0 0 2px var(--planet-glow, rgba(237,241,244,.45)), 0 0 30px color-mix(in srgb, var(--planet-glow, #edf1f4) 45%, transparent), 0 0 80px color-mix(in srgb, var(--planet-glow, #edf1f4) 18%, transparent); }
+
+/* "What's in their orbit": the same key as under your own planet, on a friend's orbit. */
+.friend-key { position: absolute; bottom: 7%; left: 50%; z-index: 4; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); }
+.friend-key[hidden] { display: none; }
+.friend-key .orbit-key-trigger { min-height: 44px; }
+.friend-key.open .orbit-key-trigger { color: rgba(255,255,255,.7); }
+.friend-key.open .orbit-key-chart { opacity: 1; transform: scaleY(1) translateY(0); pointer-events: auto; }
+.followed-orbit__planet [data-friend-ring] { transition: opacity .4s ease; }
+.followed-orbit__planet .ring-dimmed { opacity: .14; }
+.followed-orbit__planet .ring-highlighted { opacity: 1; }
+#followedOrbitStatus:empty { display: none; }
+
+/* A friend's planet is the same size as yours and sits centered like yours, with the key beneath it. */
+.followed-orbit__planet { position: absolute; top: 50%; left: 50%; width: min(70vw, 750px); max-width: 750px; margin: 0; transform: translate(-50%, -50%); }
+@media (max-width: 1024px) { .followed-orbit__planet { width: min(85vw, 750px); } }
+@media (max-width: 767px) { .followed-orbit__planet { width: 72vw; } }
+@media (max-width: 599px) { .followed-orbit__planet { width: 65vw; } }
+#followedOrbitStatus { position: absolute; left: 0; right: 0; bottom: 3%; margin: 0; }
+.followed-orbit__planet > .following-cosmos__core.has-cutout { inset: 16%; display: flex; align-items: center; justify-content: center; overflow: visible; box-shadow: none; }
+.followed-orbit__planet > .following-cosmos__core.has-cutout > img { flex-shrink: 0; width: 190%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, black 85%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, black 85%, transparent 100%); }
+@media (max-width: 680px) { .followed-orbit__head { padding-top: 76px; max-width: 86vw; } #closeFollowedOrbit { top: 14px; left: 20px; right: auto; padding: 0; margin: 0; } }
