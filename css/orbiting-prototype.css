@@ -1161,6 +1161,10 @@ body.friend-entering .orbit-camera, body.friend-entering .cosmos-depth-label, bo
 .explore-clipping img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .24s ease-out, box-shadow .24s ease-out; }
 .explore-clipping:hover, .explore-clipping:focus-visible { z-index: 250 !important; }
 .explore-clipping:hover img, .explore-clipping:focus-visible img { transform: scale(1.75); box-shadow: 0 .7rem 1.7rem rgba(0,0,0,.75), 0 0 0 1px rgba(255,245,214,.6); }
+/* Hand mode: the clipping under the fingertip lifts like a hover. */
+.explore-clipping.cursor-over { z-index: 250 !important; }
+.explore-clipping.cursor-over img { transform: scale(1.75); box-shadow: 0 .7rem 1.7rem rgba(0,0,0,.75), 0 0 0 1px rgba(255,245,214,.6); }
+body.immersive-active #wanderHandBtn { display: none; }
 .explore-clipping.is-selected { border-color: #f3e6bd; box-shadow: 0 0 0 2px rgba(243,230,189,.3), 0 .7rem 1.4rem rgba(0,0,0,.38); }
 .explore-clipping:focus-visible { outline: 3px solid #fff3c4; outline-offset: 3px; }
 .explore-detail {
@@ -1308,9 +1312,9 @@ body.is-explore-detail .explore-layer { z-index: 100; }
 }
 
 .wander-adjust { position: relative; display: grid; justify-items: center; pointer-events: auto; }
-#adjustPlanet { min-height: 36px; padding: .4rem .75rem; border: 1px solid rgba(215,194,235,.35); border-radius: 999px; background: rgba(15,12,24,.9); color: #dadbdd; font: .7rem Inter, sans-serif; cursor: pointer; }
-#adjustPlanet:hover, #adjustPlanet[aria-expanded="true"] { border-color: #c9b9e4; color: #fff; }
-#adjustPlanet:focus-visible { outline: 2px solid #c9b9e4; outline-offset: 3px; }
+#adjustPlanet, #wanderHandBtn { min-height: 36px; padding: .4rem .75rem; border: 1px solid rgba(215,194,235,.35); border-radius: 999px; background: rgba(15,12,24,.9); color: #dadbdd; font: .7rem Inter, sans-serif; cursor: pointer; }
+#adjustPlanet:hover, #adjustPlanet[aria-expanded="true"], #wanderHandBtn:hover { border-color: #c9b9e4; color: #fff; }
+#adjustPlanet:focus-visible, #wanderHandBtn:focus-visible { outline: 2px solid #c9b9e4; outline-offset: 3px; }
 .wander-adjust .wander-controls { position: absolute; bottom: calc(100% + .4rem); z-index: 4; }
 .wander-controls[hidden] { display: none; }
 

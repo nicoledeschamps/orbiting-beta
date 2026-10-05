@@ -11,7 +11,13 @@
 //   • progressive cards for the first two actions, then the guide rail
 //     keeps close visible
 //
+// Wander: when the Wander planet is showing (body.is-explore), the same
+//   gestures spin that planet and open its clippings instead of the rings.
+//   Entered from the "Wander with your hand" button.
+//
 // Exit: ✕ button in the HUD, or the Escape key.
+// Debug: press D while inside (or add ?handdebug to the URL) for live
+//        tracking stats and the active-region box on the camera preview.
 // ══════════════════════════════════════════════════════════════════
 
 const MP_VERSION  = '0.10.18';
@@ -20,14 +26,40 @@ const MP_BUNDLE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP
 const MODEL_PATH = 'assets/hand_landmarker.task';
 
 // ── Detection / smoothing ─────────────────────────────────────────
-const HAND_DETECT_INTERVAL_MS = 50; // Target 20 detections/sec regardless of display refresh rate
-const LANDMARK_SMOOTH      = 0.35;  // EMA for cursor + palm velocity
+const HAND_DETECT_INTERVAL_MS = 33; // ~30 detections/sec; stretched automatically when inference is slow
+const DETECT_INTERVAL_PER_INFER_MS = 1.5; // never spend more than ~2/3 of the main thread on inference
+const MAX_DETECT_INTERVAL_MS = 100;  // even on slow machines, keep ≥10 detections/sec
+const INFER_WARMUP_DETECTIONS = 3;   // first calls compile shaders — don't let them skew the average
+const NUM_HANDS            = 2;     // second hand feeds the two-hand L-frame (phase 3)
+const HAND_LOST_GRACE_MS   = 250;   // hold the last pose through brief tracking dropouts
+const HAND_SWITCH_JUMP     = 0.25;  // palm jump (frame units) that means a different hand → reset filters
+const GPU_FAILURES_BEFORE_CPU = 3;
+
+// One Euro filter: steady when the hand is still, responsive when it moves.
+// Units are normalized frame coords, so beta is large compared with pixel-space tunings.
+const ONE_EURO_MIN_CUTOFF  = 1.0;   // Hz — lower = steadier at rest
+const ONE_EURO_BETA        = 8.0;   // higher = less lag on fast motion
+const ONE_EURO_D_CUTOFF    = 1.0;   // Hz — derivative smoothing
+const CURSOR_GLIDE_MS      = 40;    // per-frame glide between detections (time constant)
+
+// ── Active region: the central slice of the camera that maps to the full
+// viewport, aspect-matched so up/down and left/right feel equally sensitive.
+const ACTIVE_REGION_WIDTH      = 0.7;   // fraction of camera width
+const ACTIVE_REGION_MAX_HEIGHT = 0.8;   // fraction of camera height
+const ACTIVE_REGION_CENTER_Y   = 0.45;  // hands sit slightly above frame centre
+
+// Hand span (wrist → middle MCP) at a typical laptop distance. Motion
+// thresholds scale with the live span so swipes feel the same near or far.
+const REFERENCE_HAND_SPAN  = 0.15;
+const HAND_SCALE_MIN       = 0.6;
+const HAND_SCALE_MAX       = 1.5;
 
 // ── Ring spin ──────────────────────────────────────────────────────
 const IDLE_AUTO_SPIN_DEG   = 16;    // deg/sec drift when nothing else is driving
 const SPIN_EASE            = 0.08;  // ease rate near idle
 const RING_MULT            = { art: 1.0, arena: 0.7, cosmos: 0.5 };
 const KEYBOARD_SPIN_DEG    = 220;
+const WANDER_SPIN_MULT     = 0.6;   // the planet is bigger than a ring — a gentler burst reads the same
 const MAX_SPIN_DEG         = 720;   // cap on accumulated swipe momentum (2 rot/sec)
 const SPIN_FRICTION_RATE   = 1.05;  // per-sec multiplicative decay while coasting
 const BRAKE_DECAY_RATE     = 6.0;   // per-sec decay when palm-open is braking (fast)
@@ -50,6 +82,7 @@ const DISMISS_DIR_RATIO     = 0.62;  // min |dy| / (|dx| + |dy|) — mostly vert
 const DWELL_OPEN_MS         = 450;   // hold cursor on a ring for this long to open it
 const DWELL_METER_FADE_IN   = 0.04;  // progress below this → arc hidden
 const DWELL_METER_SMOOTH    = 0.35;  // EMA on displayed progress for smoothness
+const DWELL_MAX_PALM_SPEED  = 0.0004; // normalized units / ms — faster than this restarts the dwell
 
 // ── Shared state buildRing reads from ──────────────────────────────
 window.ImmersiveOrbit = window.ImmersiveOrbit || {
@@ -69,12 +102,28 @@ const state = {
   lastDetectTime: -Infinity,
   lastVideoTime: -1,
 
+  delegate: null,              // 'GPU' | 'CPU' — whichever MediaPipe accepted
+  inferMsAvg: 0,               // EMA of detectForVideo duration
+  inferWarmupLeft: 0,          // detections still excluded from inferMsAvg
+  detectHzAvg: 0,              // EMA of fresh detections per second
+  lastFreshTs: 0,
+  detectErrorCount: 0,
+  fallingBackToCpu: false,
+
   // Landmarks
-  smoothedLandmarks: null,   // EMA-smoothed — for cursor, hover targeting
-  rawLandmarks: null,         // raw from the last fresh detection — for pose scoring
+  smoothedLandmarks: null,   // One Euro filtered — for cursor, skeleton, hover targeting
+  rawLandmarks: null,         // raw from the last fresh detection — for pose scoring + swipes
+  otherHands: [],             // raw landmarks of any non-primary hands
+  landmarkFilters: null,      // per-landmark One Euro filters for the primary hand
+  lastHandSeenTs: 0,
+  handSpan: REFERENCE_HAND_SPAN,
+  cursorPos: null,            // displayed cursor position (glides between detections)
+  poseScores: { point: 0, open: 0, fist: 0 },
+  debug: false,
 
   // Palm history for swipe detection
   palmHistory: [],             // [{x, y, t}, ...]
+  palmSpeed: 0,                // latest palm speed, normalized units / ms
   lastSwipeTime: 0,
   lastSwipeDirection: 0,       // ±1 direction of the last successful swipe
   lastDismissTime: 0,
@@ -392,6 +441,109 @@ function handSpanOf(landmarks) {
   return Math.max(0.05, dist2D(landmarks[0], landmarks[9]));
 }
 
+// Motion-threshold multiplier: >1 when the hand is close to the camera
+// (looks big, moves far in frame units), <1 when it's far away.
+function handScale() {
+  return clamp(state.handSpan / REFERENCE_HAND_SPAN, HAND_SCALE_MIN, HAND_SCALE_MAX);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  LANDMARK FILTERING — One Euro (Casiez et al. 2012)
+// ══════════════════════════════════════════════════════════════════
+
+function smoothingAlpha(cutoffHz, dtSec) {
+  const r = 2 * Math.PI * cutoffHz * dtSec;
+  return r / (r + 1);
+}
+
+class OneEuroFilter {
+  constructor(minCutoff, beta, dCutoff) {
+    this.minCutoff = minCutoff;
+    this.beta = beta;
+    this.dCutoff = dCutoff;
+    this.value = null;
+    this.derivative = 0;
+    this.lastTs = 0;
+  }
+
+  filter(value, tMs) {
+    if (this.value === null) {
+      this.value = value;
+      this.derivative = 0;
+      this.lastTs = tMs;
+      return value;
+    }
+    const dt = Math.max(0.001, (tMs - this.lastTs) / 1000);
+    this.lastTs = tMs;
+    const rawDerivative = (value - this.value) / dt;
+    this.derivative += (rawDerivative - this.derivative) * smoothingAlpha(this.dCutoff, dt);
+    const cutoff = this.minCutoff + this.beta * Math.abs(this.derivative);
+    this.value += (value - this.value) * smoothingAlpha(cutoff, dt);
+    return this.value;
+  }
+}
+
+function makeLandmarkFilter() {
+  return {
+    x: new OneEuroFilter(ONE_EURO_MIN_CUTOFF, ONE_EURO_BETA, ONE_EURO_D_CUTOFF),
+    y: new OneEuroFilter(ONE_EURO_MIN_CUTOFF, ONE_EURO_BETA, ONE_EURO_D_CUTOFF),
+    z: new OneEuroFilter(ONE_EURO_MIN_CUTOFF, ONE_EURO_BETA, ONE_EURO_D_CUTOFF),
+  };
+}
+
+function filterLandmarks(raw, nowMs) {
+  if (!state.landmarkFilters || state.landmarkFilters.length !== raw.length) {
+    state.landmarkFilters = raw.map(makeLandmarkFilter);
+  }
+  return raw.map((p, i) => {
+    const f = state.landmarkFilters[i];
+    return { x: f.x.filter(p.x, nowMs), y: f.y.filter(p.y, nowMs), z: f.z.filter(p.z || 0, nowMs) };
+  });
+}
+
+// With two hands in frame, keep following the hand we were already
+// tracking (nearest palm); on first sight, take the biggest (closest) hand.
+function pickPrimaryHand(hands) {
+  let best = 0;
+  if (hands.length > 1) {
+    const prev = state.rawLandmarks;
+    let bestMetric = Infinity;
+    hands.forEach((hand, i) => {
+      const metric = prev ? dist2D(hand[9], prev[9]) : -handSpanOf(hand);
+      if (metric < bestMetric) { bestMetric = metric; best = i; }
+    });
+  }
+  return { primary: hands[best], others: hands.filter((_, i) => i !== best) };
+}
+
+function acceptHandDetection(hands, nowMs) {
+  const { primary, others } = pickPrimaryHand(hands);
+  const prev = state.rawLandmarks;
+  if (prev && dist2D(primary[9], prev[9]) > HAND_SWITCH_JUMP) {
+    state.landmarkFilters = null;   // a different hand — don't smear between them
+    state.palmHistory = [];
+    state.cursorPos = null;
+  }
+  state.rawLandmarks = primary;
+  state.otherHands = others;
+  state.smoothedLandmarks = filterLandmarks(primary, nowMs);
+  state.handSpan = handSpanOf(primary);
+  state.lastHandSeenTs = nowMs;
+  state.poseScores = {
+    point: computePointScore(primary),
+    open: computePalmOpenScore(primary),
+    fist: computeFistScore(primary),
+  };
+}
+
+function clearTracking() {
+  state.smoothedLandmarks = null;
+  state.rawLandmarks = null;
+  state.otherHands = [];
+  state.landmarkFilters = null;
+  state.poseScores = { point: 0, open: 0, fist: 0 };
+}
+
 
 // ── Joint-geometry helper ──────────────────────────────────────────
 // A finger's extension ratio: (tip-to-MCP) / (PIP-to-MCP). Independent of
@@ -458,7 +610,8 @@ function onFistFire() {
 // The ring lightbox (main.js) toggles `.visible` on a `.ring-lightbox` node.
 function _isLightboxOpen() {
   const lb = document.querySelector('.ring-lightbox');
-  return !!(lb && lb.classList.contains('visible'));
+  if (lb && lb.classList.contains('visible')) return true;
+  return !!(window.OrbitingExplore && window.OrbitingExplore.isDetailOpen && window.OrbitingExplore.isDetailOpen());
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -467,13 +620,11 @@ function _isLightboxOpen() {
 //  palm-velocity-to-spin mapping. One-shot with cooldown.
 // ══════════════════════════════════════════════════════════════════
 
+// Keeps recording through the cooldown so chained same-direction swipes
+// already have history; the return stroke is caught by the rebound block.
+// Slow drift while hovering an image can't pass the speed gate, so the
+// dwell no longer needs to wipe this buffer.
 function recordPalmSample(landmarks, nowMs) {
-  // During cooldown, don't record — prevents return-to-neutral motion
-  // from polluting the next swipe's history buffer.
-  if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return;
-  // Opening should be quiet. Otherwise the palm center drifts while the user
-  // holds over an image, which reads as a swipe and throws the target away.
-  if (state.dwellRing) { state.palmHistory = []; return; }
   const palm = landmarks[9];
   // Per-sample velocity magnitude so detectSwipe can check average speed.
   let v = 0;
@@ -484,6 +635,7 @@ function recordPalmSample(landmarks, nowMs) {
     const vy = (palm.y - prev.y) / dt;
     v = Math.sqrt(vx * vx + vy * vy);
   }
+  state.palmSpeed = v;
 
   state.palmHistory.push({ x: palm.x, y: palm.y, t: nowMs, v });
   while (state.palmHistory.length > SWIPE_HISTORY_SIZE) state.palmHistory.shift();
@@ -497,7 +649,6 @@ function recordPalmSample(landmarks, nowMs) {
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
   if (state.openedRing) return 0;
-  if (state.dwellRing) return 0;
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -505,11 +656,12 @@ function detectSwipe(nowMs) {
   const elapsed = newest.t - oldest.t;
   if (elapsed < SWIPE_MIN_WINDOW_MS || elapsed > SWIPE_WINDOW_MS) return 0;
 
+  const scale = handScale();
   const dx = newest.x - oldest.x;
   const dy = newest.y - oldest.y;
   const adx = Math.abs(dx);
   const ady = Math.abs(dy);
-  if (adx < SWIPE_MIN_DX) return 0;
+  if (adx < SWIPE_MIN_DX * scale) return 0;
   if (adx / (adx + ady + 1e-6) < SWIPE_DIR_RATIO) return 0;
 
   // Average velocity check — rejects slow drifts and hesitant arcs.
@@ -520,7 +672,7 @@ function detectSwipe(nowMs) {
     vSamples++;
   }
   if (vSamples > 0) avgV /= vSamples;
-  if (avgV < SWIPE_MIN_AVG_VEL) return 0;
+  if (avgV < SWIPE_MIN_AVG_VEL * scale) return 0;
 
   // Unmirrored camera: dx > 0 means user's hand moved to user's LEFT.
   // User-intuitive: right-swipe = spin clockwise (positive deg).
@@ -543,6 +695,8 @@ function detectSwipe(nowMs) {
   state.lastSwipeTime = nowMs;
   state.lastSwipeDirection = direction;
   state.palmHistory = [];
+  state.dwellRing = null;   // the fingertip crossed images mid-swipe; don't open one
+  state.dwellStartTs = 0;
 
   markFirstGesture('swipe');
   pulseOnboardingIcon('swipe');
@@ -561,11 +715,12 @@ function detectDismissSwipe(nowMs) {
   const elapsed = newest.t - oldest.t;
   if (elapsed < SWIPE_MIN_WINDOW_MS || elapsed > SWIPE_WINDOW_MS) return false;
 
+  const scale = handScale();
   const dx = newest.x - oldest.x;
   const dy = newest.y - oldest.y;
   const adx = Math.abs(dx);
   const ady = Math.abs(dy);
-  if (dy < DISMISS_MIN_DY) return false;
+  if (dy < DISMISS_MIN_DY * scale) return false;
   if (ady / (adx + ady + 1e-6) < DISMISS_DIR_RATIO) return false;
 
   let avgV = 0, vSamples = 0;
@@ -574,7 +729,7 @@ function detectDismissSwipe(nowMs) {
     vSamples++;
   }
   if (vSamples > 0) avgV /= vSamples;
-  if (avgV < SWIPE_MIN_AVG_VEL) return false;
+  if (avgV < SWIPE_MIN_AVG_VEL * scale) return false;
 
   state.lastDismissTime = nowMs;
   state.palmHistory = [];
@@ -607,26 +762,60 @@ function flashSwipeIndicator(direction) {
 
 const RECT_PADDING_PX = 12;
 
+// Wander planet showing → gestures act on its clippings, not the rings.
+function wanderActive() {
+  return !!window.OrbitingExplore && document.body.classList.contains('is-explore');
+}
+
+function targetSelector() {
+  return wanderActive() ? '.explore-clipping' : '.ring-image';
+}
+
+function isWanderClipping(el) {
+  return !!(el && el.classList && el.classList.contains('explore-clipping'));
+}
+
+// Central slice of the camera frame (normalized camera coords) that maps to
+// the whole viewport. Its physical aspect matches the viewport, so a
+// centimetre of hand travel moves the cursor equally far on both axes, and
+// the user never has to reach the frame edges where tracking degrades.
+function activeRegion() {
+  const camW = ($cam && $cam.videoWidth) || 640;
+  const camH = ($cam && $cam.videoHeight) || 480;
+  const viewAspect = window.innerWidth / Math.max(1, window.innerHeight);
+  let w = ACTIVE_REGION_WIDTH;
+  let h = (w * camW) / (camH * viewAspect);
+  if (h > ACTIVE_REGION_MAX_HEIGHT) {
+    w *= ACTIVE_REGION_MAX_HEIGHT / h;
+    h = ACTIVE_REGION_MAX_HEIGHT;
+  }
+  const cy = clamp(ACTIVE_REGION_CENTER_Y, h / 2, 1 - h / 2);
+  return { x0: 0.5 - w / 2, y0: cy - h / 2, w, h };
+}
+
 function landmarkToScreen(lm) {
   // Detection runs on the unmirrored #orbitCam stream; user sees mirrored HUD.
   // Flip x to match what the user visually intuits.
+  const r = activeRegion();
+  const u = clamp((lm.x - r.x0) / r.w, 0, 1);
+  const v = clamp((lm.y - r.y0) / r.h, 0, 1);
   return {
-    x: (1 - lm.x) * window.innerWidth,
-    y: lm.y * window.innerHeight,
+    x: (1 - u) * window.innerWidth,
+    y: v * window.innerHeight,
   };
 }
 
 function findRingImageAt(x, y) {
+  const selector = targetSelector();
   const stack = document.elementsFromPoint(x, y);
   for (const el of stack) {
-    const match = el.classList && el.classList.contains('ring-image')
-      ? el
-      : (el.closest ? el.closest('.ring-image') : null);
+    const match = el.closest ? el.closest(selector) : null;
     if (match) return match;
   }
-  const imgs = document.querySelectorAll('.ring-image');
+  const imgs = document.querySelectorAll(selector);
   let best = null, bestDist = Infinity;
   for (const img of imgs) {
+    if (img.hidden || img.getAttribute('aria-hidden') === 'true') continue; // far side of the planet
     const r = img.getBoundingClientRect();
     if (r.width === 0) continue;
     if (x < r.left - RECT_PADDING_PX || x > r.right + RECT_PADDING_PX) continue;
@@ -642,6 +831,14 @@ function findRingImageAt(x, y) {
 function attemptOpenAt(x, y) {
   const ringImage = findRingImageAt(x, y);
   if (!ringImage) return false;
+  if (isWanderClipping(ringImage)) {
+    state.openedRing = ringImage;
+    ringImage.click();   // explore-planet.js opens its own detail view
+    pulseOnboardingIcon('point');
+    markFirstGesture('point');
+    fireCursorSparkle();
+    return true;
+  }
   const media = ringImage._mediaEl;
   const src = media ? (media.src || media.currentSrc) : null;
   if (!src) return false;
@@ -664,6 +861,9 @@ function attemptOpenAt(x, y) {
 }
 
 function closeLightboxIfOpen() {
+  if (window.OrbitingExplore && window.OrbitingExplore.isDetailOpen && window.OrbitingExplore.isDetailOpen()) {
+    window.OrbitingExplore.closeDetail();
+  }
   if (typeof window.closeRingLightbox === 'function') {
     try { window.closeRingLightbox(); } catch (e) {}
   }
@@ -685,9 +885,21 @@ function clearOpenedRingState() {
 //  CURSOR + PINCH METER
 // ══════════════════════════════════════════════════════════════════
 
-function updateCursorPosition(landmarks) {
+// Detections land at ~30Hz; the cursor glides toward each one every frame
+// so it moves smoothly instead of stepping.
+function updateCursorPosition(landmarks, dtSec) {
   if (!$cursor) return;
-  const tip = landmarkToScreen(landmarks[8]);
+  const target = landmarkToScreen(landmarks[8]);
+  if (!state.cursorPos) {
+    state.cursorPos = target;
+  } else {
+    const a = 1 - Math.exp(-(dtSec * 1000) / CURSOR_GLIDE_MS);
+    state.cursorPos = {
+      x: state.cursorPos.x + (target.x - state.cursorPos.x) * a,
+      y: state.cursorPos.y + (target.y - state.cursorPos.y) * a,
+    };
+  }
+  const tip = state.cursorPos;
   $cursor.style.transform = `translate(${tip.x}px, ${tip.y}px)`;
   if (!$cursor.classList.contains('is-visible')) {
     $cursor.classList.add('is-visible');
@@ -703,6 +915,7 @@ function updateCursorPosition(landmarks) {
 }
 
 function hideCursor() {
+  state.cursorPos = null;
   if (!$cursor) return;
   $cursor.classList.remove('is-visible');
   $cursor.setAttribute('aria-hidden', 'true');
@@ -742,7 +955,9 @@ function updatePointDwell(nowMs) {
     updateDwellProgress(0);
     return;
   }
-  if (state.dwellRing !== ring) {
+  // A moving hand is travelling (or swiping), not choosing — restart the
+  // clock so only a settled hover opens the image.
+  if (state.dwellRing !== ring || state.palmSpeed > DWELL_MAX_PALM_SPEED * handScale()) {
     state.dwellRing = ring;
     state.dwellStartTs = nowMs;
   }
@@ -840,6 +1055,68 @@ function clearHandSkeleton() {
   if (!$hudSkeleton || !_hudSkelCtx) return;
   const rect = $hudSkeleton.getBoundingClientRect();
   _hudSkelCtx.clearRect(0, 0, rect.width, rect.height);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  DEBUG OVERLAY — live tracking numbers for tuning (D key / ?handdebug)
+// ══════════════════════════════════════════════════════════════════
+
+let $debugPanel = null;
+
+function setDebug(on) {
+  state.debug = on;
+  if (on && !$debugPanel) {
+    $debugPanel = document.createElement('pre');
+    $debugPanel.id = 'orbitHandDebug';
+    $debugPanel.setAttribute('aria-hidden', 'true');
+    Object.assign($debugPanel.style, {
+      position: 'fixed', left: '16px', bottom: '16px', zIndex: '10000', margin: '0',
+      padding: '10px 12px', borderRadius: '8px', pointerEvents: 'none',
+      font: '11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace',
+      color: 'rgba(255, 248, 232, 0.95)', background: 'rgba(10, 8, 20, 0.78)',
+      whiteSpace: 'pre',
+    });
+    document.body.appendChild($debugPanel);
+  }
+  if ($debugPanel) $debugPanel.style.display = on ? 'block' : 'none';
+}
+
+function fmt(n, digits) { return Number.isFinite(n) ? n.toFixed(digits) : '–'; }
+
+function updateDebugOverlay(haveHand) {
+  if (!$debugPanel) return;
+  const scale = handScale();
+  const s = state.poseScores;
+  const best = Object.entries(s).sort((a, b) => b[1] - a[1])[0];
+  const pose = best && best[1] >= 0.6 ? best[0] : '—';
+  const hands = haveHand ? 1 + state.otherHands.length : 0;
+  $debugPanel.textContent = [
+    `delegate ${state.delegate || '…'}  infer ${fmt(state.inferMsAvg, 1)}ms  ${fmt(state.detectHzAvg, 0)}Hz`,
+    `hands ${hands}  span ${fmt(state.handSpan, 3)}  scale ×${fmt(scale, 2)}`,
+    `pose ${pose.padEnd(5)} point ${fmt(s.point, 2)}  open ${fmt(s.open, 2)}  fist ${fmt(s.fist, 2)}`,
+    `palm ${fmt(state.palmSpeed * 1000, 2)}/s  swipe ≥ ${fmt(SWIPE_MIN_AVG_VEL * scale * 1000, 2)}/s over ${fmt(SWIPE_MIN_DX * scale, 3)}`,
+    `spin ${fmt(state.currentVelocity, 0)}°/s  dwell ${state.dwellRing ? 'on' : 'off'}`,
+  ].join('\n');
+}
+
+// Dashed box on the camera preview showing the slice of the frame that maps
+// to the full screen. Same object-fit: cover mapping as drawHandSkeleton.
+function drawActiveRegionGuide() {
+  if (!$hudSkeleton || !_hudSkelCtx || !ensureSkeletonSized()) return;
+  const rect = $hudSkeleton.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const vw = $hudVideo.videoWidth || W, vh = $hudVideo.videoHeight || H;
+  const scale = Math.max(W / vw, H / vh);
+  const dw = vw * scale, dh = vh * scale;
+  const ox = (W - dw) / 2, oy = (H - dh) / 2;
+  const r = activeRegion();
+  const ctx = _hudSkelCtx;
+  ctx.save();
+  ctx.setLineDash([4, 3]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255, 220, 150, 0.7)';
+  ctx.strokeRect(r.x0 * dw + ox, r.y0 * dh + oy, r.w * dw, r.h * dh);
+  ctx.restore();
 }
 
 let _sparkleTimer = null;
@@ -1039,6 +1316,9 @@ function init() {
 
   buildOnboardingCards();
   buildGuideRail();
+  try {
+    if (new URLSearchParams(window.location.search).has('handdebug')) state.debug = true;
+  } catch (e) {}
 
   $portalStar.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -1059,6 +1339,9 @@ function init() {
   document.addEventListener('keydown', onGlobalKeydown);
   document.addEventListener('keyup', onGlobalKeyup);
   window.addEventListener('ring-lightbox:close', clearOpenedRingState);
+  window.addEventListener('explore-detail:close', clearOpenedRingState);
+  const wanderHandBtn = document.getElementById('wanderHandBtn');
+  if (wanderHandBtn) wanderHandBtn.addEventListener('click', onPortalActivate);
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('pagehide', () => stopStreamOnly());
   document.addEventListener('visibilitychange', () => {
@@ -1103,7 +1386,7 @@ function openModal(opts) {
   opts = opts || {};
   const titleEl = $modal.querySelector('.orbit-modal-title');
   const bodyEl  = $modalBody || $modal.querySelector('.orbit-modal-body');
-  titleEl.textContent = opts.title || 'enter my orbit?';
+  titleEl.textContent = opts.title || (wanderActive() ? 'wander with your hand?' : 'enter my orbit?');
 
   // Reset the body each time so staggered beat animations replay. Custom
   // messages (e.g. "no camera available") collapse to a single paragraph.
@@ -1183,37 +1466,78 @@ async function onEnterConfirmed() {
   try { await $cam.play(); } catch (e) {}
   try { await $hudVideo.play(); } catch (e) {}
 
-  // Reuse landmarker across sessions — skip the slow import+createFromOptions
-  // on re-entry. Saves ~1-2s per re-entry.
-  if (state.landmarker) {
-    onReady();
-    return;
+  // Reuse the landmarker across sessions — skips the slow import +
+  // createFromOptions on re-entry.
+  if (!state.landmarker) {
+    try {
+      $modalHint.textContent = 'waking up the sky…';
+      state.landmarker = await createLandmarker(['GPU', 'CPU']);
+    } catch (err) {
+      setModalLoading(false);
+      $modalHint.textContent = 'hand tracking couldn’t load. check your connection?';
+      console.error('[ImmersiveOrbit] HandLandmarker init failed:', err);
+      stopStreamOnly();
+      return;
+    }
   }
 
+  beginImmersiveSession();
+}
+
+let _mpModule = null, _mpVision = null;
+
+// Try each delegate in order; GPU is much faster where it works, CPU is the
+// safe fallback (older Safari, blocked WebGL, flaky drivers).
+async function createLandmarker(delegates) {
+  if (!_mpModule) _mpModule = await import(/* @vite-ignore */ MP_BUNDLE_URL);
+  if (!_mpVision) _mpVision = await _mpModule.FilesetResolver.forVisionTasks(MP_WASM_URL);
+  let lastErr = null;
+  for (const delegate of delegates) {
+    try {
+      const landmarker = await _mpModule.HandLandmarker.createFromOptions(_mpVision, {
+        baseOptions: { modelAssetPath: MODEL_PATH, delegate },
+        runningMode: 'VIDEO',
+        numHands: NUM_HANDS,
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.4,  // a bit forgiving so fast motion doesn't drop tracking
+        minTrackingConfidence: 0.4,
+      });
+      state.delegate = delegate;
+      state.inferMsAvg = 0;
+      state.inferWarmupLeft = INFER_WARMUP_DETECTIONS;
+      return landmarker;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[ImmersiveOrbit] HandLandmarker ${delegate} delegate unavailable:`, err);
+    }
+  }
+  throw lastErr;
+}
+
+// Some GPUs accept the delegate but then fail per-frame — swap to CPU once.
+async function fallbackToCpu() {
+  if (state.fallingBackToCpu) return;
+  state.fallingBackToCpu = true;
+  const old = state.landmarker;
+  state.landmarker = null;
+  try { if (old) old.close(); } catch (e) {}
   try {
-    $modalHint.textContent = 'waking up the sky…';
-    const mp = await import(/* @vite-ignore */ MP_BUNDLE_URL);
-    const vision = await mp.FilesetResolver.forVisionTasks(MP_WASM_URL);
-    state.landmarker = await mp.HandLandmarker.createFromOptions(vision, {
-      baseOptions: { modelAssetPath: MODEL_PATH, delegate: 'CPU' },
-      runningMode: 'VIDEO',
-      numHands: 1,
-      minHandDetectionConfidence: 0.5,
-      minHandPresenceConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
+    state.landmarker = await createLandmarker(['CPU']);
   } catch (err) {
-    setModalLoading(false);
-    $modalHint.textContent = 'hand tracking couldn’t load. check your connection?';
-    console.error('[ImmersiveOrbit] HandLandmarker init failed:', err);
-    stopStreamOnly();
-    return;
+    console.error('[ImmersiveOrbit] CPU fallback failed:', err);
   }
+  state.detectErrorCount = 0;
+  state.fallingBackToCpu = false;
+}
 
-  // Enter immersive
+function beginImmersiveSession() {
   state.active = true;
-  state.loading = false;
+  setModalLoading(false);   // re-enable Enter so a later re-entry works
   state.firstGestureFired = false;
+  clearTracking();
+  state.cursorPos = null;
+  state.palmSpeed = 0;
+  state.detectErrorCount = 0;
   state.palmHistory = [];
   state.lastSwipeTime = 0;
   state.lastSwipeDirection = 0;
@@ -1240,6 +1564,7 @@ async function onEnterConfirmed() {
 
   // Instructions are visible immediately, even before a hand is detected.
   showOnboarding(false);
+  setDebug(state.debug);
 
   state.lastTick = performance.now();
   state.lastDetectTime = -Infinity;
@@ -1262,39 +1587,46 @@ function detectLoop(now) {
   let haveHand = false;
   let isFreshDetection = false;
 
-  if (now - state.lastDetectTime >= HAND_DETECT_INTERVAL_MS && state.landmarker && $cam.readyState >= 2 && $cam.currentTime !== state.lastVideoTime) {
+  // Slow machines stretch the interval so inference never starves rendering.
+  const detectInterval = clamp((state.inferMsAvg || 0) * DETECT_INTERVAL_PER_INFER_MS, HAND_DETECT_INTERVAL_MS, MAX_DETECT_INTERVAL_MS);
+  if (now - state.lastDetectTime >= detectInterval && state.landmarker && $cam.readyState >= 2 && $cam.currentTime !== state.lastVideoTime) {
     state.lastDetectTime = now;
     state.lastVideoTime = $cam.currentTime;
     try {
+      const t0 = performance.now();
       const result = state.landmarker.detectForVideo($cam, now);
+      const inferMs = performance.now() - t0;
+      if (state.inferWarmupLeft > 0) state.inferWarmupLeft--;
+      else state.inferMsAvg = state.inferMsAvg ? state.inferMsAvg + (inferMs - state.inferMsAvg) * 0.1 : inferMs;
+      if (state.lastFreshTs) {
+        const hz = 1000 / Math.max(1, now - state.lastFreshTs);
+        state.detectHzAvg = state.detectHzAvg ? state.detectHzAvg + (hz - state.detectHzAvg) * 0.1 : hz;
+      }
+      state.lastFreshTs = now;
+      state.detectErrorCount = 0;
       if (result.landmarks && result.landmarks.length > 0) {
-        const raw = result.landmarks[0];
-        state.rawLandmarks = raw;
-        // Smoothed buffer for cursor + palm-history
-        if (!state.smoothedLandmarks) {
-          state.smoothedLandmarks = raw.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }));
-        } else {
-          for (let i = 0; i < raw.length; i++) {
-            const s = state.smoothedLandmarks[i];
-            s.x += (raw[i].x - s.x) * LANDMARK_SMOOTH;
-            s.y += (raw[i].y - s.y) * LANDMARK_SMOOTH;
-          }
-        }
+        acceptHandDetection(result.landmarks, now);
         haveHand = true;
         isFreshDetection = true;
         // First-ever fresh detection of this session → "you're seen" flash,
         // then the onboarding cards reveal themselves.
         if (!state.handSeenOnce) showSeenFlash();
+      } else if (state.smoothedLandmarks && now - state.lastHandSeenTs < HAND_LOST_GRACE_MS) {
+        haveHand = true;  // brief dropout — hold the last pose instead of resetting
       } else {
         state.smoothedLandmarks = null;
         state.rawLandmarks = null;
+        state.landmarkFilters = null;
         onHandLost();
       }
     } catch (err) {
       state.smoothedLandmarks = null;
       state.rawLandmarks = null;
+      state.landmarkFilters = null;
       onHandLost();
       console.warn('[ImmersiveOrbit] detectForVideo failed:', err);
+      state.detectErrorCount = (state.detectErrorCount || 0) + 1;
+      if (state.delegate === 'GPU' && state.detectErrorCount >= GPU_FAILURES_BEFORE_CPU) fallbackToCpu();
     }
   } else if (state.smoothedLandmarks) {
     haveHand = true;  // Reuse last smoothed landmarks between detections
@@ -1302,9 +1634,9 @@ function detectLoop(now) {
 
   // Cursor + gesture evaluation + dwell progress
   if (haveHand && state.smoothedLandmarks) {
-    updateCursorPosition(state.smoothedLandmarks);
+    updateCursorPosition(state.smoothedLandmarks, dt);
     drawHandSkeleton(state.smoothedLandmarks);
-    const handSpan = handSpanOf(state.rawLandmarks || state.smoothedLandmarks);
+    const handSpan = state.handSpan;
     if (isFreshDetection) {
       // Raw landmarks for swipe — smoothing lags the fast motion and
       // inflates the displacement/velocity thresholds in practice.
@@ -1335,6 +1667,10 @@ function detectLoop(now) {
     );
   }
 
+  // Wander's planet already turns on its own; hand mode only adds momentum.
+  const inWander = wanderActive();
+  const idleDeg = inWander ? 0 : IDLE_AUTO_SPIN_DEG;
+
   // Brake only applies while we actually see the hand — tracking drops should
   // not freeze the spin.
   if (haveHand && state.palmBraking) {
@@ -1344,13 +1680,13 @@ function detectLoop(now) {
   } else if (haveHand && state.openedRing) {
     // Freeze the image the user has opened — bleed off spin quickly.
     state.currentVelocity *= Math.exp(-3.0 * dt);
-  } else if (Math.abs(state.currentVelocity) > IDLE_AUTO_SPIN_DEG * 1.2) {
+  } else if (Math.abs(state.currentVelocity) > idleDeg * 1.2 + 1) {
     // Coasting above idle — gentle multiplicative friction (~45%/sec) keeps
     // momentum without decaying instantly. No pull toward idle here.
     state.currentVelocity *= Math.exp(-SPIN_FRICTION_RATE * dt);
   } else {
     // Near-idle — exponential approach to idle drift (plus keyboard nudge).
-    const targetDeg = IDLE_AUTO_SPIN_DEG + state.keyboardSpin;
+    const targetDeg = idleDeg + state.keyboardSpin;
     const k = 4.5; // rate constant: ~63% of the way there per 0.22s
     state.currentVelocity += (targetDeg - state.currentVelocity) * (1 - Math.exp(-k * dt));
   }
@@ -1360,6 +1696,14 @@ function detectLoop(now) {
     const rate = window.ImmersiveOrbit.ringSpinRates?.[key] ?? RING_MULT[key] ?? 1;
     rings[key] = wrap360(rings[key] + state.currentVelocity * dt * rate);
   });
+  if (inWander && state.currentVelocity !== 0 && window.OrbitingExplore.spinBy) {
+    window.OrbitingExplore.spinBy(state.currentVelocity * dt * WANDER_SPIN_MULT);
+  }
+
+  if (state.debug) {
+    drawActiveRegionGuide();
+    updateDebugOverlay(haveHand);
+  }
 
   state.rafId = requestAnimationFrame(detectLoop);
 }
@@ -1383,8 +1727,7 @@ function exitImmersive(reason) {
   state.active = false;
   state.currentVelocity = 0;
   state.keyboardSpin = 0;
-  state.smoothedLandmarks = null;
-  state.rawLandmarks = null;
+  clearTracking();
   state.palmHistory = [];
   state.displayedDwellProgress = 0;
   state.dwellRing = null;
@@ -1413,11 +1756,8 @@ function exitImmersive(reason) {
   clearHandSkeleton();
 
   stopStreamOnly();
-
-  if (state.landmarker) {
-    try { state.landmarker.close(); } catch (e) {}
-    state.landmarker = null;
-  }
+  if ($debugPanel) $debugPanel.style.display = 'none';
+  // The landmarker stays loaded so re-entry is instant.
 
   document.body.classList.remove('immersive-active');
   $hud.setAttribute('aria-hidden', 'true');
@@ -1459,6 +1799,7 @@ function stopStreamOnly() {
 
 function onGlobalKeydown(e) {
   if (e.key === 'Escape') {
+    if (e.defaultPrevented) return;   // Wander's viewer already closed on this press
     // Two-step Escape: close lightbox first (if open), then exit immersive
     if (state.active && state.openedRing) {
       closeLightboxIfOpen();
@@ -1473,6 +1814,10 @@ function onGlobalKeydown(e) {
   if (state.active) {
     if (e.key === 'ArrowLeft')  { state.keyboardSpin = -KEYBOARD_SPIN_DEG; e.preventDefault(); }
     if (e.key === 'ArrowRight') { state.keyboardSpin =  KEYBOARD_SPIN_DEG; e.preventDefault(); }
+    if ((e.key === 'd' || e.key === 'D') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      setDebug(!state.debug);
+      if (!state.debug) clearHandSkeleton();
+    }
     if (e.key === 'Enter' || e.key === ' ') {
       // Open the ring under the cursor, if any
       if (state.lastCursoredRing) {
@@ -1491,7 +1836,7 @@ function onGlobalKeyup(e) {
 }
 
 function onScroll() {
-  if (!state.active) return;
+  if (!state.active || wanderActive()) return;
   const hero = document.getElementById('hero');
   if (!hero) return;
   const rect = hero.getBoundingClientRect();

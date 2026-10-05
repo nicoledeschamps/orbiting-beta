@@ -95,9 +95,9 @@
 .explore-detail__actions button, .explore-detail__actions a { min-height: 44px; display: inline-flex; align-items: center; padding: 0; border: 0; color: var(--op-soft); font: 400 14px var(--op-ui); text-decoration: underline; }
 .explore-detail__actions button:first-child { padding: 0 18px; border: 1px solid var(--op-silver); border-radius: 2px; background: var(--op-silver); color: #000; font-weight: 500; text-decoration: none; }
 
-#adjustPlanet { min-height: 44px; padding: 0 16px; border: 1px solid rgba(237,241,244,.25); background: transparent; color: var(--op-silver); font: 400 13px var(--op-ui); }
-#adjustPlanet:hover, #adjustPlanet[aria-expanded="true"] { border-color: var(--op-silver); background: var(--op-silver); color: #000; }
-#adjustPlanet:focus-visible { outline-color: var(--op-rose); }
+#adjustPlanet, #wanderHandBtn { min-height: 44px; padding: 0 16px; border: 1px solid rgba(237,241,244,.25); background: transparent; color: var(--op-silver); font: 400 13px var(--op-ui); }
+#adjustPlanet:hover, #adjustPlanet[aria-expanded="true"], #wanderHandBtn:hover { border-color: var(--op-silver); background: var(--op-silver); color: #000; }
+#adjustPlanet:focus-visible, #wanderHandBtn:focus-visible { outline-color: var(--op-rose); }
 .wander-speed { border: 1px solid var(--op-edge); border-radius: 0; background: var(--op-panel); color: var(--op-soft); font-family: var(--op-ui); }
 .wander-speed span { color: var(--op-silver); }
 .wander-speed input { accent-color: var(--op-rose); }

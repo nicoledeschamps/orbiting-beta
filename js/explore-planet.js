@@ -102,6 +102,7 @@
     selected = null;
     selectedButton = null;
     if (isVisible && !reduceMotion.matches) tween?.play();
+    window.dispatchEvent(new CustomEvent('explore-detail:close'));
   }
 
   function matches(item) {
@@ -218,7 +219,7 @@
     container.replaceChildren(fragment);
     nodes = nextNodes;
     if (!detail.hidden) closeViewer(false);
-    render(phase.angle);
+    render(angle());
   }
 
   function showOn(node, item) {
@@ -277,19 +278,23 @@
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phase = { angle: 0 };
+  // Hand mode (immersive-orbit.js) spins the planet on top of its own slow turn.
+  let handOffset = 0;
+  const angle = () => phase.angle + handOffset;
   const tween = window.gsap && window.gsap.to(phase, {
     angle: 360, duration: 45, repeat: -1, ease: 'none', paused: true,
-    onUpdate: () => render(phase.angle)
+    onUpdate: () => render(angle())
   });
   const setSpeed = (speed) => tween?.timeScale(Math.max(.5, Math.min(12, Number(speed) || 1)));
   populate();
   window.addEventListener('hues-orbit:data-ready', populate);
-  window.addEventListener('resize', () => render(phase.angle));
-  new ResizeObserver(() => render(phase.angle)).observe(planet);
+  window.addEventListener('resize', () => render(angle()));
+  new ResizeObserver(() => render(angle())).observe(planet);
   closeDetail.addEventListener('click', () => closeViewer());
   detail.addEventListener('click', (event) => { if (!event.target.closest('img, a, button, .explore-detail__caption')) closeViewer(); });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !detail.hidden) closeViewer();
+    // preventDefault tells hand mode this Escape was spent closing the image.
+    if (event.key === 'Escape' && !detail.hidden) { event.preventDefault(); closeViewer(); }
   });
   enterOrbit.addEventListener('click', () => {
     const item = selected;
@@ -306,6 +311,12 @@
     onEnterFriend: null,
     onEnterSelf: null,
     setSpeed,
+    spinBy(degrees) {
+      handOffset = (handOffset + degrees) % 360;
+      render(angle());
+    },
+    isDetailOpen: () => !detail.hidden,
+    closeDetail() { if (!detail.hidden) closeViewer(); },
     setPersonalImages(items) {
       personalItems = Array.isArray(items) ? items.filter((item) => item?.src && !item.isVideo).map((item) => ({
         ...item, owner: 'you', ownerKey: 'self'
