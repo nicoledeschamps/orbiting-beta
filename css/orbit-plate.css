@@ -463,3 +463,7 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 
 /* Constellations always stay in the background: behind faces, planets, rings and Wander images on every page. */
 .constellations, body.orbit-personalized .constellations { z-index: 1; }
+
+/* Wander: the planet zooms in from the distance with your scroll/swipe instead of sliding in from the right. */
+.explore-planet { transform: scale(var(--explore-zoom, 1)); transform-origin: 50% 50%; }
+.explore-layer.is-active .explore-planet { animation: none; }

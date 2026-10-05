@@ -2969,6 +2969,8 @@
     hero.style.setProperty('--friend-scale', String(.7 + friendDepth * .3));
     hero.style.setProperty('--cosmos-label-opacity', String(Math.max(0, (friendDepth - .55) / .45) * (1 - exploreDepth)));
     exploreLayer.style.setProperty('--explore-opacity', String(easedExploreFade));
+    // Wander grows out of the distance as you swipe into it, following your finger like Friends does.
+    exploreLayer.style.setProperty('--explore-zoom', String(.4 + .6 * easedExploreFade));
     exploreLayer.classList.toggle('is-active', exploreActive);
     exploreLayer.inert = !exploreActive;
     exploreLayer.setAttribute('aria-hidden', String(!exploreActive));
