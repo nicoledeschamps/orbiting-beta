@@ -218,25 +218,25 @@
   gap: .85rem 1.2rem;
 }
 
-.portrait-refine:not([hidden]) {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: .7rem 1rem;
-  margin-top: 1rem;
-}
-.portrait-refine label {
-  color: var(--setup-ink);
-  font-size: .875rem;
-}
-.portrait-refine label span { color: var(--setup-muted); }
-.portrait-refine input[type="range"] { width: min(13rem, 100%); accent-color: var(--setup-accent); }
-.portrait-refine .setup-text-action[aria-pressed="true"] { text-decoration: underline; }
-.portrait-lasso:not([hidden]) { display: grid; gap: .7rem; flex-basis: 100%; max-width: 38rem; padding: .85rem; border: 1px solid rgba(237,241,244,.25); background: rgba(237,241,244,.05); }
-.portrait-lasso p { margin: 0; color: var(--setup-muted); font: .74rem/1.4 'Inter',sans-serif; }
-.portrait-lasso canvas { display: block; max-width: 100%; width: auto; height: auto; max-height: 26rem; background: #09090d; cursor: crosshair; touch-action: none; }
+.portrait-tip { margin: .7rem 0 0; color: var(--setup-muted); font: .78rem/1.45 'Inter', sans-serif; max-width: 34rem; }
+.portrait-refine:not([hidden]) { display: grid; gap: .8rem; margin-top: .9rem; }
+.portrait-toggles { display: flex; flex-wrap: wrap; gap: .5rem; }
+.portrait-toggle { min-height: 2.5rem; padding: .45rem .8rem; border: 1px solid rgba(237,241,244,.28); border-radius: 999px; background: transparent; color: var(--setup-ink); font: 500 .8rem 'Inter', sans-serif; cursor: pointer; }
+.portrait-toggle[aria-pressed="true"], .portrait-toggle[aria-expanded="true"] { border-color: var(--setup-oxblood); background: var(--setup-oxblood); color: #fff; }
+.portrait-toggle:disabled { opacity: .45; cursor: default; }
+.portrait-toggle:focus-visible { outline: 2px solid var(--setup-accent); outline-offset: 2px; }
+.portrait-edge:not([hidden]) { display: grid; grid-template-columns: auto 1fr; gap: .35rem .6rem; max-width: 22rem; color: var(--setup-ink); font-size: .85rem; }
+.portrait-edge span { color: var(--setup-muted); justify-self: end; }
+.portrait-edge input { grid-column: 1 / -1; width: 100%; accent-color: var(--setup-accent); }
+.portrait-lasso:not([hidden]) { display: grid; gap: .7rem; max-width: 38rem; padding: .85rem; border: 1px solid rgba(237,241,244,.25); background: rgba(237,241,244,.05); }
+.portrait-lasso p { margin: 0; color: var(--setup-muted); font: .78rem/1.4 'Inter',sans-serif; }
+.portrait-lasso__modes { display: flex; flex-wrap: wrap; gap: .4rem; }
+.portrait-lasso__modes button { min-height: 2.4rem; padding: .4rem .75rem; border: 1px solid rgba(237,241,244,.25); border-radius: .35rem; background: transparent; color: var(--setup-ink); font: .8rem 'Inter', sans-serif; cursor: pointer; }
+.portrait-lasso__modes button[aria-checked="true"] { border-color: var(--setup-accent); background: rgba(237,241,244,.12); }
+.portrait-lasso canvas { display: block; justify-self: start; max-width: 100%; width: auto; height: auto; max-height: min(26rem, 60dvh); cursor: crosshair; touch-action: none; -webkit-user-select: none; user-select: none;
+  background: repeating-conic-gradient(#1b1b22 0 25%, #101015 0 50%) 0 0 / 16px 16px; }
 .portrait-lasso__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.portrait-lasso__actions button { padding: .45rem .65rem; border: 1px solid rgba(237,241,244,.25); border-radius: .35rem; background: transparent; color: var(--setup-ink); cursor: pointer; }
+.portrait-lasso__actions button { min-height: 2.4rem; padding: .45rem .75rem; border: 1px solid rgba(237,241,244,.25); border-radius: .35rem; background: transparent; color: var(--setup-ink); cursor: pointer; }
 .portrait-lasso__actions button:disabled { opacity: .45; cursor: default; }
 
 .setup-file-input {

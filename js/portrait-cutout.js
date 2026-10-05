@@ -1,26 +1,54 @@
-// Person segmentation runs in the visitor's browser; the uploaded photo is never sent to us.
+// Person segmentation and face framing run in the visitor's browser; the uploaded photo is never sent to us.
 const VERSION = '0.10.18';
 const BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
-const MODEL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
+const SEGMENTER_MODEL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
+const FACE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite';
+const SEGMENT_SIZE = 1024;
+const OUTPUT_SIZE = 2048;
+// Crop only when the head-and-shoulders frame covers less than this share of the photo.
+const FRAME_MAX_AREA = 0.6;
+let visionPromise;
 let segmenterPromise;
+let faceDetectorPromise;
 
-async function getSegmenter() {
-  if (!segmenterPromise) {
-    segmenterPromise = (async () => {
-      const { FilesetResolver, ImageSegmenter } = await import(`${BASE}/vision_bundle.mjs`);
-      const vision = await FilesetResolver.forVisionTasks(`${BASE}/wasm`);
-      return ImageSegmenter.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: MODEL, delegate: 'CPU' },
-        runningMode: 'IMAGE',
-        outputCategoryMask: false,
-        outputConfidenceMasks: true
-      });
-    })().catch((error) => {
-      segmenterPromise = null;
-      throw error;
-    });
-  }
-  return segmenterPromise;
+function retryable(factory) {
+  let promise;
+  return () => {
+    if (!promise) promise = factory().catch((error) => { promise = null; throw error; });
+    return promise;
+  };
+}
+
+const getVision = retryable(async () => {
+  const { FilesetResolver, ImageSegmenter, FaceDetector } = await import(`${BASE}/vision_bundle.mjs`);
+  const fileset = await FilesetResolver.forVisionTasks(`${BASE}/wasm`);
+  return { fileset, ImageSegmenter, FaceDetector };
+});
+
+const getSegmenter = retryable(async () => {
+  const { fileset, ImageSegmenter } = await getVision();
+  return ImageSegmenter.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: SEGMENTER_MODEL, delegate: 'CPU' },
+    runningMode: 'IMAGE',
+    outputCategoryMask: false,
+    outputConfidenceMasks: true
+  });
+});
+
+const getFaceDetector = retryable(async () => {
+  const { fileset, FaceDetector } = await getVision();
+  return FaceDetector.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'CPU' },
+    runningMode: 'IMAGE',
+    minDetectionConfidence: 0.5
+  });
+});
+
+function canvasOf(width, height) {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  return canvas;
 }
 
 function canvasBlob(canvas) {
@@ -29,21 +57,52 @@ function canvasBlob(canvas) {
   });
 }
 
+// Head-and-shoulders box around a detected face, in 0–1 photo coordinates.
+function frameAroundFace(face, width, height) {
+  const boxWidth = Math.min(width, face.width * 3.2);
+  const boxHeight = Math.min(height, boxWidth * 1.15);
+  const centerX = face.originX + face.width / 2;
+  const left = Math.max(0, Math.min(width - boxWidth, centerX - boxWidth / 2));
+  const top = Math.max(0, Math.min(height - boxHeight, face.originY - face.height * 0.75));
+  const frame = { x: left / width, y: top / height, w: boxWidth / width, h: boxHeight / height };
+  return frame.w * frame.h < FRAME_MAX_AREA ? frame : null;
+}
+
+function largestFace(detector, image) {
+  return detector.detect(image).detections
+    .map((detection) => detection.boundingBox)
+    .filter(Boolean)
+    .sort((a, b) => b.width * b.height - a.width * a.height)[0] || null;
+}
+
+function tracePolygon(context, points, width, height) {
+  context.beginPath();
+  points.forEach(({ x, y }, index) => {
+    const px = Math.max(0, Math.min(1, x)) * width;
+    const py = Math.max(0, Math.min(1, y)) * height;
+    if (index === 0) context.moveTo(px, py);
+    else context.lineTo(px, py);
+  });
+  context.closePath();
+}
+
 export async function cutOutPortrait(file, onProgress = () => {}) {
   if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
   onProgress('Reading your photo…');
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1024 / Math.max(bitmap.width, bitmap.height));
-  const source = document.createElement('canvas');
-  source.width = Math.max(1, Math.round(bitmap.width * scale));
-  source.height = Math.max(1, Math.round(bitmap.height * scale));
-  source.getContext('2d').drawImage(bitmap, 0, 0, source.width, source.height);
+  const fullScale = Math.min(1, OUTPUT_SIZE / Math.max(bitmap.width, bitmap.height));
+  const full = canvasOf(bitmap.width * fullScale, bitmap.height * fullScale);
+  full.getContext('2d').drawImage(bitmap, 0, 0, full.width, full.height);
   bitmap.close();
+  const segmentScale = Math.min(1, SEGMENT_SIZE / Math.max(full.width, full.height));
+  const source = canvasOf(full.width * segmentScale, full.height * segmentScale);
+  source.getContext('2d').drawImage(full, 0, 0, source.width, source.height);
 
-  onProgress('Finding your outline… The first cutout may take a moment.');
+  onProgress('Removing your background… The first one may take a moment.');
   let confidence = null;
   let maskWidth = 0;
   let maskHeight = 0;
+  let frame = null;
   const automaticReady = getSegmenter().then((segmenter) => {
     const result = segmenter.segment(source);
     const mask = result.confidenceMasks?.[0];
@@ -58,12 +117,42 @@ export async function cutOutPortrait(file, onProgress = () => {}) {
     result.close();
     return Boolean(confidence);
   }).catch(() => false);
+  const framingReady = Promise.all([getFaceDetector(), automaticReady]).then(([detector]) => {
+    let face = largestFace(detector, source);
+    // The face model sees a 128px image, so faces in full-body photos vanish. Look again at the person's upper body.
+    const person = confidence && personBounds();
+    if (!face && person) {
+      const side = Math.min(person.width, person.height);
+      const crop = canvasOf(side, side);
+      const left = Math.max(0, person.x + person.width / 2 - side / 2);
+      crop.getContext('2d').drawImage(source, left, person.y, side, side, 0, 0, side, side);
+      const found = largestFace(detector, crop);
+      if (found) face = { originX: found.originX + left, originY: found.originY + person.y, width: found.width, height: found.height };
+    }
+    frame = face ? frameAroundFace(face, source.width, source.height) : null;
+    return Boolean(frame);
+  }).catch(() => false);
 
-  async function render(edge = 45) {
-    if (!confidence) throw new Error('Automatic cutout is unavailable for this photo.');
-    const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = maskWidth;
-    maskCanvas.height = maskHeight;
+  // Bounding box of the segmented person, in source pixels.
+  function personBounds() {
+    let minX = maskWidth, minY = maskHeight, maxX = -1, maxY = -1;
+    for (let y = 0; y < maskHeight; y++) {
+      for (let x = 0; x < maskWidth; x++) {
+        if (confidence[y * maskWidth + x] < 0.5) continue;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxX < 0) return null;
+    const sx = source.width / maskWidth;
+    const sy = source.height / maskHeight;
+    return { x: minX * sx, y: minY * sy, width: (maxX - minX + 1) * sx, height: (maxY - minY + 1) * sy };
+  }
+
+  function automaticMask(edge) {
+    const maskCanvas = canvasOf(maskWidth, maskHeight);
     const maskContext = maskCanvas.getContext('2d');
     const pixels = maskContext.createImageData(maskWidth, maskHeight);
     const threshold = edge / 100;
@@ -75,54 +164,44 @@ export async function cutOutPortrait(file, onProgress = () => {}) {
       pixels.data[i * 4 + 3] = Math.round(alpha * 255);
     }
     maskContext.putImageData(pixels, 0, 0);
-    const output = document.createElement('canvas');
-    output.width = source.width;
-    output.height = source.height;
-    const context = output.getContext('2d');
-    context.drawImage(source, 0, 0);
-    context.globalCompositeOperation = 'destination-in';
+    return maskCanvas;
+  }
+
+  // edits: [{ mode: 'keep' | 'erase' | 'restore', points: [{ x, y }] }] in 0–1 photo coordinates.
+  function buildMask(removeBackground, edge, edits) {
+    const mask = canvasOf(full.width, full.height);
+    const context = mask.getContext('2d');
     context.imageSmoothingEnabled = true;
-    context.drawImage(maskCanvas, 0, 0, output.width, output.height);
-    return URL.createObjectURL(await canvasBlob(output));
-  }
-
-  // Cut It Out's freehand lasso approach, applied as a portrait alpha mask.
-  async function renderLasso(points, edge = 45, refineAutomatically = false) {
-    if (!Array.isArray(points) || points.length < 3) throw new Error('Draw a complete outline first.');
-    const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = source.width;
-    maskCanvas.height = source.height;
-    const maskContext = maskCanvas.getContext('2d');
-    maskContext.fillStyle = '#fff';
-    maskContext.beginPath();
-    points.forEach(({ x, y }, index) => {
-      const px = Math.max(0, Math.min(1, x)) * source.width;
-      const py = Math.max(0, Math.min(1, y)) * source.height;
-      if (index === 0) maskContext.moveTo(px, py);
-      else maskContext.lineTo(px, py);
-    });
-    maskContext.closePath();
-    maskContext.fill();
-    const output = document.createElement('canvas');
-    output.width = source.width;
-    output.height = source.height;
-    const context = output.getContext('2d');
-    context.drawImage(source, 0, 0);
-    context.globalCompositeOperation = 'destination-in';
-    context.filter = `blur(${Math.max(.5, (80 - edge) / 25)}px)`;
-    context.drawImage(maskCanvas, 0, 0);
-    if (refineAutomatically) {
-      if (!confidence) throw new Error('Automatic refinement is not ready. Use the drawn outline or try again.');
-      const automaticUrl = await render(edge);
-      try {
-        const bitmap = await createImageBitmap(await (await fetch(automaticUrl)).blob());
-        context.filter = 'none';
-        context.drawImage(bitmap, 0, 0);
-        bitmap.close();
-      } finally { URL.revokeObjectURL(automaticUrl); }
+    if (removeBackground && confidence) context.drawImage(automaticMask(edge), 0, 0, mask.width, mask.height);
+    else { context.fillStyle = '#fff'; context.fillRect(0, 0, mask.width, mask.height); }
+    context.fillStyle = '#fff';
+    for (const { mode, points } of edits) {
+      if (!Array.isArray(points) || points.length < 3) continue;
+      context.globalCompositeOperation = mode === 'keep' ? 'destination-in' : mode === 'erase' ? 'destination-out' : 'source-over';
+      tracePolygon(context, points, mask.width, mask.height);
+      context.fill();
     }
-    return URL.createObjectURL(await canvasBlob(output));
+    return mask;
   }
 
-  return { render, renderLasso, get automaticAvailable() { return Boolean(confidence); }, automaticReady };
+  async function render({ removeBackground = true, edge = 45, edits = [], framed = false } = {}) {
+    const output = canvasOf(full.width, full.height);
+    const context = output.getContext('2d');
+    context.drawImage(full, 0, 0);
+    context.globalCompositeOperation = 'destination-in';
+    context.drawImage(buildMask(removeBackground, edge, edits), 0, 0);
+    if (!framed || !frame) return URL.createObjectURL(await canvasBlob(output));
+    const crop = canvasOf(frame.w * full.width, frame.h * full.height);
+    crop.getContext('2d').drawImage(output, frame.x * full.width, frame.y * full.height, crop.width, crop.height, 0, 0, crop.width, crop.height);
+    return URL.createObjectURL(await canvasBlob(crop));
+  }
+
+  return {
+    render,
+    automaticReady,
+    framingReady,
+    original: full,
+    get automaticAvailable() { return Boolean(confidence); },
+    get frame() { return frame; }
+  };
 }

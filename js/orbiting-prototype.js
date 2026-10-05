@@ -46,41 +46,44 @@
   const clearPhotos = document.getElementById('clearPhotos');
   const portraitStatus = document.getElementById('portraitStatus');
   const portraitRefine = document.getElementById('portraitRefine');
-  const portraitRemoveBackground = document.getElementById('portraitRemoveBackground');
   const portraitSize = document.getElementById('portraitSize');
   const portraitX = document.getElementById('portraitX');
-  const portraitY = document.getElementById('portraitY');
   function updatePortraitPosition() {
     document.getElementById('portraitSizeValue').textContent = `${portraitSize.value}%`;
     [setupPortrait, finalPortrait].forEach((image) => {
       image.style.scale = String(Number(portraitSize.value) / 100);
-      image.style.translate = `${portraitX.value}% ${portraitY.value}%`;
+      image.style.translate = `${portraitX.value}% 0%`;
     });
   }
   function resetPortraitPosition() {
-    portraitSize.value = '100'; portraitX.value = '0'; portraitY.value = '0';
+    portraitSize.value = '100'; portraitX.value = '0';
     updatePortraitPosition();
   }
-  [portraitSize, portraitX, portraitY].forEach((control) => control.addEventListener('input', updatePortraitPosition));
+  [portraitSize, portraitX].forEach((control) => control.addEventListener('input', updatePortraitPosition));
   document.getElementById('portraitPositionReset').addEventListener('click', resetPortraitPosition);
+  const portraitBackground = document.getElementById('portraitBackground');
+  const portraitFrame = document.getElementById('portraitFrame');
+  const portraitTouchUpOpen = document.getElementById('portraitTouchUpOpen');
+  const portraitEdgeField = document.getElementById('portraitEdgeField');
   const portraitEdge = document.getElementById('portraitEdge');
   const portraitEdgeValue = document.getElementById('portraitEdgeValue');
-  const portraitOriginal = document.getElementById('portraitOriginal');
   const portraitLasso = document.getElementById('portraitLasso');
   const portraitLassoCanvas = document.getElementById('portraitLassoCanvas');
-  const portraitLassoApply = document.getElementById('portraitLassoApply');
-  const portraitLassoReset = document.getElementById('portraitLassoReset');
+  const portraitLassoHint = document.getElementById('portraitLassoHint');
+  const portraitLassoUndo = document.getElementById('portraitLassoUndo');
+  const portraitLassoClear = document.getElementById('portraitLassoClear');
   let portraitJob = 0;
   let portraitRenderVersion = 0;
   let originalPortraitUrl = null;
   let cutoutPortraitUrl = null;
   let portraitCutout = null;
-  let portraitLassoPoints = null;
-  let portraitLassoMagic = false;
-  const portraitMagicLasso = document.getElementById('portraitMagicLasso');
+  let portraitEdits = [];
+  let portraitRemoveBg = true;
+  let portraitFramed = true;
+  let lassoMode = 'erase';
   let lassoDraft = [];
   let lassoDrawing = false;
-  let lassoImage = null;
+  let lassoPreview = null;
   let edgeTimer;
   const skyTitleFirst = document.getElementById('skyTitleFirst');
   const skyTitleSecond = document.getElementById('skyTitleSecond');
@@ -214,6 +217,8 @@
     originalPortraitUrl = null;
     cutoutPortraitUrl = null;
     portraitCutout = null;
+    portraitEdits = [];
+    closeLasso();
     portraitRefine.hidden = true;
     if (portrait) {
       originalPortraitUrl = URL.createObjectURL(portrait.blob);
@@ -1527,7 +1532,7 @@
       },
       sharedSky: { enabled: shareSkyWithFriends.checked, constellations: shareSkyWithFriends.checked ? ownSkySigns() : [] },
       preferences: {
-        portraitPosition: { size: Number(portraitSize.value), x: Number(portraitX.value), y: Number(portraitY.value) },
+        portraitPosition: { size: Number(portraitSize.value), x: Number(portraitX.value), y: 0 },
         wanderSize: Number(wanderSize.value), wanderSpeed: Number(wanderSpeed.value), lightUpSpace: lightUpSpace.checked,
         combineSkyWithFriends: combineSkyWithFriends.checked, friendSkyIds: [...friendSkyIds]
       },
@@ -1549,7 +1554,7 @@
     if (!saved || saved.version !== 1) return;
     if (!preserveLocalMedia) await restoreOrbitMedia(saved.media);
     const position = saved.preferences?.portraitPosition || {};
-    for (const [control, key, fallback] of [[portraitSize, 'size', 100], [portraitX, 'x', 0], [portraitY, 'y', 0]]) {
+    for (const [control, key, fallback] of [[portraitSize, 'size', 100], [portraitX, 'x', 0]]) {
       control.value = String(Number.isFinite(position[key]) ? Math.max(Number(control.min), Math.min(Number(control.max), position[key])) : fallback);
     }
     updatePortraitPosition();
@@ -2053,24 +2058,55 @@
     finalPortrait.style.opacity = '';
   }
 
-  async function renderPortraitEdge(job) {
+  const lassoHints = {
+    erase: 'Draw a loop around anything you want to erase. Each loop applies when you lift your finger.',
+    restore: 'Draw a loop around anything the cutout removed by mistake to bring it back.',
+    keep: 'Draw a loop around yourself. Everything outside it is removed.'
+  };
+
+  function syncPortraitControls() {
+    const automatic = Boolean(portraitCutout?.automaticAvailable);
+    const removed = automatic && portraitRemoveBg;
+    portraitBackground.disabled = !automatic;
+    portraitBackground.setAttribute('aria-pressed', String(removed));
+    portraitBackground.textContent = removed ? 'background removed' : 'original background';
+    portraitFrame.hidden = !portraitCutout?.frame;
+    portraitFrame.setAttribute('aria-pressed', String(portraitFramed));
+    portraitFrame.textContent = portraitFramed ? 'zoomed to your face' : 'full photo';
+    portraitEdgeField.hidden = !removed;
+    portraitLassoUndo.disabled = !portraitEdits.length;
+    portraitLassoClear.disabled = !portraitEdits.length;
+  }
+
+  function portraitSummary() {
+    if (!portraitCutout) return '';
+    const parts = [portraitCutout.automaticAvailable && portraitRemoveBg ? 'Background removed.' : 'Original background.'];
+    if (portraitCutout.frame && portraitFramed) parts.push('We zoomed in on your face so it fills the planet.');
+    else if (portraitCutout.frame) parts.push('Showing your full photo.');
+    if (!portraitCutout.automaticAvailable) parts.push('We couldn’t find a clear outline. Use touch up to trim it yourself.');
+    return parts.join(' ');
+  }
+
+  async function renderPortrait(job) {
     if (!portraitCutout) return;
     const version = ++portraitRenderVersion;
-    portraitStatus.textContent = 'Refining your cutout…';
+    syncPortraitControls();
     try {
-      const url = portraitLassoPoints
-        ? await portraitCutout.renderLasso(portraitLassoPoints, Number(portraitEdge.value), portraitLassoMagic)
-        : await portraitCutout.render(Number(portraitEdge.value));
+      const url = await portraitCutout.render({
+        removeBackground: portraitRemoveBg,
+        edge: Number(portraitEdge.value),
+        edits: portraitEdits,
+        framed: portraitFramed
+      });
       if (job !== portraitJob || version !== portraitRenderVersion) { URL.revokeObjectURL(url); return; }
       if (cutoutPortraitUrl) URL.revokeObjectURL(cutoutPortraitUrl);
       cutoutPortraitUrl = url;
-      if (portraitOriginal.getAttribute('aria-pressed') !== 'true') showPortrait(url);
-      portraitStatus.textContent = portraitLassoPoints
-        ? 'Custom cutout ready. Move the slider to refine its edge.'
-        : 'Cutout ready. Move the slider if the edge needs adjusting.';
+      showPortrait(url);
+      portraitStatus.textContent = portraitSummary();
+      if (!portraitLasso.hidden) await loadLassoPreview();
     } catch (error) {
       if (job !== portraitJob || version !== portraitRenderVersion) return;
-      portraitStatus.textContent = 'Could not refine this cutout. You can still use the original photo.';
+      portraitStatus.textContent = 'Could not update your portrait. Try another photo or use it as is.';
     }
   }
 
@@ -2078,48 +2114,32 @@
     if (!file) return;
     const job = ++portraitJob;
     resetPortraitPosition();
-    portraitRemoveBackground.disabled = true;
-    portraitMagicLasso.disabled = true;
-    portraitMagicLasso.checked = false;
-    portraitLassoMagic = false;
     window.clearTimeout(edgeTimer);
     if (originalPortraitUrl) URL.revokeObjectURL(originalPortraitUrl);
     if (cutoutPortraitUrl) URL.revokeObjectURL(cutoutPortraitUrl);
     originalPortraitUrl = URL.createObjectURL(file);
     cutoutPortraitUrl = null;
     portraitCutout = null;
-    portraitLassoPoints = null;
-    portraitLasso.hidden = true;
-    portraitLassoReset.hidden = true;
+    portraitEdits = [];
+    portraitRemoveBg = true;
+    portraitFramed = true;
+    closeLasso();
     portraitRefine.hidden = true;
-    portraitEdge.hidden = false;
-    portraitEdge.previousElementSibling.hidden = false;
-    portraitOriginal.setAttribute('aria-pressed', 'true');
-    portraitOriginal.textContent = 'original photo selected';
     showPortrait(originalPortraitUrl);
     try {
-      const { cutOutPortrait } = await import('./portrait-cutout.js?v=4');
+      const { cutOutPortrait } = await import('./portrait-cutout.js?v=5');
       const cutout = await cutOutPortrait(file, (message) => {
         if (job === portraitJob) portraitStatus.textContent = message;
       });
       if (job !== portraitJob) return;
+      await Promise.all([cutout.automaticReady, cutout.framingReady]);
+      if (job !== portraitJob) return;
       portraitCutout = cutout;
       portraitRefine.hidden = false;
-      portraitEdge.hidden = true;
-      portraitEdge.previousElementSibling.hidden = true;
-      portraitStatus.textContent = 'Photo ready. Draw a custom cutout now, or wait for the automatic outline.';
-      const automaticAvailable = await cutout.automaticReady;
-      if (job !== portraitJob) return;
-      if (automaticAvailable) {
-        portraitRemoveBackground.disabled = false;
-        portraitMagicLasso.disabled = false;
-        if (!portraitLassoPoints) portraitStatus.textContent = 'Photo ready. Choose remove background, draw a cutout, or keep the original.';
-      } else if (!portraitLassoPoints) {
-        portraitStatus.textContent = 'Automatic cutout could not find a clear outline. Draw one or keep the original photo.';
-      }
+      await renderPortrait(job);
     } catch (error) {
       if (job !== portraitJob) return;
-      portraitStatus.textContent = 'Could not prepare this photo for cutting. You can keep the original or try another.';
+      portraitStatus.textContent = 'Could not prepare this photo. You can keep it as is or try another.';
       portraitRefine.hidden = true;
     }
   }
@@ -2128,68 +2148,94 @@
     loadPortraitFile(portraitInput.files && portraitInput.files[0]);
   });
 
-  document.getElementById('tryDemoCutout').addEventListener('click', async () => {
-    portraitStatus.textContent = 'Opening the demo photo…';
-    try {
-      const response = await fetch('assets/saturn-face.png');
-      if (!response.ok) throw new Error('Demo photo unavailable.');
-      const file = new File([await response.blob()], 'demo-portrait.png', { type: 'image/png' });
-      await loadPortraitFile(file);
-    } catch (_) {
-      portraitStatus.textContent = 'Could not open the demo photo. Choose another image to try the cutout.';
-    }
+  portraitBackground.addEventListener('click', () => {
+    if (!portraitCutout?.automaticAvailable) return;
+    portraitRemoveBg = !portraitRemoveBg;
+    renderPortrait(portraitJob);
+  });
+
+  portraitFrame.addEventListener('click', () => {
+    if (!portraitCutout?.frame) return;
+    portraitFramed = !portraitFramed;
+    renderPortrait(portraitJob);
   });
 
   portraitEdge.addEventListener('input', () => {
     const value = Number(portraitEdge.value);
     portraitEdgeValue.textContent = value < 35 ? 'softer' : value > 55 ? 'tighter' : 'balanced';
     window.clearTimeout(edgeTimer);
-    edgeTimer = window.setTimeout(() => renderPortraitEdge(portraitJob), 120);
+    edgeTimer = window.setTimeout(() => renderPortrait(portraitJob), 120);
   });
 
+  // The touch-up canvas shows the same region as the portrait: the face frame when zoomed, else the whole photo.
+  function lassoBox() {
+    return portraitFramed && portraitCutout?.frame ? portraitCutout.frame : { x: 0, y: 0, w: 1, h: 1 };
+  }
+
   function drawLasso() {
-    if (!lassoImage) return;
+    if (!portraitCutout) return;
     const canvas = portraitLassoCanvas;
     const context = canvas.getContext('2d');
+    const original = portraitCutout.original;
+    const box = lassoBox();
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(lassoImage, 0, 0, canvas.width, canvas.height);
+    context.globalAlpha = 0.2;
+    context.drawImage(original, box.x * original.width, box.y * original.height, box.w * original.width, box.h * original.height, 0, 0, canvas.width, canvas.height);
+    context.globalAlpha = 1;
+    if (lassoPreview) context.drawImage(lassoPreview, 0, 0, canvas.width, canvas.height);
     if (!lassoDraft.length) return;
     context.beginPath();
     lassoDraft.forEach(({ x, y }, index) => {
       if (index === 0) context.moveTo(x * canvas.width, y * canvas.height);
       else context.lineTo(x * canvas.width, y * canvas.height);
     });
-    if (!lassoDrawing && lassoDraft.length >= 3) context.closePath();
-    context.strokeStyle = '#fff4d6';
+    if (!lassoDrawing) context.closePath();
+    context.strokeStyle = lassoMode === 'erase' ? '#ff8a8a' : '#fff4d6';
     context.lineWidth = Math.max(2, canvas.width / 200);
     context.setLineDash([8, 5]);
     context.stroke();
-    if (!lassoDrawing && lassoDraft.length >= 3) {
-      context.fillStyle = 'rgba(124, 64, 80, .2)';
-      context.fill();
-    }
+    context.setLineDash([]);
   }
 
-  document.getElementById('portraitLassoOpen').addEventListener('click', async () => {
-    if (!originalPortraitUrl || !portraitCutout) return;
+  async function loadLassoPreview() {
     const job = portraitJob;
-    portraitLasso.hidden = false;
-    lassoDraft = [];
-    portraitLassoApply.disabled = true;
     const image = new Image();
-    image.src = originalPortraitUrl;
-    try { await image.decode(); } catch (_) {
-      portraitLasso.hidden = true;
-      portraitStatus.textContent = 'Could not open that photo for manual cutout.';
-      return;
-    }
-    if (job !== portraitJob) { portraitLasso.hidden = true; return; }
-    lassoImage = image;
-    const scale = Math.min(1, 600 / Math.max(image.naturalWidth, image.naturalHeight));
-    portraitLassoCanvas.width = Math.round(image.naturalWidth * scale);
-    portraitLassoCanvas.height = Math.round(image.naturalHeight * scale);
+    image.src = cutoutPortraitUrl || originalPortraitUrl;
+    try { await image.decode(); } catch (_) { return; }
+    if (job !== portraitJob || portraitLasso.hidden) return;
+    lassoPreview = image;
+    const box = lassoBox();
+    const original = portraitCutout.original;
+    const width = box.w * original.width;
+    const height = box.h * original.height;
+    const scale = Math.min(1, 720 / Math.max(width, height));
+    portraitLassoCanvas.width = Math.round(width * scale);
+    portraitLassoCanvas.height = Math.round(height * scale);
     drawLasso();
+  }
+
+  function closeLasso() {
+    portraitLasso.hidden = true;
+    portraitTouchUpOpen.setAttribute('aria-expanded', 'false');
+    lassoDraft = [];
+    lassoDrawing = false;
+    lassoPreview = null;
+  }
+
+  portraitTouchUpOpen.addEventListener('click', async () => {
+    if (!portraitCutout) return;
+    if (!portraitLasso.hidden) { closeLasso(); return; }
+    portraitLasso.hidden = false;
+    portraitTouchUpOpen.setAttribute('aria-expanded', 'true');
+    await loadLassoPreview();
+    portraitLasso.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
+
+  portraitLasso.querySelectorAll('[data-lasso-mode]').forEach((button) => button.addEventListener('click', () => {
+    lassoMode = button.dataset.lassoMode;
+    portraitLasso.querySelectorAll('[data-lasso-mode]').forEach((other) => other.setAttribute('aria-checked', String(other === button)));
+    portraitLassoHint.textContent = lassoHints[lassoMode];
+  }));
 
   const lassoPoint = (event) => {
     const bounds = portraitLassoCanvas.getBoundingClientRect();
@@ -2199,81 +2245,54 @@
     };
   };
   portraitLassoCanvas.addEventListener('pointerdown', (event) => {
+    if (!lassoPreview) return;
+    event.preventDefault();
     lassoDrawing = true;
     lassoDraft = [lassoPoint(event)];
-    portraitLassoApply.disabled = true;
-    portraitLassoCanvas.setPointerCapture(event.pointerId);
+    try { portraitLassoCanvas.setPointerCapture(event.pointerId); } catch (_) {}
     drawLasso();
   });
   portraitLassoCanvas.addEventListener('pointermove', (event) => {
     if (!lassoDrawing) return;
+    event.preventDefault();
     const point = lassoPoint(event);
     const last = lassoDraft[lassoDraft.length - 1];
     if (Math.hypot((point.x - last.x) * portraitLassoCanvas.width, (point.y - last.y) * portraitLassoCanvas.height) < 3) return;
     lassoDraft.push(point);
     drawLasso();
   });
-  portraitLassoCanvas.addEventListener('pointerup', () => {
+  function finishLasso() {
+    if (!lassoDrawing) return;
     lassoDrawing = false;
-    portraitLassoApply.disabled = lassoDraft.length < 3;
-    drawLasso();
-  });
-  portraitLassoCanvas.addEventListener('pointercancel', () => {
-    lassoDrawing = false;
-    portraitLassoApply.disabled = lassoDraft.length < 3;
-    drawLasso();
-  });
-  document.getElementById('portraitLassoClear').addEventListener('click', () => {
+    const draft = lassoDraft;
     lassoDraft = [];
-    portraitLassoApply.disabled = true;
-    drawLasso();
+    if (draft.length < 3) { drawLasso(); return; }
+    const box = lassoBox();
+    const points = draft.map(({ x, y }) => ({ x: box.x + x * box.w, y: box.y + y * box.h }));
+    portraitEdits = [...portraitEdits, { mode: lassoMode, points }];
+    renderPortrait(portraitJob);
+  }
+  portraitLassoCanvas.addEventListener('pointerup', finishLasso);
+  portraitLassoCanvas.addEventListener('pointercancel', finishLasso);
+  portraitLassoUndo.addEventListener('click', () => {
+    portraitEdits = portraitEdits.slice(0, -1);
+    renderPortrait(portraitJob);
   });
-  document.getElementById('portraitLassoCancel').addEventListener('click', () => { portraitLasso.hidden = true; });
-  portraitLassoApply.addEventListener('click', async () => {
-    if (lassoDraft.length < 3) return;
-    portraitOriginal.setAttribute('aria-pressed', 'false');
-    portraitOriginal.textContent = 'show original photo';
-    portraitLassoMagic = portraitMagicLasso.checked && !portraitMagicLasso.disabled;
-    portraitLassoPoints = lassoDraft.slice();
-    portraitLasso.hidden = true;
-    portraitLassoReset.hidden = !portraitCutout.automaticAvailable;
-    portraitEdge.hidden = false;
-    portraitEdge.previousElementSibling.hidden = false;
-    await renderPortraitEdge(portraitJob);
+  portraitLassoClear.addEventListener('click', () => {
+    portraitEdits = [];
+    renderPortrait(portraitJob);
   });
-  portraitLassoReset.addEventListener('click', async () => {
-    if (!portraitCutout?.automaticAvailable) return;
-    portraitLassoPoints = null;
-    portraitLassoReset.hidden = true;
-    portraitOriginal.setAttribute('aria-pressed', 'false');
-    portraitOriginal.textContent = 'show original photo';
-    await renderPortraitEdge(portraitJob);
-  });
-
-  portraitRemoveBackground.addEventListener('click', async () => {
-    if (!portraitCutout?.automaticAvailable) return;
-    portraitLassoPoints = null;
-    portraitLasso.hidden = true;
-    portraitLassoReset.hidden = true;
-    portraitOriginal.setAttribute('aria-pressed', 'false');
-    portraitOriginal.textContent = 'show original photo';
-    portraitEdge.hidden = false;
-    portraitEdge.previousElementSibling.hidden = false;
-    await renderPortraitEdge(portraitJob);
-  });
-
-  portraitOriginal.addEventListener('click', () => {
-    if (!originalPortraitUrl || !cutoutPortraitUrl) return;
-    const useOriginal = portraitOriginal.getAttribute('aria-pressed') !== 'true';
-    portraitOriginal.setAttribute('aria-pressed', String(useOriginal));
-    portraitOriginal.textContent = useOriginal ? 'use cutout instead' : 'show original photo';
-    showPortrait(useOriginal ? originalPortraitUrl : cutoutPortraitUrl);
-    portraitStatus.textContent = useOriginal ? 'Original photo selected.' : 'Cutout selected.';
+  document.getElementById('portraitLassoDone').addEventListener('click', () => {
+    closeLasso();
+    portraitTouchUpOpen.focus();
   });
 
   document.getElementById('useDemoPortrait').addEventListener('click', () => {
     ++portraitJob;
     resetPortraitPosition();
+    portraitCutout = null;
+    portraitEdits = [];
+    closeLasso();
     portraitRefine.hidden = true;
     const demo = 'assets/saturn-face-transparent.webp';
     showPortrait(demo);

@@ -12,7 +12,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20260427a">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-instagram">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-portrait">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-friends-corner">
   <script type="importmap">
@@ -62,32 +62,37 @@
               <input class="setup-file-input" id="setupPortraitInput" type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif">
             </label>
             <button class="setup-text-action" id="useDemoPortrait" type="button">use the demo portrait</button>
-            <button class="setup-text-action" id="tryDemoCutout" type="button">try cutout with demo photo</button>
           </div>
+          <p class="portrait-tip">A close-up of your face and shoulders works best. We remove the background for you and zoom in if you’re far away.</p>
           <p class="setup-status" id="portraitStatus" aria-live="polite">Demo portrait ready. Uploading another photo replaces it.</p>
+          <div class="portrait-refine" id="portraitRefine" hidden>
+            <div class="portrait-toggles" role="group" aria-label="Portrait options">
+              <button class="portrait-toggle" id="portraitBackground" type="button" aria-pressed="true" disabled>background removed</button>
+              <button class="portrait-toggle" id="portraitFrame" type="button" aria-pressed="true" hidden>zoomed to your face</button>
+              <button class="portrait-toggle" id="portraitTouchUpOpen" type="button" aria-expanded="false">touch up</button>
+            </div>
+            <label class="portrait-edge" id="portraitEdgeField" hidden>Cutout edge <span id="portraitEdgeValue">balanced</span>
+              <input id="portraitEdge" type="range" min="15" max="75" value="45" step="5">
+            </label>
+            <div class="portrait-lasso" id="portraitLasso" hidden>
+              <div class="portrait-lasso__modes" role="radiogroup" aria-label="Touch-up tool">
+                <button type="button" role="radio" data-lasso-mode="erase" aria-checked="true">erase</button>
+                <button type="button" role="radio" data-lasso-mode="restore" aria-checked="false">bring back</button>
+                <button type="button" role="radio" data-lasso-mode="keep" aria-checked="false">keep only</button>
+              </div>
+              <p id="portraitLassoHint">Draw a loop around anything you want to erase. Each loop applies when you lift your finger.</p>
+              <canvas id="portraitLassoCanvas" aria-label="Draw around part of your photo to touch up the cutout"></canvas>
+              <div class="portrait-lasso__actions">
+                <button type="button" id="portraitLassoUndo" disabled>undo</button>
+                <button type="button" id="portraitLassoClear" disabled>start over</button>
+                <button type="button" id="portraitLassoDone">done</button>
+              </div>
+            </div>
+          </div>
           <div class="portrait-position">
             <label>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="50" max="200" value="100"></label>
             <label>Horizontal position<input id="portraitX" type="range" min="-50" max="50" value="0"></label>
-            <label>Vertical position<input id="portraitY" type="range" min="-50" max="50" value="0"></label>
             <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
-          </div>
-          <div class="portrait-refine" id="portraitRefine" hidden>
-            <button class="setup-text-action" id="portraitRemoveBackground" type="button" disabled>remove background</button>
-            <label for="portraitEdge">Refine the cutout edge <span id="portraitEdgeValue">balanced</span></label>
-            <input id="portraitEdge" type="range" min="15" max="75" value="45" step="5">
-            <button class="setup-text-action" id="portraitOriginal" type="button" aria-pressed="false">show original photo</button>
-            <button class="setup-text-action" id="portraitLassoOpen" type="button">draw a custom cutout</button>
-            <button class="setup-text-action" id="portraitLassoReset" type="button" hidden>return to automatic cutout</button>
-            <div class="portrait-lasso" id="portraitLasso" hidden>
-              <p>Draw around the part of your photo you want to keep. Release to close the shape.</p>
-              <label><input id="portraitMagicLasso" type="checkbox" disabled> Refine my outline automatically (magic lasso)</label>
-              <canvas id="portraitLassoCanvas" aria-label="Draw a freehand cutout around your portrait"></canvas>
-              <div class="portrait-lasso__actions">
-                <button type="button" id="portraitLassoClear">start over</button>
-                <button type="button" id="portraitLassoApply" disabled>use this cutout</button>
-                <button type="button" id="portraitLassoCancel">cancel</button>
-              </div>
-            </div>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
@@ -855,7 +860,7 @@
   <script src="js/shared-sky.js?v=2"></script>
   <script src="js/following-cosmos.js?v=20261005-spaces"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261005-instagram"></script>
+  <script src="js/orbiting-prototype.js?v=20261005-portrait"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
