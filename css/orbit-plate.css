@@ -360,3 +360,6 @@
   .followed-orbit__head { padding: 20px; max-width: 70vw; }
   .followed-orbit__planet { margin-top: 24vh; }
 }
+
+/* A friend without a face yet: their planet is outlined and glows in their title color. */
+.following-cosmos__core:not(.has-cutout) { box-shadow: inset 0 0 0 2px var(--planet-glow, rgba(237,241,244,.45)), 0 0 30px color-mix(in srgb, var(--planet-glow, #edf1f4) 45%, transparent), 0 0 80px color-mix(in srgb, var(--planet-glow, #edf1f4) 18%, transparent); }

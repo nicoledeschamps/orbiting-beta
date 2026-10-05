@@ -61,6 +61,9 @@
     container.replaceChildren();
     const core = document.createElement('span');
     core.className = 'following-cosmos__core';
+    // Until someone has a face, their planet glows in their own title color.
+    const glow = snapshot.title?.secondColor;
+    if (typeof glow === 'string' && /^#[0-9a-f]{6}$/i.test(glow)) core.style.setProperty('--planet-glow', glow);
     const ownPortrait = typeof snapshot.portraitSrc === 'string' && snapshot.portraitSrc.startsWith('blob:');
     if (ownPortrait || (typeof snapshot.portraitAsset === 'string' && /^assets\/portraits\/[a-z0-9_-]+\.jpg$/.test(snapshot.portraitAsset))) {
       const portrait = document.createElement('img');
