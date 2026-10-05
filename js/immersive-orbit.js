@@ -2,14 +2,16 @@
 // IMMERSIVE ORBIT v4 — hand-tracked Saturn
 //
 // Gestures (one-hand):
-//   • swipe (L/R)    → ring-spin burst, decays naturally
-//   • hover + hold   → dwell on a ring image to open the lightbox
-//   • swipe down     → dismiss an opened image
+//   • point          → aim: the photo under your fingertip lights up
+//   • open hand      → open the photo you just aimed at (hold ~¼s, hand still)
+//   • fist           → close the open photo (hold ~⅓s)
+//   • swipe (L/R)    → spin burst with a fast open hand, decays naturally
+//   • swipe down     → also closes an open photo
 //
 // Onboarding:
 //   • "you're seen" flash on first hand detection (one shot)
-//   • progressive cards for the first two actions, then the guide rail
-//     keeps close visible
+//   • progressive cards: spin → point-then-open → fist; the guide rail stays
+//     visible and lights up whichever pose it currently sees
 //
 // Wander: when the Wander planet is showing (body.is-explore), the same
 //   gestures spin that planet and open its clippings instead of the rings.
@@ -78,11 +80,14 @@ const SWIPE_REBOUND_BLOCK_MS = 350;  // after a swipe, ignore opposite-direction
 const DISMISS_MIN_DY        = 0.12;  // normalized frame-height downward displacement
 const DISMISS_DIR_RATIO     = 0.62;  // min |dy| / (|dx| + |dy|) — mostly vertical
 
-// ── Point-hold dwell (open image) ──────────────────────────────────
-const DWELL_OPEN_MS         = 450;   // hold cursor on a ring for this long to open it
-const DWELL_METER_FADE_IN   = 0.04;  // progress below this → arc hidden
-const DWELL_METER_SMOOTH    = 0.35;  // EMA on displayed progress for smoothness
-const DWELL_MAX_PALM_SPEED  = 0.0004; // normalized units / ms — faster than this restarts the dwell
+// ── Pose gestures: point to aim, open hand to open, fist to close ──
+const POINT_AIM_SCORE       = 0.7;   // clear finger-point needed to aim (an open palm scores ~0.55)
+const AIM_MEMORY_MS         = 1500;  // the aimed photo stays chosen while the hand opens
+const OPEN_HOLD_MS          = 250;
+const FIST_HOLD_MS          = 300;
+const OPEN_MAX_PALM_SPEED   = 0.0004; // normalized units / ms — a faster open hand is a swipe, not an open
+const HOLD_METER_FADE_IN    = 0.04;  // progress below this → arc hidden
+const HOLD_METER_SMOOTH     = 0.35;  // EMA on displayed progress for smoothness
 
 // ── Shared state buildRing reads from ──────────────────────────────
 window.ImmersiveOrbit = window.ImmersiveOrbit || {
@@ -133,10 +138,10 @@ const state = {
   lastTick: 0,
   keyboardSpin: 0,
 
-  // Hover-hold dwell timer (opens images after sustained cursor hover)
-  dwellRing: null,             // ring-image currently being dwelled on
-  dwellStartTs: 0,             // ms timestamp when dwell started
-  displayedDwellProgress: 0,   // smoothed 0..1 for the cursor meter ring
+  // Aim: the photo last pointed at (open hand opens it while still fresh)
+  aimRing: null,
+  aimTs: 0,
+  displayedHoldProgress: 0,   // smoothed 0..1 for the cursor meter ring
 
   // Misc
   permissionDenied: false,
@@ -259,7 +264,33 @@ const GESTURE_ICONS = {
 //    onFire / onHold / onRelease / onReady (ready = rearmed after fire)
 // ══════════════════════════════════════════════════════════════════
 
-const GESTURE_DEFS = {};
+const GESTURE_DEFS = {
+  // Point: aim. Continuous — the cursor targets photos while the pose holds.
+  point: {
+    compute: (lm) => computePointScore(lm),
+    threshold: 0.6, releaseThreshold: 0.4,
+    fireHoldMs: 80, releaseHoldMs: 150, cooldown: 0,
+    priority: 1, mutualExclusion: ['open', 'fist'], continuous: true,
+    onFire: () => setPointing(true),
+    onRelease: () => setPointing(false),
+  },
+  // Open hand: opens the aimed photo. Speed-gated so a swipe never opens.
+  open: {
+    compute: (lm) => (state.palmSpeed > OPEN_MAX_PALM_SPEED * handScale() ? 0 : computePalmOpenScore(lm)),
+    threshold: 0.6, releaseThreshold: 0.3,
+    fireHoldMs: OPEN_HOLD_MS, releaseHoldMs: 200, cooldown: 600,
+    priority: 2,
+    onFire: () => onOpenFire(),
+  },
+  // Fist: closes the open photo. Does nothing else.
+  fist: {
+    compute: (lm) => computeFistScore(lm),
+    threshold: 0.7, releaseThreshold: 0.35,
+    fireHoldMs: FIST_HOLD_MS, releaseHoldMs: 200, cooldown: 600,
+    priority: 3,
+    onFire: () => onFistFire(),
+  },
+};
 
 const gestureState = {};
 for (const key of Object.keys(GESTURE_DEFS)) {
@@ -386,7 +417,7 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
         if (def.onFire) def.onFire(smoothed, raw);
       } catch (e) { console.warn('[ImmersiveOrbit] onFire threw:', e); }
       // NB: card advancement is driven by each gesture's specific handler
-      // (onPalmStart, detectSwipe, attemptOpenAt) — not by generic pose entry.
+      // (detectSwipe, onOpenFire, onFistFire) — not by generic pose entry.
       // Point, in particular, advances only when an image actually opens.
       dispatch('orbit:gesture-fired', { gesture: key, score: scores[key] });
     } else if (outcome === 'wantStayActive') {
@@ -404,26 +435,60 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
 }
 
 /**
- * Called when the hand is lost (no landmarks this frame). Resets time-based
- * counters but does NOT fire onRelease for continuous gestures (that would
- * flash-close the lightbox on every brief tracking drop).
- *
- * EXCEPTION: any visual/motion pose flags should clear immediately if the
- * hand is gone, so the cursor and spin loop recover cleanly.
+ * Called once the hand has been gone longer than the dropout grace. Resets
+ * time-based counters and ends continuous poses (pointing) so the hand comes
+ * back fresh. One-shot latches (open, fist) keep their state: losing the hand
+ * isn't a deliberate release, so it can't re-fire them.
  */
 function onHandLost() {
   for (const key of Object.keys(gestureState)) {
     const st = gestureState[key];
     st.aboveSinceTs = 0;
     st.belowSinceTs = 0;
-    // Keep st.active and st.rearmed as-is; tracking loss isn't the same as
-    // a real gesture release. Pinch/fist latches stay safe this way.
+    if (st.active && GESTURE_DEFS[key].continuous) {
+      st.active = false;
+      st.rearmed = true;
+      try { if (GESTURE_DEFS[key].onRelease) GESTURE_DEFS[key].onRelease(); } catch (e) {}
+    }
   }
-  // Release pose flags so the spin loop and cursor recover cleanly.
   state.palmBraking = false;
-  state.pointActive = false;
-  if ($cursor) $cursor.classList.remove('is-pointing');
   state.palmHistory = [];
+  updateLiveGuide();
+}
+
+function setPointing(on) {
+  state.pointActive = on;
+  if ($cursor) $cursor.classList.toggle('is-pointing', on);
+  if (on) pulseOnboardingIcon('point');
+}
+
+// Aiming = a clear point, with no photo open. Looser "pointActive" lingers
+// while the hand opens; aiming stops as soon as the index stops leading.
+function isAiming() {
+  return state.pointActive && !state.openedRing && state.poseScores.point >= POINT_AIM_SCORE;
+}
+
+function aimedRing(nowMs) {
+  const ring = state.aimRing;
+  return ring && ring.isConnected && nowMs - state.aimTs <= AIM_MEMORY_MS ? ring : null;
+}
+
+function onOpenFire() {
+  if (state.openedRing) return;
+  const ring = aimedRing(performance.now());
+  if (!ring || !openTarget(ring)) return;
+  pulseOnboardingIcon('open');
+  markFirstGesture('open');
+}
+
+// Guide rail: light up the pose the camera currently reads, so the user can
+// see what it thinks their hand is doing.
+function updateLiveGuide() {
+  if (!$guide) return;
+  for (const key of Object.keys(GESTURE_DEFS)) {
+    const row = $guide.querySelector(`.orbit-hud-guide-row[data-gesture-key="${key}"]`);
+    if (row) row.classList.toggle('is-live', !!(gestureState[key] && gestureState[key].active));
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -602,6 +667,7 @@ function onFistFire() {
   pulseOnboardingIcon('fist');
   if (state.openedRing || _isLightboxOpen()) {
     closeLightboxIfOpen();
+    markFirstGesture('fist');
   }
   // If no photo is open, fist is a no-op — the pulse still fires so the user
   // sees their gesture was recognised.
@@ -649,6 +715,7 @@ function recordPalmSample(landmarks, nowMs) {
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
   if (state.openedRing) return 0;
+  if (isAiming()) return 0;   // moving a pointed finger is aiming, not spinning
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -695,8 +762,7 @@ function detectSwipe(nowMs) {
   state.lastSwipeTime = nowMs;
   state.lastSwipeDirection = direction;
   state.palmHistory = [];
-  state.dwellRing = null;   // the fingertip crossed images mid-swipe; don't open one
-  state.dwellStartTs = 0;
+  state.aimRing = null;   // the fingertip crossed photos mid-swipe; don't open one
 
   markFirstGesture('swipe');
   pulseOnboardingIcon('swipe');
@@ -828,14 +894,11 @@ function findRingImageAt(x, y) {
   return best;
 }
 
-function attemptOpenAt(x, y) {
-  const ringImage = findRingImageAt(x, y);
+function openTarget(ringImage) {
   if (!ringImage) return false;
   if (isWanderClipping(ringImage)) {
     state.openedRing = ringImage;
     ringImage.click();   // explore-planet.js opens its own detail view
-    pulseOnboardingIcon('point');
-    markFirstGesture('point');
     fireCursorSparkle();
     return true;
   }
@@ -854,8 +917,6 @@ function attemptOpenAt(x, y) {
     );
   }
   ringImage.classList.add('pinch-selected'); // CSS class name kept for style reuse
-  pulseOnboardingIcon('point');
-  markFirstGesture('point'); // advance the hold-to-open card only on real open
   fireCursorSparkle();
   return true;
 }
@@ -875,10 +936,9 @@ function clearOpenedRingState() {
     state.openedRing.classList.remove('pinch-selected');
     state.openedRing = null;
   }
-  // Reset dwell so re-pointing at the same ring starts fresh.
-  state.dwellRing = null;
-  state.dwellStartTs = 0;
-  updateDwellProgress(0);
+  // Clear the aim so the still-open hand can't reopen the same photo.
+  state.aimRing = null;
+  setHoldMeter(0);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -887,7 +947,7 @@ function clearOpenedRingState() {
 
 // Detections land at ~30Hz; the cursor glides toward each one every frame
 // so it moves smoothly instead of stepping.
-function updateCursorPosition(landmarks, dtSec) {
+function updateCursorPosition(landmarks, dtSec, nowMs) {
   if (!$cursor) return;
   const target = landmarkToScreen(landmarks[8]);
   if (!state.cursorPos) {
@@ -905,8 +965,13 @@ function updateCursorPosition(landmarks, dtSec) {
     $cursor.classList.add('is-visible');
     $cursor.setAttribute('aria-hidden', 'false');
   }
-  // Maintain cursor-over highlight on the ring image under the cursor
-  const hoveredRing = findRingImageAt(tip.x, tip.y);
+  // Only a deliberate point picks a target. The last aim is remembered
+  // briefly so it survives the hand opening to select it.
+  if (isAiming()) {
+    state.aimRing = findRingImageAt(tip.x, tip.y);
+    state.aimTs = nowMs;
+  }
+  const hoveredRing = state.openedRing ? null : aimedRing(nowMs);
   if (hoveredRing !== state.lastCursoredRing) {
     if (state.lastCursoredRing) state.lastCursoredRing.classList.remove('cursor-over');
     if (hoveredRing) hoveredRing.classList.add('cursor-over');
@@ -925,51 +990,28 @@ function hideCursor() {
   }
 }
 
-function updateDwellProgress(rawProgress) {
-  state.displayedDwellProgress += (rawProgress - state.displayedDwellProgress) * DWELL_METER_SMOOTH;
-  const s = state.displayedDwellProgress;
+function setHoldMeter(rawProgress) {
+  state.displayedHoldProgress += (rawProgress - state.displayedHoldProgress) * HOLD_METER_SMOOTH;
+  const s = state.displayedHoldProgress;
   if ($cursorMeterFill) {
     // pathLength=100 → dashoffset in [0 (full) ... 100 (empty)]
     $cursorMeterFill.style.strokeDashoffset = String(100 - Math.max(0, Math.min(100, s * 100)));
   }
   if ($cursor) {
-    $cursor.classList.toggle('is-meter-visible', s > DWELL_METER_FADE_IN);
+    $cursor.classList.toggle('is-meter-visible', s > HOLD_METER_FADE_IN);
     $cursor.classList.toggle('is-meter-ready',   s > 0.80);
   }
 }
 
-// Hover-hold dwell: while the tracked cursor hovers a ring image, count up to
-// DWELL_OPEN_MS. Hit that → open the ring. Any target change, hand loss, or
-// lightbox-open cancels.
-function updatePointDwell(nowMs) {
-  if (state.openedRing) {
-    state.dwellRing = null;
-    state.dwellStartTs = 0;
-    updateDwellProgress(0);
-    return;
-  }
-  const ring = state.lastCursoredRing;
-  if (!ring) {
-    state.dwellRing = null;
-    state.dwellStartTs = 0;
-    updateDwellProgress(0);
-    return;
-  }
-  // A moving hand is travelling (or swiping), not choosing — restart the
-  // clock so only a settled hover opens the image.
-  if (state.dwellRing !== ring || state.palmSpeed > DWELL_MAX_PALM_SPEED * handScale()) {
-    state.dwellRing = ring;
-    state.dwellStartTs = nowMs;
-  }
-  const elapsed = nowMs - state.dwellStartTs;
-  const progress = clamp(elapsed / DWELL_OPEN_MS, 0, 1);
-  updateDwellProgress(progress);
-  if (progress >= 1) {
-    const r = ring.getBoundingClientRect();
-    attemptOpenAt(r.left + r.width / 2, r.top + r.height / 2);
-    state.dwellRing = null;
-    state.dwellStartTs = 0;
-  }
+// The cursor ring fills while a pose is being held toward firing: an open
+// hand over an aimed photo, or a fist while a photo is open.
+function updateHoldMeter(nowMs) {
+  const key = state.openedRing ? 'fist' : (aimedRing(nowMs) ? 'open' : null);
+  const st = key ? gestureState[key] : null;
+  const progress = st && !st.active && st.aboveSinceTs > 0
+    ? clamp((nowMs - st.aboveSinceTs) / GESTURE_DEFS[key].fireHoldMs, 0, 1)
+    : 0;
+  setHoldMeter(progress);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1095,7 +1137,7 @@ function updateDebugOverlay(haveHand) {
     `hands ${hands}  span ${fmt(state.handSpan, 3)}  scale ×${fmt(scale, 2)}`,
     `pose ${pose.padEnd(5)} point ${fmt(s.point, 2)}  open ${fmt(s.open, 2)}  fist ${fmt(s.fist, 2)}`,
     `palm ${fmt(state.palmSpeed * 1000, 2)}/s  swipe ≥ ${fmt(SWIPE_MIN_AVG_VEL * scale * 1000, 2)}/s over ${fmt(SWIPE_MIN_DX * scale, 3)}`,
-    `spin ${fmt(state.currentVelocity, 0)}°/s  dwell ${state.dwellRing ? 'on' : 'off'}`,
+    `spin ${fmt(state.currentVelocity, 0)}°/s  aim ${aimedRing(performance.now()) ? 'on' : 'off'}  active ${Object.keys(GESTURE_DEFS).filter((k) => gestureState[k].active).join(',') || '—'}`,
   ].join('\n');
 }
 
@@ -1136,18 +1178,21 @@ function fireCursorSparkle() {
 //  ONBOARDING HUD
 // ══════════════════════════════════════════════════════════════════
 
-// First-impression cards. Keep the initial lesson tiny: move the orbit, then
-// open something. Close stays visible in the persistent guide rail.
+// First-impression cards: spin, then the select loop (point → open hand),
+// then close. The guide rail below keeps every gesture visible.
 const ONBOARDING_CARDS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'point', icon: GESTURE_ICONS.point, label: 'hold over image' },
+  { key: 'open',  icon: GESTURE_ICONS.point, label: 'point, then open hand' },
+  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
 ];
 
-// Persistent guide rail — only the reliable actions, always visible.
+// Persistent guide rail — every gesture, always visible. Rows light up
+// (is-live) while the camera reads that pose.
 const GUIDE_RAIL_ITEMS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'point', icon: GESTURE_ICONS.point, label: 'hold over image' },
-  { key: 'dismiss', icon: GESTURE_ICONS.swipe, label: 'swipe down close' },
+  { key: 'point', icon: GESTURE_ICONS.point, label: 'point to aim' },
+  { key: 'open',  icon: GESTURE_ICONS.palm,  label: 'open hand to open' },
+  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
 ];
 
 function buildOnboardingCards() {
@@ -1542,9 +1587,9 @@ function beginImmersiveSession() {
   state.lastSwipeTime = 0;
   state.lastSwipeDirection = 0;
   state.lastDismissTime = 0;
-  state.displayedDwellProgress = 0;
-  state.dwellRing = null;
-  state.dwellStartTs = 0;
+  state.displayedHoldProgress = 0;
+  state.aimRing = null;
+  state.aimTs = 0;
   state.palmBraking = false;
   state.pointActive = false;
   state.handSeenOnce = false;
@@ -1632,9 +1677,9 @@ function detectLoop(now) {
     haveHand = true;  // Reuse last smoothed landmarks between detections
   }
 
-  // Cursor + gesture evaluation + dwell progress
+  // Cursor + gesture evaluation + hold meter
   if (haveHand && state.smoothedLandmarks) {
-    updateCursorPosition(state.smoothedLandmarks, dt);
+    updateCursorPosition(state.smoothedLandmarks, dt, now);
     drawHandSkeleton(state.smoothedLandmarks);
     const handSpan = state.handSpan;
     if (isFreshDetection) {
@@ -1643,16 +1688,15 @@ function detectLoop(now) {
       recordPalmSample(state.rawLandmarks || state.smoothedLandmarks, now);
     }
     evaluateGestures(state.smoothedLandmarks, state.rawLandmarks, handSpan, now, isFreshDetection);
-    updatePointDwell(now);
+    updateHoldMeter(now);
+    updateLiveGuide();
   } else {
     hideCursor();
     clearHandSkeleton();
-    updateDwellProgress(0);
-    state.dwellRing = null;
-    state.dwellStartTs = 0;
+    setHoldMeter(0);
   }
 
-  // Ring spin: swipes accumulate momentum, hover-open dismisses downward.
+  // Ring spin: swipes accumulate momentum; a downward swipe closes a photo.
   if (haveHand && isFreshDetection && detectDismissSwipe(now)) {
     state.currentVelocity = 0;
   }
@@ -1673,7 +1717,8 @@ function detectLoop(now) {
 
   // Brake only applies while we actually see the hand — tracking drops should
   // not freeze the spin.
-  if (haveHand && state.palmBraking) {
+  // Aiming holds the rings still so the target doesn't slide away.
+  if (haveHand && (state.palmBraking || isAiming())) {
     // Strong exponential decay toward 0 while palm-open held.
     state.currentVelocity *= Math.exp(-BRAKE_DECAY_RATE * dt);
     if (Math.abs(state.currentVelocity) < 1) state.currentVelocity = 0;
@@ -1729,9 +1774,9 @@ function exitImmersive(reason) {
   state.keyboardSpin = 0;
   clearTracking();
   state.palmHistory = [];
-  state.displayedDwellProgress = 0;
-  state.dwellRing = null;
-  state.dwellStartTs = 0;
+  state.displayedHoldProgress = 0;
+  state.aimRing = null;
+  state.aimTs = 0;
   state.openedRing = null;
   state.palmBraking = false;
   state.pointActive = false;
@@ -1819,13 +1864,8 @@ function onGlobalKeydown(e) {
       if (!state.debug) clearHandSkeleton();
     }
     if (e.key === 'Enter' || e.key === ' ') {
-      // Open the ring under the cursor, if any
-      if (state.lastCursoredRing) {
-        const ring = state.lastCursoredRing;
-        const r = ring.getBoundingClientRect();
-        attemptOpenAt(r.left + r.width / 2, r.top + r.height / 2);
-        e.preventDefault();
-      }
+      // Open the aimed photo, if any
+      if (state.lastCursoredRing && openTarget(state.lastCursoredRing)) e.preventDefault();
     }
   }
 }

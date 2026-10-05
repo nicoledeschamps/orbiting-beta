@@ -3796,6 +3796,12 @@ body.immersive-active .orbit-hud {
   transition: background 0.25s ease, transform 0.25s ease;
 }
 
+/* The pose the camera reads right now (point / open / fist). */
+.orbit-hud-guide-row.is-live {
+  background: rgba(255, 220, 180, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0.42);
+}
+
 .orbit-hud-guide-row.is-pulse {
   background: rgba(255, 220, 180, 0.18);
   animation: orbit-guide-pulse 0.65s ease-out;
@@ -4070,6 +4076,9 @@ body.immersive-active .orbit-hud {
 }
 
 /* While actually pinching — hold that bright state + pulse core */
+/* A relaxed hand only moves the cursor; pointing brightens it to show it can aim. */
+body.immersive-active .orbit-cursor.is-visible:not(.is-pointing) { opacity: 0.5; }
+.orbit-cursor.is-pointing .orbit-cursor-core,
 .orbit-cursor.is-pinching .orbit-cursor-core {
   transform: scale(1.35);
   background: #fff3dc;
