@@ -388,3 +388,19 @@
 /* Wander: under "Welcome to the death of the algorithm.", a line on what this space is. */
 .explore-layer__heading > p.explore-layer__about { margin-top: .35rem; max-width: 30rem; color: var(--op-gray); font: italic 400 clamp(.85rem, 1.05vw, .98rem)/1.45 var(--op-read); }
 @media (min-width: 768px) { .explore-layer__heading { max-width: 34rem; } }
+
+/* Wander filters: a quiet search line and pills for whose orbit and which ring. */
+.wander-filters { margin-top: .9rem; display: flex; flex-direction: column; gap: .5rem; pointer-events: auto; }
+.wander-filters[hidden], .wander-filters__row[hidden] { display: none; }
+.wander-filters__search input { width: min(19rem, 70vw); min-height: 38px; padding: 2px 0; border: 0; border-bottom: 1px solid rgba(237,241,244,.4); border-radius: 0; background: transparent; color: var(--op-silver); font: italic 400 15px var(--op-read); }
+.wander-filters__search input::placeholder { color: var(--op-gray); }
+.wander-filters__search input:focus-visible { outline: 2px solid var(--op-rose); outline-offset: 2px; }
+.wander-filters__row { display: flex; flex-wrap: wrap; gap: 6px; }
+.wander-pill { min-height: 34px; padding: 0 12px; border: 1px solid rgba(237,241,244,.25); border-radius: 999px; background: rgba(0,0,0,.35); color: var(--op-silver); font: 400 12px var(--op-ui); white-space: nowrap; cursor: pointer; }
+.wander-pill:hover { border-color: var(--op-silver); }
+.wander-pill[aria-pressed="true"] { border-color: var(--op-silver); background: var(--op-silver); color: #000; }
+.wander-pill:focus-visible { outline: 2px solid var(--op-rose); outline-offset: 2px; }
+@media (max-width: 767px) {
+  .wander-filters__row { flex-wrap: nowrap; overflow-x: auto; max-width: calc(100vw - 2.5rem); padding-bottom: 2px; scrollbar-width: none; }
+  .wander-pill { min-height: 32px; }
+}

@@ -1665,7 +1665,12 @@
   function enterOrbit(forceEmpty = false, previewHues = false, restoringProfile = false) {
     if (!restoringProfile && !requireFilledRing()) return;
     const items = approvedSourceItems();
-    window.OrbitingExplore?.setPersonalImages(items);
+    // Wander's filters can find your images by the name of the ring they sit in.
+    const ringOf = new Map();
+    [...ringBuilder.querySelectorAll('.ring-row')].forEach((row) => itemsForRingSources(ringSourceList(row)).forEach((item) => {
+      if (!ringOf.has(item.src)) ringOf.set(item.src, ringLabel(row));
+    }));
+    window.OrbitingExplore?.setPersonalImages(items.map((item) => ({ ...item, ring: ringOf.get(item.src) || '' })));
     const showHuesDemo = previewHues && !items.length;
     if (!showHuesDemo && window.HuesOrbit?.setPersonalImages) window.HuesOrbit.setPersonalImages(ringGroups());
     const hasSources = !forceEmpty && (previewHues || ringGroups().some((ring) => ring.items.length));

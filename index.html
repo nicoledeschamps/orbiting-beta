@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20260427a">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-lines">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-swap">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-filters">
   <script type="importmap">
   {
     "imports": {
@@ -418,6 +418,11 @@
         <h2 id="exploreTitle">Wander<span>.</span></h2>
         <p>Welcome to the death of the algorithm.</p>
         <p class="explore-layer__about">Where what moves you meets what moves the people you orbit.</p>
+        <div class="wander-filters" id="wanderFilters" hidden>
+          <label class="wander-filters__search"><span class="sr-only">Search Wander</span><input id="wanderSearch" type="search" placeholder="search what orbits: fashion, chrome…" autocomplete="off" spellcheck="false" maxlength="40"></label>
+          <div class="wander-filters__row" id="wanderPeople" role="group" aria-label="Whose orbit"></div>
+          <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
+        </div>
       </div>
       <div class="people-search">
         <button class="people-search__toggle" id="peopleSearchToggle" type="button" aria-expanded="false" aria-controls="peopleSearchPanel">search ✦</button>
@@ -824,13 +829,13 @@
   <script src="js/main.js?v=20261005-friendkey"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261002a"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261005-fairswap"></script>
+  <script src="js/explore-planet.js?v=20261005-filters"></script>
   <script src="js/orbiting-account.js?v=20261005-friends"></script>
   <script src="js/friend-search.js?v=20261004-pages"></script>
   <script src="js/shared-sky.js?v=2"></script>
-  <script src="js/following-cosmos.js?v=20261005-wander"></script>
+  <script src="js/following-cosmos.js?v=20261005-filters"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261005-wander"></script>
+  <script src="js/orbiting-prototype.js?v=20261005-filters"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>

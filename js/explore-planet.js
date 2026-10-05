@@ -30,6 +30,13 @@
   let selectedButton = null;
   let isVisible = false;
   let personalItems = [];
+  // Filters: whose orbit, which ring, and words in an image's title, ring, source or owner.
+  const filterBox = document.getElementById('wanderFilters');
+  const searchInput = document.getElementById('wanderSearch');
+  const peopleRow = document.getElementById('wanderPeople');
+  const ringRow = document.getElementById('wanderRings');
+  const emptyDefault = emptyNote?.textContent || '';
+  const filter = { person: 'all', ring: '', query: '' };
   let friendItems = [];
   // Images waiting their turn, per person; a person's image leaving the far side makes room for another of theirs,
   // so everyone keeps their share of the planet while their own images rotate through it.
@@ -78,11 +85,51 @@
     if (isVisible && !reduceMotion.matches) tween?.play();
   }
 
+  function matches(item) {
+    if (filter.person !== 'all' && ownerOf(item) !== filter.person) return false;
+    if (filter.ring && (item.ring || '').toLowerCase() !== filter.ring) return false;
+    if (!filter.query) return true;
+    const words = [item.alt, item.ring, item.source, item.owner].join(' ').toLowerCase();
+    return filter.query.split(/\s+/).every((word) => words.includes(word));
+  }
+  function pill(label, pressed, onPick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'wander-pill';
+    button.textContent = label;
+    button.setAttribute('aria-pressed', String(pressed));
+    button.addEventListener('click', onPick);
+    return button;
+  }
+  function buildFilters(all) {
+    if (!filterBox || demoMode) return;
+    filterBox.hidden = !all.length;
+    const people = new Map();
+    all.forEach((item) => { if (!people.has(ownerOf(item))) people.set(ownerOf(item), item.ownerKey === 'self' ? 'just me' : item.owner); });
+    peopleRow.replaceChildren(
+      pill('everyone', filter.person === 'all', () => { filter.person = 'all'; populate(); }),
+      ...[...people].sort(([a], [b]) => (a === 'self' ? -1 : b === 'self' ? 1 : 0)).map(([key, label]) =>
+        pill(label, filter.person === key, () => { filter.person = filter.person === key ? 'all' : key; populate(); })));
+    peopleRow.hidden = people.size < 2;
+    const counts = new Map();
+    all.forEach((item) => { const ring = (item.ring || '').trim().toLowerCase(); if (ring) counts.set(ring, (counts.get(ring) || 0) + 1); });
+    const rings = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([ring]) => ring);
+    if (filter.ring && !rings.includes(filter.ring)) rings.push(filter.ring);
+    ringRow.replaceChildren(...rings.map((ring) => pill(ring, filter.ring === ring, () => { filter.ring = filter.ring === ring ? '' : ring; populate(); })));
+    ringRow.hidden = !rings.length;
+  }
+
   function populate() {
     const nicole = demoMode ? nicoleItems() : [];
-    const own = demoMode ? [] : personalItems;
-    const theirs = demoMode ? [] : friendItems;
+    const everything = demoMode ? [] : [...personalItems, ...friendItems];
+    buildFilters(everything);
+    const own = demoMode ? [] : personalItems.filter(matches);
+    const theirs = demoMode ? [] : friendItems.filter(matches);
+    const filtering = filter.person !== 'all' || filter.ring || filter.query;
     const hasItems = demoMode ? nicole.length + brandon.length > 0 : own.length + theirs.length > 0;
+    emptyNote.textContent = filtering && everything.length
+      ? `Nothing in orbit matches ${filter.query ? `“${filter.query}”` : 'this'} yet.`
+      : emptyDefault;
     emptyNote.hidden = hasItems;
     planet.setAttribute('aria-label', demoMode ? 'Rotating planet of prototype clippings' : 'Rotating planet of your clippings and your friends’');
     if (!hasItems) {
@@ -229,6 +276,11 @@
     closeViewer(false);
     if (item?.ownerKey === 'nicole' || item?.ownerKey === 'self') window.OrbitingExplore.onEnterSelf?.();
     else window.OrbitingExplore.onEnterFriend?.(item);
+  });
+  let searchTimer;
+  searchInput?.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { filter.query = searchInput.value.trim().toLowerCase(); populate(); }, 250);
   });
   window.OrbitingExplore = {
     onEnterFriend: null,

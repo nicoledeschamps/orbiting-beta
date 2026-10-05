@@ -255,7 +255,7 @@
     if (!window.OrbitingExplore?.setFriendImages) return;
     if (!following.length) { window.OrbitingExplore.setFriendImages([]); return; }
     Promise.allSettled(following.map(person => sharedOrbit(person).then(snapshot => snapshot.rings.flatMap(ring =>
-      ring.items.map(item => ({ ...item, owner: `@${person.username}`, personId: person.followed_user_id, source: ring.name })))))).then(results => {
+      ring.items.map(item => ({ ...item, owner: `@${person.username}`, personId: person.followed_user_id, source: ring.name, ring: ring.name })))))).then(results => {
       if (job === wanderJob) window.OrbitingExplore.setFriendImages(results.flatMap(result => result.status === 'fulfilled' ? result.value : []));
     });
   }
