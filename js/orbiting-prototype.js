@@ -196,7 +196,10 @@
     if (!Array.isArray(manifest.uploads) || manifest.uploads.length > 200) throw new Error('Your saved media list could not be read.');
     // Finish downloads before replacing the current draft, so a failed request cannot erase it.
     const restored = [];
-    for (const ref of manifest.uploads) restored.push(await window.OrbitingAccount.loadImage(ref));
+    for (const ref of manifest.uploads) {
+      restored.push(await window.OrbitingAccount.loadImage(ref));
+      window.dispatchEvent(new CustomEvent('orbiting:media-progress', { detail: { done: restored.length, total: manifest.uploads.length } }));
+    }
     const portrait = manifest.portrait?.path ? await window.OrbitingAccount.loadImage(manifest.portrait) : null;
     localPhotoUrls.forEach(url => URL.revokeObjectURL(url));
     savedImageRefs.clear();

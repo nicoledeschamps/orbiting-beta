@@ -1345,6 +1345,14 @@ body.is-explore-detail .explore-layer { z-index: 100; }
   text-align: center; font-family: Palatino, Georgia, serif;
 }
 .profile-loading[hidden], .profile-loading [hidden] { display: none; }
+/* Rotating orbit lines replace the static message visually while loading; the message stays for screen readers. */
+.profile-loading__line { display: none; margin: 0; font-style: italic; letter-spacing: .02em; transition: opacity .35s ease; }
+.profile-loading__line.is-swapping { opacity: 0; }
+.profile-loading.is-cycling .profile-loading__line { display: block; }
+.profile-loading.is-cycling #profileLoadingMessage {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) { .profile-loading__line { transition: none; } }
 .profile-loading button, .profile-loading a {
   color: inherit; font: inherit; background: transparent;
   border: 1px solid #777; border-radius: .5rem; padding: .65rem 1rem;
