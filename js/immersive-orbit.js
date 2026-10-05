@@ -81,7 +81,7 @@ const DISMISS_MIN_DY        = 0.12;  // normalized frame-height downward displac
 const DISMISS_DIR_RATIO     = 0.62;  // min |dy| / (|dx| + |dy|) — mostly vertical
 
 // ── Pose gestures: point to aim, open hand to open, fist to close ──
-const POINT_AIM_SCORE       = 0.7;   // clear finger-point needed to aim (an open palm scores ~0.55)
+const POINT_AIM_SCORE       = 0.7;   // clear finger-point needed to aim
 const AIM_MEMORY_MS         = 1500;  // the aimed photo stays chosen while the hand opens
 const OPEN_HOLD_MS          = 250;
 const FIST_HOLD_MS          = 300;
@@ -118,7 +118,7 @@ const state = {
   // Landmarks
   smoothedLandmarks: null,   // One Euro filtered — for cursor, skeleton, hover targeting
   rawLandmarks: null,         // raw image-space landmarks from the last fresh detection — for swipes
-  poseLandmarks: null,        // worldLandmarks (3D metres) of the same hand — for pose scoring
+  handPose: null,             // finger bends from image + worldLandmarks — for pose scoring
   otherHands: [],             // raw landmarks of any non-primary hands
   landmarkFilters: null,      // per-landmark One Euro filters for the primary hand
   lastHandSeenTs: 0,
@@ -313,8 +313,8 @@ for (const key of Object.keys(GESTURE_DEFS)) {
  *   4. Apply winning transitions (fire callbacks).
  */
 function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
-  // Pass 1 — scores (use raw landmarks for finer detail when available).
-  const source = raw || smoothed;
+  // Pass 1 — scores from the hand pose (finger bends).
+  const source = raw;   // the hand pose (finger bends); null scores 0
   const scores = {};
   for (const [key, def] of Object.entries(GESTURE_DEFS)) {
     scores[key] = def.compute(source, handSpan);
@@ -595,85 +595,94 @@ function acceptHandDetection(hands, worldHands, nowMs) {
     state.cursorPos = null;
   }
   state.rawLandmarks = primary;
-  state.poseLandmarks = primaryWorld || primary;   // true 3D for pose scoring
+  const camAspect = $cam && $cam.videoWidth && $cam.videoHeight ? $cam.videoWidth / $cam.videoHeight : 4 / 3;
+  state.handPose = handPose(primary, primaryWorld, camAspect);
   state.otherHands = others;
   state.smoothedLandmarks = filterLandmarks(primary, nowMs);
   state.handSpan = handSpanOf(primary);
   state.lastHandSeenTs = nowMs;
   state.poseScores = {
-    point: computePointScore(state.poseLandmarks),
-    open: computePalmOpenScore(state.poseLandmarks),
-    fist: computeFistScore(state.poseLandmarks),
+    point: computePointScore(state.handPose),
+    open: computePalmOpenScore(state.handPose),
+    fist: computeFistScore(state.handPose),
   };
 }
 
 function clearTracking() {
   state.smoothedLandmarks = null;
   state.rawLandmarks = null;
-  state.poseLandmarks = null;
+  state.handPose = null;
   state.otherHands = [];
   state.landmarkFilters = null;
   state.poseScores = { point: 0, open: 0, fist: 0 };
 }
 
 
-// ── Joint-geometry helper ──────────────────────────────────────────
-// A finger's extension ratio: (tip-to-MCP) / (PIP-to-MCP). Independent of
-// hand size, depth, rotation. Typical values:
-//   fully curled → ~0.55    loose/relaxed → ~1.1–1.3    fully extended → ~1.9
-// Joint indices per finger: MCP / PIP / TIP
-//   index 5 / 6 / 8    middle 9 / 10 / 12    ring 13 / 14 / 16    pinky 17 / 18 / 20
-// Measured in 3D: a curled finger folds toward the camera, so in the flat
-// image its PIP lands on its MCP and the ratio blows up. Pose scoring is fed
-// MediaPipe worldLandmarks (metres, true 3D) for exactly this reason.
-function dist3D(a, b) {
-  const dx = a.x - b.x, dy = a.y - b.y, dz = (a.z || 0) - (b.z || 0);
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+// ── Hand pose from finger bend angles ─────────────────────────────
+// Each finger's bend = the angles at its MCP, PIP and DIP joints added up
+// (degrees): ~0–50 straight, ~120–250 curled. It is measured twice:
+//   • on the flat camera image (aspect-corrected): reliable, except that a
+//     fist facing the camera folds toward the lens and looks straight;
+//   • on MediaPipe worldLandmarks (3D): catches that fold, but reads a
+//     straight finger as bent fairly often.
+// So a finger counts as curled if EITHER view sees a strong bend, and as
+// straight if either view sees it straight. Thresholds were checked against
+// real photos (scripts/fixtures/hand-poses.json).
+// Joints per finger: MCP / PIP / DIP / TIP
+//   index 5/6/7/8   middle 9/10/11/12   ring 13/14/15/16   pinky 17/18/19/20
+const FINGER_JOINTS = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]];
+
+function jointAngle(a, b, c, useZ, xScale) {
+  const ux = (b.x - a.x) * xScale, uy = b.y - a.y, uz = useZ ? (b.z || 0) - (a.z || 0) : 0;
+  const vx = (c.x - b.x) * xScale, vy = c.y - b.y, vz = useZ ? (c.z || 0) - (b.z || 0) : 0;
+  const nu = Math.sqrt(ux * ux + uy * uy + uz * uz), nv = Math.sqrt(vx * vx + vy * vy + vz * vz);
+  if (nu < 1e-6 || nv < 1e-6) return 90;   // a joint folded straight at the lens: call it bent
+  return Math.acos(clamp((ux * vx + uy * vy + uz * vz) / (nu * nv), -1, 1)) * 180 / Math.PI;
 }
 
-function fingerExtension(lm, mcpIdx, pipIdx, tipIdx) {
-  const tipMcp = dist3D(lm[tipIdx], lm[mcpIdx]);
-  const pipMcp = dist3D(lm[pipIdx], lm[mcpIdx]);
-  return tipMcp / Math.max(pipMcp, 1e-4);
+function fingerBends(lm, useZ, xScale) {
+  return FINGER_JOINTS.map(([mcp, pip, dip, tip]) =>
+    jointAngle(lm[0], lm[mcp], lm[pip], useZ, xScale) +
+    jointAngle(lm[mcp], lm[pip], lm[dip], useZ, xScale) +
+    jointAngle(lm[pip], lm[dip], lm[tip], useZ, xScale));
 }
 
-function fourFingerExtensions(lm) {
-  return [
-    fingerExtension(lm, 5, 6, 8),     // index
-    fingerExtension(lm, 9, 10, 12),   // middle
-    fingerExtension(lm, 13, 14, 16),  // ring
-    fingerExtension(lm, 17, 18, 20),  // pinky
-  ];
+// image: normalized camera landmarks; world: worldLandmarks (or image again);
+// xScale: camera width / height, so image angles aren't squashed.
+function handPose(image, world, xScale) {
+  const flat = fingerBends(image, false, xScale);
+  const deep = fingerBends(world || image, true, 1);
+  return {
+    flat,
+    curl: flat.map((b, i) => Math.max(b, deep[i])),
+    straight: flat.map((b, i) => Math.min(b, deep[i])),
+  };
 }
 
-// Fist: every non-thumb finger must be curled. Uses MAX extension — as
-// soon as any one finger sticks out, the score collapses.
-function computeFistScore(landmarks /*, handSpan */) {
-  const ext = fourFingerExtensions(landmarks);
-  const mostExtended = Math.max(ext[0], ext[1], ext[2], ext[3]);
-  return clamp((1.15 - mostExtended) / 0.35, 0, 1);
+const average = (list) => list.reduce((sum, x) => sum + x, 0) / list.length;
+
+// Fist: every finger curled — unless the flat image clearly shows a
+// straight index, which a real fist never does.
+function computeFistScore(pose) {
+  if (!pose) return 0;
+  const curled = clamp((average(pose.curl) - 100) / 50, 0, 1) * clamp((Math.min(...pose.curl) - 80) / 40, 0, 1);
+  const indexNotStraight = clamp((pose.flat[0] - 25) / 15, 0, 1);
+  return curled * indexNotStraight;
 }
 
-// Open palm: every non-thumb finger must be extended. Uses MIN extension —
-// one curled finger drops the score to zero.
-function computePalmOpenScore(landmarks /*, handSpan */) {
-  const ext = fourFingerExtensions(landmarks);
-  const avgExtended = (ext[0] + ext[1] + ext[2] + ext[3]) / 4;
-  const leastExtended = Math.min(ext[0], ext[1], ext[2], ext[3]);
-  const avgScore = clamp((avgExtended - 1.45) / 0.35, 0, 1);
-  const minScore = clamp((leastExtended - 1.20) / 0.45, 0, 1);
-  return avgScore * minScore;
+// Open hand: every finger straight in at least one view and not strongly
+// bent overall.
+function computePalmOpenScore(pose) {
+  if (!pose) return 0;
+  return clamp((80 - Math.max(...pose.straight)) / 30, 0, 1) * clamp((110 - average(pose.curl)) / 30, 0, 1);
 }
 
-// Point: index is clearly extended and leads the other fingers. Do not require
-// a perfect finger-gun; webcam hands are messy, especially while aiming.
-function computePointScore(landmarks /*, handSpan */) {
-  const ext = fourFingerExtensions(landmarks);
-  const indexExt = ext[0];
-  const nextMostExtended = Math.max(ext[1], ext[2], ext[3]);
-  const indexScore = clamp((indexExt - 1.35) / 0.40, 0, 1);
-  const leadScore = clamp((indexExt - nextMostExtended + 0.18) / 0.45, 0, 1);
-  return Math.max(indexScore * leadScore, indexScore * 0.55);
+// Point: index straight, the other three curled.
+function computePointScore(pose) {
+  if (!pose) return 0;
+  const indexStraight = clamp((60 - pose.straight[0]) / 30, 0, 1);
+  const othersCurled = clamp((average(pose.curl.slice(1)) - 100) / 50, 0, 1);
+  return indexStraight * othersCurled;
 }
 
 // ── Fist handler — closes an open photo. Never exits immersive mode;
@@ -1702,7 +1711,7 @@ function detectLoop(now) {
       // inflates the displacement/velocity thresholds in practice.
       recordPalmSample(state.rawLandmarks || state.smoothedLandmarks, now);
     }
-    evaluateGestures(state.smoothedLandmarks, state.poseLandmarks || state.rawLandmarks, handSpan, now, isFreshDetection);
+    evaluateGestures(state.smoothedLandmarks, state.handPose, handSpan, now, isFreshDetection);
     updateHoldMeter(now);
     updateLiveGuide();
   } else {
