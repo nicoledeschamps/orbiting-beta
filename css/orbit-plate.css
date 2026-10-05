@@ -346,3 +346,17 @@
   .following-cosmos__name { font-size: 14px; }
   .following-cosmos__bio { display: none; }
 }
+
+/* A friend's orbit mirrors your own: their title (in their color), bio and @name sit top-left, the way back sits top-right. */
+.followed-orbit { text-align: left; }
+.followed-orbit__head { position: absolute; top: 0; left: 0; z-index: 2; box-sizing: border-box; max-width: min(30rem, 78vw); padding: 36px 44px; display: flex; flex-direction: column; gap: .45rem; }
+.followed-orbit__name { margin: 0; font: 400 clamp(1.2rem, 2.5vw, 2rem)/1.1 var(--op-title); letter-spacing: .05em; text-transform: uppercase; }
+.followed-orbit__bio { margin: .25rem 0 0; padding: 0; max-width: 26rem; font: 400 clamp(.9rem, 1.2vw, 1rem)/1.4 var(--op-read); }
+.followed-orbit h2 { margin: .35rem 0 0; padding: 0; font: 400 12px var(--op-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--op-gray); }
+#closeFollowedOrbit { position: absolute; z-index: 3; top: clamp(1rem, 3vw, 2.3rem); right: clamp(1rem, 3vw, 2.5rem); }
+.followed-orbit__planet { margin: 20vh auto 6vh; }
+#followedOrbitStatus { text-align: center; }
+@media (max-width: 680px) {
+  .followed-orbit__head { padding: 20px; max-width: 70vw; }
+  .followed-orbit__planet { margin-top: 24vh; }
+}

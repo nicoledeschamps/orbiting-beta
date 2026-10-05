@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20260427a">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-lines">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-friends">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-friend-head">
   <script type="importmap">
   {
     "imports": {
@@ -520,9 +520,11 @@
 
   <section id="followedOrbit" class="followed-orbit" role="dialog" aria-modal="true" aria-labelledby="followedOrbitTitle" hidden>
     <button id="closeFollowedOrbit" type="button">← back to your cosmos</button>
-    <h2 id="followedOrbitTitle"></h2>
-    <p class="followed-orbit__name" id="followedOrbitName" hidden><span></span><span></span></p>
-    <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
+    <header class="followed-orbit__head">
+      <p class="followed-orbit__name" id="followedOrbitName" hidden><span></span><span></span></p>
+      <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
+      <h2 id="followedOrbitTitle"></h2>
+    </header>
     <div id="followedOrbitPlanet" class="followed-orbit__planet"></div>
     <p id="followedOrbitStatus" role="status"></p>
   </section>
