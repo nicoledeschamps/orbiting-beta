@@ -12,7 +12,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20260427a">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-portrait">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-portrait-reset">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-wander-zoom">
   <script type="importmap">
@@ -90,9 +90,9 @@
             </div>
           </div>
           <div class="portrait-position">
+            <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
             <label>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="50" max="200" value="100"></label>
             <label>Horizontal position<input id="portraitX" type="range" min="-50" max="50" value="0"></label>
-            <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>

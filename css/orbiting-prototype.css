@@ -1317,6 +1317,7 @@ body.is-explore-detail .explore-layer { z-index: 100; }
 .portrait-position { display: grid; gap: .75rem; margin: 1rem 0; }
 .portrait-position label { display: grid; grid-template-columns: 1fr auto; gap: .35rem; }
 .portrait-position input { grid-column: 1 / -1; width: 100%; }
+.portrait-position #portraitPositionReset { justify-self: start; }
 /* Phone composition: navigation owns its row; the title remains left aligned. */
 @media (max-width: 767px) {
   .hero-title {
