@@ -2799,9 +2799,10 @@
     const easedExploreFade = exploreFade * exploreFade * (3 - 2 * exploreFade);
     const closeEnough = cosmosDepth >= .72 && exploreDepth < .6;
     const exploreActive = exploreDepth >= .6;
-    const shift = (window.innerWidth < 680 ? -24 : -23) * friendDepth;
+    // Signed in, you stay at the center and friends turn around you; the demo keeps its side-by-side neighbor.
+    const shift = hasDemoFriend ? (window.innerWidth < 680 ? -24 : -23) * friendDepth : 0;
     hero.style.setProperty('--orbit-shift', `${shift}vw`);
-    hero.style.setProperty('--orbit-scale', String(1 - friendDepth * .58));
+    hero.style.setProperty('--orbit-scale', String(1 - friendDepth * (hasDemoFriend ? .58 : .45)));
     hero.style.setProperty('--orbit-camera-opacity', String(1 - easedExploreFade));
     hero.style.setProperty('--orbit-chrome-opacity', String(1 - friendDepth));
     hero.style.setProperty('--friend-opacity', String(Math.max(0, (friendDepth - .12) / .88) * (1 - exploreDepth)));

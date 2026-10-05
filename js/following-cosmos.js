@@ -41,7 +41,14 @@
       const t = orbit.title && typeof orbit.title === 'object' ? orbit.title : {};
       const text = (value, max) => typeof value === 'string' ? value.trim().slice(0, max) : '';
       const skyTitle = { first: text(t.first, 32), second: text(t.second, 32), secondColor: /^#[0-9a-f]{6}$/i.test(t.secondColor || '') ? t.secondColor : '', bio: text(t.bio, 80) };
-      return { failed, portraitAsset: orbit.portraitAsset, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
+      let portraitSrc = '';
+      if (typeof orbit.portraitPath === 'string' && window.OrbitingAccount.loadFollowedPortrait) {
+        try {
+          const blob = await window.OrbitingAccount.loadFollowedPortrait(person.followed_user_id, orbit.portraitPath);
+          if (blob && window.URL?.createObjectURL) portraitSrc = window.URL.createObjectURL(blob);
+        } catch (_) { /* fall back to the initial */ }
+      }
+      return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
         items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
       })) };
@@ -54,9 +61,11 @@
     container.replaceChildren();
     const core = document.createElement('span');
     core.className = 'following-cosmos__core';
-    if (typeof snapshot.portraitAsset === 'string' && /^assets\/portraits\/[a-z0-9_-]+\.jpg$/.test(snapshot.portraitAsset)) {
+    const ownPortrait = typeof snapshot.portraitSrc === 'string' && snapshot.portraitSrc.startsWith('blob:');
+    if (ownPortrait || (typeof snapshot.portraitAsset === 'string' && /^assets\/portraits\/[a-z0-9_-]+\.jpg$/.test(snapshot.portraitAsset))) {
       const portrait = document.createElement('img');
-      portrait.src = snapshot.portraitAsset;
+      portrait.src = ownPortrait ? snapshot.portraitSrc : snapshot.portraitAsset;
+      if (ownPortrait) core.classList?.add('has-cutout');
       portrait.alt = `${person.username}'s portrait`;
       // A site copy may leave a supplied portrait out; fall back to the initial instead of a broken image.
       portrait.onerror = () => { core.replaceChildren(); core.textContent = person.username.slice(0, 1).toUpperCase(); };
@@ -117,6 +126,46 @@
     if (tile) window.openRingLightbox?.(tile._mediaEl.src, tile._isVideo, tile._source, tile._boardUrl, tile._metadata);
   });
 
+  // Friends turn around you: a tilted ring for a few friends, a globe from six up.
+  // Planets on the near side pass in front of your planet; the far side passes behind it.
+  const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  let turn = 0, frame = 0, paused = false;
+  function placeGlobe() {
+    const list = [...planets.children];
+    const count = list.length;
+    if (!count) return;
+    const width = window.innerWidth || 1024, height = window.innerHeight || 768;
+    const radius = Math.min(width, height) * (width < 680 ? .4 : .34);
+    list.forEach((planet, index) => {
+      let x, y, z;
+      if (count < 6) {
+        const angle = (index / count) * Math.PI * 2 + turn;
+        x = Math.cos(angle); z = Math.sin(angle); y = -.5 * z;
+      } else {
+        const lat = 1 - (index / (count - 1)) * 2, ring = Math.sqrt(Math.max(0, 1 - lat * lat)), angle = index * 2.39996 + turn;
+        x = Math.cos(angle) * ring; z = Math.sin(angle) * ring;
+        y = lat * .9 - z * .4;
+      }
+      const near = (z + 1) / 2;
+      planet.style.transform = `translate(-50%, -50%) translate(${(x * radius).toFixed(1)}px, ${(y * radius * .8).toFixed(1)}px) scale(${(.6 + .55 * near).toFixed(3)})`;
+      planet.style.zIndex = z > 0 ? '6' : '1';
+      planet.style.opacity = (.45 + .55 * near).toFixed(2);
+      planet.dataset.near = String(near > .62);
+    });
+  }
+  function spin() {
+    frame = 0;
+    if (sky.hidden || !window.requestAnimationFrame) return;
+    if (!paused && !reduceMotion?.matches) { turn = (turn + .0022) % (Math.PI * 2); placeGlobe(); }
+    frame = window.requestAnimationFrame(spin);
+  }
+  function startSpin() { placeGlobe(); if (!frame && window.requestAnimationFrame) frame = window.requestAnimationFrame(spin); }
+  planets.addEventListener('mouseenter', () => { paused = true; });
+  planets.addEventListener('mouseleave', () => { paused = false; });
+  planets.addEventListener('focusin', () => { paused = true; });
+  planets.addEventListener('focusout', () => { paused = false; });
+  window.addEventListener('resize', placeGlobe);
+
   function render(connections) {
     const job = sequence;
     kill(nearTweens); planets.replaceChildren();
@@ -143,6 +192,7 @@
     });
     loaded = true;
     status.textContent = following.length ? '' : 'Your cosmos is waiting. Find someone through search in Wander.';
+    startSpin();
   }
   async function load() {
     const job = ++sequence;
@@ -161,5 +211,6 @@
     const visible = event.detail.active && !event.detail.demo;
     sky.hidden = !visible; sky.inert = !visible;
     if (visible && !loaded) load();
+    if (visible) startSpin();
   });
 })();

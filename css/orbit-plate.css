@@ -324,3 +324,25 @@
   .following-cosmos__sphere { width: 72px; font-size: 1.6rem; }
   .following-cosmos__name { font-size: 15px; }
 }
+
+/* ── Friends section (B): you stay at the center and the people you follow turn around you ──
+   The layer makes no stacking context, so far-side planets (z 1) pass behind your planet (z 2) and near-side ones (z 6) in front. */
+.following-cosmos { top: 0; right: 0; bottom: 0; left: 0; z-index: auto; overflow: visible; padding: 0; pointer-events: none; }
+.following-cosmos__planets { position: absolute; inset: 0; display: block; }
+.following-cosmos__planet { position: absolute; left: 50%; top: 50%; width: 140px; padding: 0; display: flex; flex-direction: column; align-items: center; pointer-events: auto; will-change: transform, opacity; }
+.following-cosmos__sphere { width: 92px; margin: 0 0 .4rem; }
+.following-cosmos__name, .following-cosmos__bio { transition: opacity .35s ease; text-shadow: 0 0 14px #000; }
+.following-cosmos__planet[data-near="false"] .following-cosmos__name, .following-cosmos__planet[data-near="false"] .following-cosmos__bio { opacity: 0; }
+.following-cosmos__title { display: none; }
+.following-cosmos > p, #refreshFollowingCosmos { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: auto; white-space: nowrap; }
+.following-cosmos > p { bottom: 17%; margin: 0; }
+#refreshFollowingCosmos { bottom: 11%; }
+.following-cosmos__core.has-cutout { background: none; box-shadow: none; overflow: visible; }
+.following-cosmos__core.has-cutout > img { object-fit: contain; border-radius: 0; filter: drop-shadow(0 0 18px rgba(237,241,244,.18)); }
+@media (max-width: 680px) {
+  .following-cosmos { top: 0; bottom: 0; left: 0; right: 0; }
+  .following-cosmos__planet { width: 104px; }
+  .following-cosmos__sphere { width: 64px; }
+  .following-cosmos__name { font-size: 14px; }
+  .following-cosmos__bio { display: none; }
+}
