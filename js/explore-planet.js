@@ -31,8 +31,10 @@
   let isVisible = false;
   let personalItems = [];
   let friendItems = [];
-  // Images waiting their turn; each one leaves the planet's far side as another comes in.
-  let waiting = [];
+  // Images waiting their turn, per person; a person's image leaving the far side makes room for another of theirs,
+  // so everyone keeps their share of the planet while their own images rotate through it.
+  let waiting = new Map();
+  const ownerOf = (item) => item.ownerKey === 'friend' ? `friend:${item.personId}` : item.ownerKey;
 
   function nicoleItems() {
     const data = window.HuesOrbit?.data || {};
@@ -104,7 +106,7 @@
     (demoMode ? [...nicole, ...brandon] : [...own, ...theirs]).forEach((item) => {
       if (seen.has(item.src)) return;
       seen.add(item.src);
-      const key = item.ownerKey === 'friend' ? `friend:${item.personId}` : item.ownerKey;
+      const key = ownerOf(item);
       if (!byOwner.has(key)) byOwner.set(key, []);
       byOwner.get(key).push(item);
     });
@@ -115,7 +117,11 @@
     }
     const capacity = bands.reduce((sum, count) => sum + count, 0);
     const pool = shuffle(dealt.slice(0, capacity));
-    waiting = dealt.slice(capacity);
+    waiting = new Map();
+    dealt.slice(capacity).forEach((item) => {
+      if (!waiting.has(ownerOf(item))) waiting.set(ownerOf(item), []);
+      waiting.get(ownerOf(item)).push(item);
+    });
     const visibleCount = Math.min(pool.length, capacity);
     const occupied = new Map(Array.from({ length: visibleCount }, (_, index) =>
       [Math.floor((index + .5) * capacity / visibleCount), pool[index]]));
@@ -158,9 +164,10 @@
   // or, when everything already fits, with another far-side image, so each turn of the planet looks different.
   function swapOut(node) {
     if (node.item === selected) return;
-    if (waiting.length) {
-      const next = waiting.shift();
-      waiting.push(node.item);
+    const queue = waiting.get(ownerOf(node.item));
+    if (queue?.length) {
+      const next = queue.shift();
+      queue.push(node.item);
       showOn(node, next);
       return;
     }
