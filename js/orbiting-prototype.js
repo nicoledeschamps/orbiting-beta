@@ -2986,28 +2986,74 @@
     return setup.getAttribute('aria-hidden') === 'true' && resourcesPage.hidden && friendPortal.hidden && !document.body.classList.contains('immersive-active');
   }
 
+  // Your orbit (0), Friends (1) and Wander (2) are stops: one scroll or swipe moves at most one space,
+  // and letting go glides into the nearest stop so you never rest halfway between two spaces.
+  const stopOf = (depth) => Math.round(Math.max(0, Math.min(2, depth)));
+  let glideFrame = null, wheelFrom = null, wheelTimer = null, touchFrom = 0, swiped = false, suppressClick = false;
+  function cancelGlide() { if (glideFrame) cancelAnimationFrame(glideFrame); glideFrame = null; }
+  function glideTo(target) {
+    cancelGlide();
+    const from = cosmosDepth;
+    if (from === target || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setCosmosDepth(target); return; }
+    const started = performance.now(), duration = 420;
+    const frame = (now) => {
+      const t = Math.min(1, (now - started) / duration);
+      setCosmosDepth(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+      glideFrame = t < 1 ? requestAnimationFrame(frame) : null;
+    };
+    glideFrame = requestAnimationFrame(frame);
+  }
+  function settleFrom(stop) {
+    const moved = cosmosDepth - stop;
+    glideTo(Math.abs(moved) >= .2 ? Math.max(0, Math.min(2, stop + Math.sign(moved))) : stop);
+  }
+
   hero.addEventListener('wheel', (event) => {
-    if (!canChangeDepth() || event.target.closest('.people-search, .wander-controls, .following-cosmos') || (!cosmosDepth && event.deltaY < 0)) return;
+    if (!canChangeDepth() || event.target.closest('.people-search, .wander-controls, .friend-card') || (!cosmosDepth && event.deltaY < 0)) return;
     event.preventDefault();
+    cancelGlide();
+    if (wheelFrom === null) wheelFrom = stopOf(cosmosDepth);
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1);
     const step = Math.min(.18, Math.abs(delta) / 650);
-    setCosmosDepth(cosmosDepth + (event.deltaY > 0 ? step : -step));
+    setCosmosDepth(Math.max(wheelFrom - 1, Math.min(wheelFrom + 1, cosmosDepth + (event.deltaY > 0 ? step : -step))));
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => { const from = wheelFrom; wheelFrom = null; settleFrom(from); }, 180);
   }, { passive: false });
 
+  // A swipe can start anywhere, even on a friend's planet; a tap without movement still opens their card.
   hero.addEventListener('touchstart', (event) => {
-    if (!canChangeDepth() || event.touches.length !== 1 || event.target.closest('.people-search, .wander-controls, .following-cosmos, button, input, a')) return;
+    if (!canChangeDepth() || event.touches.length !== 1 || event.target.closest('.people-search, .wander-controls, .friend-card, input, a, button:not(.following-cosmos__planet)')) return;
+    cancelGlide();
     touchStartY = event.touches[0].clientY;
+    touchFrom = stopOf(cosmosDepth);
     touchStartDepth = cosmosDepth;
+    swiped = false;
   }, { passive: true });
   hero.addEventListener('touchmove', (event) => {
     if (touchStartY === null || !canChangeDepth() || event.touches.length !== 1) return;
     const distance = event.touches[0].clientY - touchStartY;
-    if (Math.abs(distance) < 8) return;
+    if (!swiped && Math.abs(distance) < 8) return;
+    swiped = true;
     event.preventDefault();
-    setCosmosDepth(Math.max(touchStartDepth - 1, Math.min(touchStartDepth + 1, touchStartDepth - distance / 360)));
+    setCosmosDepth(Math.max(touchFrom - 1, Math.min(touchFrom + 1, touchStartDepth - distance / 360)));
   }, { passive: false });
-  hero.addEventListener('touchend', () => { touchStartY = null; });
-  depthControl.addEventListener('click', () => setCosmosDepth(cosmosDepth < .72 ? 1 : cosmosDepth < 1.6 ? 2 : 1));
+  const endTouch = () => {
+    if (touchStartY !== null && swiped) {
+      settleFrom(touchFrom);
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; }, 400);
+    }
+    touchStartY = null;
+  };
+  hero.addEventListener('touchend', endTouch);
+  hero.addEventListener('touchcancel', endTouch);
+  hero.addEventListener('click', (event) => {
+    if (!suppressClick) return;
+    suppressClick = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+  depthControl.addEventListener('click', () => glideTo(cosmosDepth < .72 ? 1 : cosmosDepth < 1.6 ? 2 : 1));
   window.addEventListener('orbiting:open-cosmos', () => { setCosmosDepth(1); depthControl.focus(); });
   window.addEventListener('orbiting:depth-changed', (event) => {
     document.getElementById('cosmosHeading')?.setAttribute('aria-hidden', String(!(event.detail.depth >= .72 && event.detail.depth < 1.6)));
