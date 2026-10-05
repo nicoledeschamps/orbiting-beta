@@ -31,6 +31,8 @@
   let isVisible = false;
   let personalItems = [];
   let friendItems = [];
+  // Images waiting their turn; each one leaves the planet's far side as another comes in.
+  let waiting = [];
 
   function nicoleItems() {
     const data = window.HuesOrbit?.data || {};
@@ -113,6 +115,7 @@
     }
     const capacity = bands.reduce((sum, count) => sum + count, 0);
     const pool = shuffle(dealt.slice(0, capacity));
+    waiting = dealt.slice(capacity);
     const visibleCount = Math.min(pool.length, capacity);
     const occupied = new Map(Array.from({ length: visibleCount }, (_, index) =>
       [Math.floor((index + .5) * capacity / visibleCount), pool[index]]));
@@ -126,16 +129,16 @@
         button.className = 'explore-clipping';
         button.style.setProperty('--clip-aspect', String(shapes[(position * 5 + row) % shapes.length]));
         button.style.setProperty('--clip-width', `${7.5 + ((position * 7 + row * 3) % 6)}%`);
-        button.setAttribute('aria-label', `${item.alt || 'Clipping'} · ${item.ownerKey === 'self' ? 'in your orbit' : `shared by ${item.owner}`} · ${item.source}`);
         const img = document.createElement('img');
         img.alt = '';
         img.loading = 'lazy';
-        img.src = item.src;
         img.addEventListener('error', () => { button.hidden = true; });
         button.appendChild(img);
-        button.addEventListener('click', () => showItem(item, button));
+        const node = { button, img, row, slot, count, item, front: true };
+        showOn(node, item);
+        button.addEventListener('click', () => showItem(node.item, button));
         fragment.appendChild(button);
-        nextNodes.push({ button, row, slot, count });
+        nextNodes.push(node);
         position += 1;
       }
     });
@@ -145,10 +148,35 @@
     render(phase.angle);
   }
 
+  function showOn(node, item) {
+    node.item = item;
+    node.button.hidden = false;
+    node.img.src = item.src;
+    node.button.setAttribute('aria-label', `${item.alt || 'Clipping'} · ${item.ownerKey === 'self' ? 'in your orbit' : `shared by ${item.owner}`} · ${item.source}`);
+  }
+  // As an image turns to the far side, out of sight, it trades places: with one that hasn't been shown yet,
+  // or, when everything already fits, with another far-side image, so each turn of the planet looks different.
+  function swapOut(node) {
+    if (node.item === selected) return;
+    if (waiting.length) {
+      const next = waiting.shift();
+      waiting.push(node.item);
+      showOn(node, next);
+      return;
+    }
+    const behind = nodes.filter((other) => other !== node && !other.front && other.item !== selected);
+    if (!behind.length) return;
+    const other = behind[Math.floor(Math.random() * behind.length)];
+    const item = node.item;
+    showOn(node, other.item);
+    showOn(other, item);
+  }
+
   function render(degrees) {
     const radius = planet.clientWidth / 2;
     const spin = degrees * Math.PI / 180;
-    nodes.forEach(({ button, row, slot, count }) => {
+    nodes.forEach((node) => {
+      const { button, row, slot, count } = node;
       const latitude = -1.38 + row * (2.76 / (bands.length - 1)) + Math.sin(slot * 2.31 + row) * .035;
       const longitude = (slot + (row % 2 ? .43 : 0) + Math.sin(row * 1.73) * .18) * Math.PI * 2 / count + spin;
       const arc = Math.cos(latitude);
@@ -157,6 +185,8 @@
       const x = Math.sin(longitude) * arc * radius * .96 + Math.sin(slot * 3.2 + row) * radius * .012;
       const y = Math.sin(latitude) * radius * .93 + Math.cos(slot * 2.4 + row) * radius * .012;
       const front = facing >= 0;
+      if (node.front && !front) swapOut(node);
+      node.front = front;
       const opacity = front ? .72 + Math.max(0, depth) * .28 : .14 + (1 + depth) * .18;
       button.style.setProperty('--clip-x', `${x}px`);
       button.style.setProperty('--clip-y', `${y}px`);
