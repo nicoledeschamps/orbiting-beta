@@ -1411,3 +1411,7 @@ body.is-cosmos .hero-title, body.is-cosmos .orbit-key { visibility: hidden; }
   position: absolute; inset: 0; display: block;
   transform: scale(2); transform-origin: 50% 40%;
 }
+
+/* Instagram Login block at the top of the Instagram source card. */
+.instagram-connect { display: grid; gap: .5rem; margin: .75rem 0 1rem; }
+.instagram-connect .source-input-hint { margin: 0; }

@@ -150,7 +150,7 @@
     arena: { name: 'Are.na', kind: 'public profile or channel', example: 'https://www.are.na/yourname', prefix: 'https://www.are.na/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null },
     pinterest: { name: 'Pinterest', kind: 'public profile or board', example: 'https://www.pinterest.com/yourname/', prefix: 'https://www.pinterest.com/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null },
     spotify: { name: 'Spotify', kind: 'public profile or playlist', example: 'https://open.spotify.com/user/yourname', prefix: 'https://open.spotify.com/user/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null },
-    instagram: { name: 'Instagram', kind: 'public profile, post or Reel', example: 'https://www.instagram.com/p/.../', prefix: 'https://www.instagram.com/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null }
+    instagram: { connected: false, connectedUsername: '', name: 'Instagram', kind: 'public profile, post or Reel', example: 'https://www.instagram.com/p/.../', prefix: 'https://www.instagram.com/', url: '', approved: false, items: [], options: [], selectedUrls: [], nextPage: null }
   };
   let localPhotoUrls = [];
   let localPhotoFiles = [];
@@ -352,7 +352,7 @@
   function sourceIsApproved(source) {
     const choice = sourceChoices[source];
     return selectedSources.has(source) && choice.approved && Boolean(choice.url)
-      && (sourceIsProfile(source, choice.url) ? choice.selectedUrls.length > 0 : choice.baseShared === true);
+      && (choice.connected === true || (sourceIsProfile(source, choice.url) ? choice.selectedUrls.length > 0 : choice.baseShared === true));
   }
 
   function sourceIsProfile(source, url) {
@@ -401,7 +401,7 @@
       const count = sourceChoices[source].selectedUrls.length;
       button.setAttribute('aria-expanded', String(source === activeSource));
       button.dataset.hasSource = String(sourceIsApproved(source));
-      button.querySelector('em').textContent = count ? `${count} shared` : selected && sourceChoices[source].approved
+      button.querySelector('em').textContent = sourceChoices[source].connected ? 'connected' : count ? `${count} shared` : selected && sourceChoices[source].approved
         ? sourceChoices[source].baseShared ? 'shared' : 'preview'
         : source === activeSource ? 'editing' : 'choose';
     });
@@ -440,6 +440,11 @@
       const choice = sourceChoices[source];
       const url = choice.url;
       const selectedUrls = [...choice.selectedUrls];
+      if (source === 'instagram' && choice.connected) {
+        await refreshConnectedInstagram(choice, url);
+        hasCurrentResult = true;
+        return;
+      }
       try {
         const batches = [];
         for (let index = 0; index < selectedUrls.length; index += 5) batches.push(selectedUrls.slice(index, index + 5));
@@ -513,6 +518,99 @@
     document.body.classList.toggle('orbit-empty', !approvedSourceItems().length);
   }
 
+  // Instagram Login: a connected Creator or Business account brings in its own posts. Saved collections stay private to Instagram.
+  let instagramReady = false;
+  let instagramServerStatus = null;
+  window.OrbitingAccount?.instagramAvailable?.().then((ready) => {
+    instagramReady = ready;
+    if (ready && activeSource === 'instagram') renderSourceSharing();
+  }).catch(() => {});
+
+  function instagramConnectBlock(choice) {
+    const block = document.createElement('div');
+    block.className = 'instagram-connect';
+    const button = document.createElement('button');
+    button.type = 'button';
+    const note = document.createElement('p');
+    note.className = 'source-input-hint';
+    if (!choice.connected && instagramServerStatus === null) {
+      instagramServerStatus = 'loading';
+      window.OrbitingAccount.instagramStatus()
+        .then((status) => { instagramServerStatus = status; })
+        .catch(() => { instagramServerStatus = { connected: false }; })
+        .finally(() => { if (activeSource === 'instagram') renderSourceSharing(); });
+    }
+    if (choice.connected) {
+      button.className = 'source-link-approve source-link-approve--secondary';
+      button.dataset.disconnectInstagram = '';
+      button.textContent = 'Disconnect Instagram';
+      note.textContent = `Connected as @${choice.connectedUsername}. Your own posts fill this ring and refresh when your orbit opens.`;
+    } else if (instagramServerStatus?.connected) {
+      button.className = 'source-link-approve';
+      button.dataset.useInstagram = instagramServerStatus.username || '';
+      button.textContent = `Use @${instagramServerStatus.username}'s posts`;
+      note.textContent = 'Your Instagram is already connected to Orbiting.';
+    } else {
+      button.className = 'source-link-approve';
+      button.dataset.connectInstagram = '';
+      button.textContent = 'Connect Instagram';
+      note.textContent = 'Brings in your own posts. Works with Creator and Business accounts (switching is free in Instagram settings). Saved collections stay private to Instagram. Or add public posts by link below.';
+    }
+    block.append(button, note);
+    return block;
+  }
+
+  function useConnectedInstagram(username) {
+    if (!/^[A-Za-z0-9._]{1,30}$/.test(username || '')) return;
+    const choice = sourceChoices.instagram;
+    choice.connected = true;
+    choice.connectedUsername = username;
+    choice.url = `https://www.instagram.com/${username}/`;
+    choice.approved = true;
+    choice.baseShared = false;
+    choice.selectedUrls = [];
+    choice.options = [];
+    selectedSources.add('instagram');
+    activeSource = 'instagram';
+    instagramServerStatus = { connected: true, username };
+    syncSourceButtons();
+    renderSourceSharing();
+    refreshPublicSources('instagram').then(() => { if (!settingsMode) setSourceStage('arrange'); });
+  }
+
+  async function refreshConnectedInstagram(choice, url) {
+    try {
+      const result = await window.OrbitingAccount.loadInstagramMedia();
+      if (choice.url !== url) return;
+      choice.previewLoading = false;
+      choice.options = [];
+      if (!result.connected) {
+        choice.connected = false;
+        choice.approved = false;
+        choice.items = [];
+        instagramServerStatus = { connected: false };
+        if (activeSource === 'instagram') sourceAuthStatus.textContent = result.error || 'Instagram is no longer connected. Connect it again.';
+        return;
+      }
+      const seen = new Set();
+      choice.items = (result.items || []).filter((item) => typeof item.src === 'string' && item.src.startsWith('https://') && !seen.has(item.src) && seen.add(item.src));
+      if (activeSource === 'instagram') sourceAuthStatus.textContent = choice.items.length
+        ? `Instagram: ${choice.items.length} images from @${choice.connectedUsername} are in your ring preview.`
+        : `Instagram is connected as @${choice.connectedUsername}, but no posts were found yet.`;
+    } catch (error) {
+      if (choice.url !== url) return;
+      choice.previewLoading = false;
+      choice.items = [];
+      if (activeSource === 'instagram') sourceAuthStatus.textContent = error.message || 'Instagram could not be reached right now. Try Refresh sources.';
+    }
+  }
+
+  // The Instagram tab writes this key after a successful connection; this tab picks it up.
+  window.addEventListener('storage', (event) => {
+    if (event.key !== window.OrbitingAccount?.INSTAGRAM_CONNECTED_KEY || !event.newValue) return;
+    try { useConnectedInstagram(JSON.parse(event.newValue).username); } catch (_) {}
+  });
+
   function renderSourceSharing() {
     const advanceToChoose = sourceStageAdvance && !settingsMode && activeSource && activeSource !== 'photos' && sourceChoices[activeSource]?.options.length > 0;
     if (advanceToChoose) { sourceStageAdvance = false; sourceChoices[activeSource].pickerOpen = true; setSourceStage('choose'); }
@@ -535,6 +633,10 @@
       removeSource.textContent = `Remove ${choice.name}`;
       header.append(heading, removeSource);
       card.append(header);
+      if (source === 'instagram' && signedInUser && instagramReady) {
+        card.append(instagramConnectBlock(choice));
+        if (choice.connected) { sourceSharing.append(card); return; }
+      }
       const label = document.createElement('label');
       label.className = 'source-link-label';
       label.textContent = source === 'spotify' ? 'Profile ID or public link' : source === 'instagram' ? 'Public Instagram username' : 'Username or public link';
@@ -1406,7 +1508,8 @@
       media: savedMedia,
       sharedPortrait: savedMedia.portrait?.asset === 'assets/portraits/zachbell14.jpg' ? { asset: savedMedia.portrait.asset } : null,
       sources: [...selectedSources].filter(sourceIsApproved).map((source) => ({
-        provider: source, url: sourceChoices[source].url, selectedUrls: [...sourceChoices[source].selectedUrls], baseShared: Boolean(sourceChoices[source].baseShared)
+        provider: source, url: sourceChoices[source].url, selectedUrls: [...sourceChoices[source].selectedUrls], baseShared: Boolean(sourceChoices[source].baseShared),
+        ...(sourceChoices[source].connected ? { connected: true } : {})
       })),
       title: {
         first: skyTitleFirst.value.slice(0, 32),
@@ -1457,6 +1560,8 @@
     selectedSources.clear();
     activeSource = null;
     Object.values(sourceChoices).forEach((choice) => { choice.url = ''; choice.approved = false; choice.baseShared = false; choice.previewLoading = false; choice.items = []; choice.options = []; choice.selectedUrls = []; choice.nextPage = null; choice.pickerOpen = false; choice.extraOpen = false; });
+    sourceChoices.instagram.connected = false;
+    sourceChoices.instagram.connectedUsername = '';
     if (Array.isArray(saved.sources)) saved.sources.slice(0, 5).forEach((entry) => {
       if (!sourceChoices[entry?.provider] || typeof entry.url !== 'string') return;
       try {
@@ -1466,6 +1571,10 @@
         sourceChoices[entry.provider].selectedUrls = Array.isArray(entry.selectedUrls)
           ? [...new Set(entry.selectedUrls.flatMap((url) => { try { return [validateSourceUrl(entry.provider, url)]; } catch (_) { return []; } }))] : [];
         selectedSources.add(entry.provider);
+        if (entry.provider === 'instagram' && entry.connected === true) {
+          sourceChoices.instagram.connected = true;
+          sourceChoices.instagram.connectedUsername = new URL(sourceChoices.instagram.url).pathname.split('/').filter(Boolean)[0] || '';
+        }
       } catch (_) {}
     });
     syncSourceButtons();
@@ -2217,6 +2326,32 @@
   }
 
   sourceSharing.addEventListener('click', async (event) => {
+    if (event.target.closest('[data-connect-instagram]')) {
+      // Open the tab synchronously so the browser does not block it, then send it to Instagram.
+      const instagramTab = window.open('', 'orbiting-instagram');
+      try {
+        const url = await window.OrbitingAccount.instagramAuthorizeUrl();
+        if (instagramTab) instagramTab.location.href = url;
+        else window.location.assign(url);
+        sourceAuthStatus.textContent = 'Finish connecting in the Instagram tab. Your posts will appear here when you come back.';
+      } catch (error) {
+        instagramTab?.close();
+        sourceAuthStatus.textContent = error.message || 'Instagram could not be opened.';
+      }
+      return;
+    }
+    const useInstagram = event.target.closest('[data-use-instagram]');
+    if (useInstagram) { useConnectedInstagram(useInstagram.dataset.useInstagram); return; }
+    if (event.target.closest('[data-disconnect-instagram]')) {
+      try { await window.OrbitingAccount.disconnectInstagram(); } catch (_) {}
+      const choice = sourceChoices.instagram;
+      choice.connected = false; choice.connectedUsername = ''; choice.approved = false; choice.url = ''; choice.items = [];
+      instagramServerStatus = { connected: false };
+      sourceAuthStatus.textContent = 'Instagram disconnected. Save your orbit to remove its ring.';
+      renderSourceSharing(); syncSourceButtons(); updateSourcePreview();
+      if (window.HuesOrbit?.setPersonalImages) window.HuesOrbit.setPersonalImages(ringGroups());
+      return;
+    }
     if (event.target.closest('[data-switch-to-photos]')) {
       photosSourceButton.click();
       return;
@@ -2228,6 +2363,7 @@
       selectedSources.delete(source);
       clearTimeout(sourcePreviewTimers.get(source));
       excludedRingSources.delete(source);
+      if (source === 'instagram') { choice.connected = false; choice.connectedUsername = ''; }
       choice.url = ''; choice.approved = false; choice.baseShared = false; choice.previewLoading = false; choice.items = []; choice.options = []; choice.selectedUrls = []; choice.nextPage = null; choice.pickerOpen = false; choice.extraOpen = false;
       activeSource = null;
       sourceAuthStatus.textContent = `${choice.name} removed. Choose another source above, or continue.`;

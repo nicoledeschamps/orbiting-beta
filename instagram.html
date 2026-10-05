@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
-  <title>Your Orbiting account</title>
+  <meta name="referrer" content="no-referrer">
+  <title>Connecting Instagram · Orbiting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -19,22 +20,15 @@
     </header>
     <main class="login-shell">
       <div class="orbit-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <section class="login-card" aria-labelledby="accessTitle">
-        <p class="op-eyebrow">Your invitation</p>
-        <h1 id="accessTitle" class="op-title">Make this space yours.</h1>
-        <p class="access-status" id="accessStatus" role="status">Checking your account link…</p>
-        <form id="accessForm" hidden>
-          <label for="newPassword">Create your password</label>
-          <input class="op-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
-          <label for="repeatPassword" style="margin-top: 16px">Repeat your password</label>
-          <input class="op-input" id="repeatPassword" type="password" minlength="8" autocomplete="new-password" required>
-          <button class="op-btn primary" id="savePassword">Save password and continue</button>
-        </form>
-        <a class="op-link" href="login.html">Back to sign in</a>
+      <section class="login-card" aria-labelledby="instagramTitle">
+        <p class="op-eyebrow">Instagram</p>
+        <h1 id="instagramTitle" class="op-title">Bringing your posts into orbit.</h1>
+        <p class="access-status" id="instagramStatus" role="status">Connecting your Instagram…</p>
+        <a class="op-link" id="instagramBack" href="./?view=profile">Back to your orbit</a>
       </section>
     </main>
   </div>
   <script src="js/orbiting-account.js?v=20261005-instagram"></script>
-  <script src="js/account-access.js?v=20261004-pages"></script>
+  <script src="js/instagram-return.js?v=20261005-instagram"></script>
 </body>
 </html>
