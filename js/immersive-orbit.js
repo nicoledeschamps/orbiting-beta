@@ -117,7 +117,8 @@ const state = {
 
   // Landmarks
   smoothedLandmarks: null,   // One Euro filtered — for cursor, skeleton, hover targeting
-  rawLandmarks: null,         // raw from the last fresh detection — for pose scoring + swipes
+  rawLandmarks: null,         // raw image-space landmarks from the last fresh detection — for swipes
+  poseLandmarks: null,        // worldLandmarks (3D metres) of the same hand — for pose scoring
   otherHands: [],             // raw landmarks of any non-primary hands
   landmarkFilters: null,      // per-landmark One Euro filters for the primary hand
   lastHandSeenTs: 0,
@@ -568,7 +569,7 @@ function filterLandmarks(raw, nowMs) {
 
 // With two hands in frame, keep following the hand we were already
 // tracking (nearest palm); on first sight, take the biggest (closest) hand.
-function pickPrimaryHand(hands) {
+function pickPrimaryHand(hands, worldHands) {
   let best = 0;
   if (hands.length > 1) {
     const prev = state.rawLandmarks;
@@ -578,11 +579,15 @@ function pickPrimaryHand(hands) {
       if (metric < bestMetric) { bestMetric = metric; best = i; }
     });
   }
-  return { primary: hands[best], others: hands.filter((_, i) => i !== best) };
+  return {
+    primary: hands[best],
+    primaryWorld: worldHands && worldHands[best] ? worldHands[best] : null,
+    others: hands.filter((_, i) => i !== best),
+  };
 }
 
-function acceptHandDetection(hands, nowMs) {
-  const { primary, others } = pickPrimaryHand(hands);
+function acceptHandDetection(hands, worldHands, nowMs) {
+  const { primary, primaryWorld, others } = pickPrimaryHand(hands, worldHands);
   const prev = state.rawLandmarks;
   if (prev && dist2D(primary[9], prev[9]) > HAND_SWITCH_JUMP) {
     state.landmarkFilters = null;   // a different hand — don't smear between them
@@ -590,20 +595,22 @@ function acceptHandDetection(hands, nowMs) {
     state.cursorPos = null;
   }
   state.rawLandmarks = primary;
+  state.poseLandmarks = primaryWorld || primary;   // true 3D for pose scoring
   state.otherHands = others;
   state.smoothedLandmarks = filterLandmarks(primary, nowMs);
   state.handSpan = handSpanOf(primary);
   state.lastHandSeenTs = nowMs;
   state.poseScores = {
-    point: computePointScore(primary),
-    open: computePalmOpenScore(primary),
-    fist: computeFistScore(primary),
+    point: computePointScore(state.poseLandmarks),
+    open: computePalmOpenScore(state.poseLandmarks),
+    fist: computeFistScore(state.poseLandmarks),
   };
 }
 
 function clearTracking() {
   state.smoothedLandmarks = null;
   state.rawLandmarks = null;
+  state.poseLandmarks = null;
   state.otherHands = [];
   state.landmarkFilters = null;
   state.poseScores = { point: 0, open: 0, fist: 0 };
@@ -616,9 +623,17 @@ function clearTracking() {
 //   fully curled → ~0.55    loose/relaxed → ~1.1–1.3    fully extended → ~1.9
 // Joint indices per finger: MCP / PIP / TIP
 //   index 5 / 6 / 8    middle 9 / 10 / 12    ring 13 / 14 / 16    pinky 17 / 18 / 20
+// Measured in 3D: a curled finger folds toward the camera, so in the flat
+// image its PIP lands on its MCP and the ratio blows up. Pose scoring is fed
+// MediaPipe worldLandmarks (metres, true 3D) for exactly this reason.
+function dist3D(a, b) {
+  const dx = a.x - b.x, dy = a.y - b.y, dz = (a.z || 0) - (b.z || 0);
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+
 function fingerExtension(lm, mcpIdx, pipIdx, tipIdx) {
-  const tipMcp = dist2D(lm[tipIdx], lm[mcpIdx]);
-  const pipMcp = dist2D(lm[pipIdx], lm[mcpIdx]);
+  const tipMcp = dist3D(lm[tipIdx], lm[mcpIdx]);
+  const pipMcp = dist3D(lm[pipIdx], lm[mcpIdx]);
   return tipMcp / Math.max(pipMcp, 1e-4);
 }
 
@@ -1650,7 +1665,7 @@ function detectLoop(now) {
       state.lastFreshTs = now;
       state.detectErrorCount = 0;
       if (result.landmarks && result.landmarks.length > 0) {
-        acceptHandDetection(result.landmarks, now);
+        acceptHandDetection(result.landmarks, result.worldLandmarks, now);
         haveHand = true;
         isFreshDetection = true;
         // First-ever fresh detection of this session → "you're seen" flash,
@@ -1687,7 +1702,7 @@ function detectLoop(now) {
       // inflates the displacement/velocity thresholds in practice.
       recordPalmSample(state.rawLandmarks || state.smoothedLandmarks, now);
     }
-    evaluateGestures(state.smoothedLandmarks, state.rawLandmarks, handSpan, now, isFreshDetection);
+    evaluateGestures(state.smoothedLandmarks, state.poseLandmarks || state.rawLandmarks, handSpan, now, isFreshDetection);
     updateHoldMeter(now);
     updateLiveGuide();
   } else {
