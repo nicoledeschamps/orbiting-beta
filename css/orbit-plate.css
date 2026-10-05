@@ -404,3 +404,22 @@
   .wander-filters__row { flex-wrap: nowrap; overflow-x: auto; max-width: calc(100vw - 2.5rem); padding-bottom: 2px; scrollbar-width: none; }
   .wander-pill { min-height: 32px; }
 }
+
+/* The filters live under the planet, centered, above "Adjust planet". */
+.explore-stage .wander-filters { margin-top: 0; align-items: center; text-align: center; max-width: min(40rem, calc(100vw - 2rem)); }
+.explore-stage .wander-filters__row { justify-content: center; }
+.explore-stage .wander-filters__search input { text-align: center; }
+.explore-stage:has(.wander-filters:not([hidden])) { gap: 1.1rem; }
+.explore-stage:has(.wander-filters:not([hidden])) .explore-planet { width: min(calc(58vw * var(--wander-size, 1)), calc(590px * var(--wander-size, 1)), 88vw, calc(100dvh - 25rem)); }
+@media (max-width: 767px) {
+  .explore-stage .wander-filters__row { justify-content: flex-start; max-width: calc(100vw - 2rem); }
+  .explore-stage:has(.wander-filters:not([hidden])) .explore-planet { width: min(84vw, calc(100dvh - 24rem)); }
+}
+.wander-filters__pills { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 14px; }
+.wander-filters__pills > .wander-filters__row:not([hidden]) + .wander-filters__row:not([hidden]) { padding-left: 14px; border-left: 1px solid var(--op-line); }
+.explore-stage:has(.wander-filters:not([hidden])) .explore-planet { width: min(calc(58vw * var(--wander-size, 1)), calc(590px * var(--wander-size, 1)), 88vw, calc(100dvh - 21rem)); }
+@media (max-width: 767px) {
+  .wander-filters__pills { flex-direction: column; align-items: stretch; gap: 6px; }
+  .wander-filters__pills > .wander-filters__row:not([hidden]) + .wander-filters__row:not([hidden]) { padding-left: 0; border-left: 0; }
+  .explore-stage:has(.wander-filters:not([hidden])) .explore-planet { width: min(84vw, calc(100dvh - 22rem)); }
+}
