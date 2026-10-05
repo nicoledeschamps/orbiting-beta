@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20260427a">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-instagram">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-filter-toggle">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-sky-back">
   <script type="importmap">
   {
     "imports": {
@@ -412,6 +412,26 @@
       <button id="refreshFollowingCosmos" type="button">refresh your cosmos</button>
     </section>
     <div class="cosmos-depth-label" id="cosmosDepthLabel" aria-hidden="true">your close orbit <span>✦</span> two worlds in view</div>
+    <div class="cosmos-heading" id="cosmosHeading" aria-hidden="true">
+      <h2 class="cosmos-heading__title">Friends<span>.</span></h2>
+      <p class="cosmos-heading__note" id="cosmosHeadingNote">your close orbit</p>
+    </div>
+    <nav class="space-guide" id="spaceGuide" aria-label="Where you are in Orbiting">
+      <button type="button" data-space="0">your orbit</button>
+      <button type="button" data-space="1">friends</button>
+      <button type="button" data-space="2">wander</button>
+    </nav>
+    <aside class="friend-card" id="friendCard" aria-labelledby="friendCardName" hidden>
+      <button class="friend-card__close" id="friendCardClose" type="button" aria-label="Close friend card">×</button>
+      <span class="friend-card__eyebrow">Friend</span>
+      <div class="friend-card__planet" id="friendCardPlanet"></div>
+      <h3 class="friend-card__name" id="friendCardName"><span></span><span></span></h3>
+      <p class="friend-card__bio" id="friendCardBio"></p>
+      <span class="friend-card__handle" id="friendCardHandle"></span>
+      <p class="friend-card__rings" id="friendCardRings"></p>
+      <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">Enter orbit</button><button class="op-link" id="friendCardUnfollow" type="button">Unfollow</button></div>
+      <p class="friend-card__status" id="friendCardStatus" role="status" aria-live="polite"></p>
+    </aside>
 
     <section class="explore-layer" id="exploreLayer" aria-labelledby="exploreTitle" aria-hidden="true" inert>
       <div class="explore-layer__heading">
@@ -838,7 +858,7 @@
   <script src="js/orbiting-account.js?v=20261005-instagram"></script>
   <script src="js/friend-search.js?v=20261004-pages"></script>
   <script src="js/shared-sky.js?v=2"></script>
-  <script src="js/following-cosmos.js?v=20261005-filters"></script>
+  <script src="js/following-cosmos.js?v=20261005-spaces"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbiting-prototype.js?v=20261005-instagram"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">

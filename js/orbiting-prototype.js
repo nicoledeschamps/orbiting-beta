@@ -2990,6 +2990,23 @@
   hero.addEventListener('touchend', () => { touchStartY = null; });
   depthControl.addEventListener('click', () => setCosmosDepth(cosmosDepth < .72 ? 1 : cosmosDepth < 1.6 ? 2 : 1));
   window.addEventListener('orbiting:open-cosmos', () => { setCosmosDepth(1); depthControl.focus(); });
+  // "Where you are": your orbit · friends · wander. The current space is marked; tapping one goes there.
+  const spaceGuide = document.getElementById('spaceGuide');
+  if (spaceGuide) {
+    spaceGuide.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-space]');
+      if (button && canChangeDepth()) setCosmosDepth(Number(button.dataset.space));
+    });
+    window.addEventListener('orbiting:depth-changed', (event) => {
+      const depth = event.detail.depth;
+      const space = depth >= 1.6 ? 2 : depth >= .72 ? 1 : 0;
+      spaceGuide.querySelectorAll('[data-space]').forEach((button) => {
+        if (Number(button.dataset.space) === space) button.setAttribute('aria-current', 'location');
+        else button.removeAttribute('aria-current');
+      });
+      document.getElementById('cosmosHeading')?.setAttribute('aria-hidden', String(space !== 1));
+    });
+  }
   if (!hasDemoFriend) document.getElementById('cosmosDepthLabel').textContent = 'friends in the cosmos';
 
   function closeFriendPortal() {

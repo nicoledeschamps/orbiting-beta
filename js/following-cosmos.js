@@ -230,7 +230,7 @@
       }
       const near = (z + 1) / 2;
       planet.style.transform = `translate(-50%, -50%) translate(${(x * radius).toFixed(1)}px, ${(y * radius * .8).toFixed(1)}px) scale(${(.6 + .55 * near).toFixed(3)})`;
-      planet.style.zIndex = z > 0 ? '6' : '1';
+      planet.style.zIndex = z > 0 ? '6' : '2';
       planet.style.opacity = (.45 + .55 * near).toFixed(2);
       planet.dataset.near = String(near > .62);
     });
@@ -269,6 +269,67 @@
   };
   let lastFollowing = [];
 
+  // The friend card: tapping a planet shows who it is before you enter their orbit.
+  const card = document.getElementById('friendCard');
+  const cardPlanet = document.getElementById('friendCardPlanet');
+  const cardName = document.getElementById('friendCardName');
+  const cardBio = document.getElementById('friendCardBio');
+  const cardHandle = document.getElementById('friendCardHandle');
+  const cardRings = document.getElementById('friendCardRings');
+  const cardEnter = document.getElementById('friendCardEnter');
+  const cardUnfollow = document.getElementById('friendCardUnfollow');
+  const cardStatus = document.getElementById('friendCardStatus');
+  let cardPerson = null, cardSource = null, cardTweens = [], cardJob = 0;
+  function closeCard(restoreFocus = true) {
+    if (!card || card.hidden) return;
+    card.hidden = true; ++cardJob; kill(cardTweens);
+    if (restoreFocus) cardSource?.focus();
+  }
+  async function openCard(person, planet) {
+    if (!card) { enter(person, planet); return; }
+    const job = ++cardJob;
+    cardPerson = person; cardSource = planet;
+    kill(cardTweens); cardPlanet.replaceChildren();
+    cardName.children[0].textContent = person.username; cardName.children[1].textContent = ''; cardName.children[1].style.color = '';
+    cardBio.textContent = ''; cardBio.hidden = true;
+    cardHandle.textContent = `@${person.username}`;
+    cardRings.textContent = 'Loading their rings…';
+    cardEnter.textContent = `Enter @${person.username}’s orbit`;
+    cardStatus.textContent = '';
+    card.hidden = false;
+    cardEnter.focus();
+    try {
+      const snapshot = await sharedOrbit(person);
+      if (job !== cardJob) return;
+      drawOrbit(cardPlanet, snapshot, person, true, cardTweens);
+      const t = snapshot.title || {};
+      if (t.first || t.second) {
+        cardName.children[0].textContent = t.first || person.username;
+        cardName.children[1].textContent = t.second || '';
+        cardName.children[1].style.color = t.secondColor || '';
+      }
+      cardBio.textContent = t.bio || ''; cardBio.hidden = !t.bio;
+      const named = snapshot.rings.filter(ring => ring.items.length).map(ring => ring.name);
+      cardRings.textContent = named.length ? named.join(' · ') : 'No rings shared with everyone yet.';
+    } catch (_) { if (job === cardJob) cardRings.textContent = 'Their rings could not load right now.'; }
+  }
+  if (card) {
+    document.getElementById('friendCardClose').addEventListener('click', () => closeCard());
+    cardEnter.addEventListener('click', () => { const person = cardPerson, planet = cardSource; closeCard(false); enter(person, planet); });
+    cardUnfollow.addEventListener('click', async () => {
+      const person = cardPerson;
+      cardUnfollow.disabled = true;
+      try {
+        await window.OrbitingAccount.unfollowPerson(person.followed_user_id);
+        cache.delete(person.followed_user_id);
+        closeCard(false);
+        window.dispatchEvent(new CustomEvent('orbiting:following-changed', { detail: { following: lastFollowing.filter(entry => entry.followed_user_id !== person.followed_user_id) } }));
+      } catch (error) { cardStatus.textContent = error.message || 'Could not unfollow right now.'; }
+      finally { cardUnfollow.disabled = false; }
+    });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !card.hidden && dialog.hidden) closeCard(); });
+  }
+
   function render(connections) {
     const job = sequence;
     kill(nearTweens); planets.replaceChildren();
@@ -284,7 +345,7 @@
       sphere.textContent = person.username.slice(0, 1).toUpperCase(); sphere.setAttribute('aria-hidden', 'true');
       const name = document.createElement('span'); name.className = 'following-cosmos__name'; name.textContent = `@${person.username}`;
       planet.append(sphere, name); planet.setAttribute('aria-label', `Enter @${person.username}’s orbit`);
-      planet.addEventListener('click', () => enter(person, planet)); planets.append(planet);
+      planet.addEventListener('click', () => openCard(person, planet)); planets.append(planet);
       sharedOrbit(person).then(snapshot => {
         if (job !== sequence) return;
         drawOrbit(sphere, snapshot, person, true, nearTweens);
@@ -297,6 +358,8 @@
     });
     loaded = true;
     status.textContent = following.length ? '' : 'Your cosmos is waiting. Find someone through search in Wander.';
+    const note = document.getElementById('cosmosHeadingNote');
+    if (note) note.textContent = following.length ? `your close orbit ✦ ${following.length} ${following.length === 1 ? 'friend' : 'friends'} around you` : 'your close orbit';
     startSpin();
   }
   async function load() {
@@ -316,6 +379,7 @@
     // Wander sits past the cosmos, so friends load as soon as you start pulling back, ready for both.
     if (!event.detail.demo && event.detail.depth >= .72 && !loaded) load();
     const visible = event.detail.active && !event.detail.demo;
+    if (!visible) closeCard(false);
     sky.hidden = !visible; sky.inert = !visible;
     if (visible && !loaded) load();
     if (visible) startSpin();
