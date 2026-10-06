@@ -9,6 +9,12 @@
 //   • swipe (L/R)    → spin burst with a fast hand, decays naturally
 //   • swipe down     → also closes an open photo
 //
+// Gestures (two-hand):
+//   • L-frame        → both hands as L's (index up, other fingers curled);
+//                      the dashed box between them zooms in after ~½s.
+//                      Swipe / pinch / fist keep working while zoomed; a fist
+//                      with no photo open zooms back out.
+//
 // Onboarding:
 //   • "you're seen" flash on first hand detection (one shot)
 //   • progressive cards: spin → pinch → fist; the guide rail stays visible
@@ -91,6 +97,19 @@ const PINCH_BRAKE_GAP       = 0.45;  // fingers closing on a photo → hold the 
 const PINCH_METER_GAP       = 0.55;  // cursor ring starts filling below this gap
 const AIM_MEMORY_MS         = 400;   // a photo stays targeted briefly if the pinch nudges the cursor off it
 const FIST_HOLD_MS          = 300;
+
+// ── L-frame zoom ───────────────────────────────────────────────────
+// Each hand's "L" = index straight + other three curled (real pointing
+// hands score 1.0; fists, open hands and pinches ≤ 0.3).
+const FRAME_POSE_SCORE      = 0.6;   // both hands at or above → framing
+const FRAME_KEEP_SCORE      = 0.35;  // once framing, stay framing down to this
+const FRAME_GRACE_MS        = 250;   // tolerate brief dropouts before the frame clears
+const FRAME_LOCK_MS         = 500;   // hold the frame this long to zoom
+const FRAME_MIN_W_PX        = 80;
+const FRAME_MIN_H_PX        = 60;
+const FRAME_RECT_GLIDE_MS   = 60;    // on-screen box smoothing (time constant)
+const ZOOM_MAX              = 4;
+const ZOOM_FILL             = 0.9;   // the framed area fills 90% of the screen
 const HOLD_METER_FADE_IN    = 0.04;  // progress below this → arc hidden
 const HOLD_METER_SMOOTH     = 0.35;  // EMA on displayed progress for smoothness
 
@@ -130,6 +149,9 @@ const state = {
   handSpan: REFERENCE_HAND_SPAN,
   cursorPos: null,            // displayed cursor position (glides between detections)
   poseScores: { pinch: 0, fist: 0, gap: NaN },
+  otherPose: null,            // finger bends of the second hand (L-frame)
+  frame: { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, armed: true },
+  zoom: { el: null, scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 },
   debug: false,
 
   // Palm history for swipe detection
@@ -239,6 +261,16 @@ const GESTURE_ICONS = {
       <!-- Spark where they meet -->
       <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/>
       <path d="M12 8 L12 9.5 M12 14.5 L12 16 M8.5 12 L9.5 12 M14.5 12 L15.5 12" stroke-width="1.4"/>
+    </svg>`,
+
+  // L-frame: two opposite corner brackets. Reads as "frame this".
+  frame: `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <path d="M4 10 L4 4 L10 4"/>
+      <path d="M20 14 L20 20 L14 20"/>
+      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" opacity="0.7"/>
     </svg>`,
 
   // Fist: tight rounded shape + four knuckle dots. Reads as "closed hand".
@@ -489,6 +521,7 @@ function updateLiveGuide() {
     aim: !state.openedRing && !!state.lastCursoredRing,
     pinch: isPinching(),
     fist: !!(gestureState.fist && gestureState.fist.active),
+    frame: isFraming(),
   };
   for (const [key, on] of Object.entries(live)) {
     const row = $guide.querySelector(`.orbit-hud-guide-row[data-gesture-key="${key}"]`);
@@ -587,11 +620,12 @@ function pickPrimaryHand(hands, worldHands) {
     primary: hands[best],
     primaryWorld: worldHands && worldHands[best] ? worldHands[best] : null,
     others: hands.filter((_, i) => i !== best),
+    othersWorld: worldHands ? worldHands.filter((_, i) => i !== best) : [],
   };
 }
 
 function acceptHandDetection(hands, worldHands, nowMs) {
-  const { primary, primaryWorld, others } = pickPrimaryHand(hands, worldHands);
+  const { primary, primaryWorld, others, othersWorld } = pickPrimaryHand(hands, worldHands);
   const prev = state.rawLandmarks;
   if (prev && dist2D(primary[9], prev[9]) > HAND_SWITCH_JUMP) {
     state.landmarkFilters = null;   // a different hand — don't smear between them
@@ -602,6 +636,7 @@ function acceptHandDetection(hands, worldHands, nowMs) {
   const camAspect = $cam && $cam.videoWidth && $cam.videoHeight ? $cam.videoWidth / $cam.videoHeight : 4 / 3;
   state.handPose = handPose(primary, primaryWorld, camAspect);
   state.otherHands = others;
+  state.otherPose = others.length ? handPose(others[0], othersWorld[0] || null, camAspect) : null;
   state.smoothedLandmarks = filterLandmarks(primary, nowMs);
   state.handSpan = handSpanOf(primary);
   state.lastHandSeenTs = nowMs;
@@ -617,6 +652,7 @@ function clearTracking() {
   state.rawLandmarks = null;
   state.handPose = null;
   state.otherHands = [];
+  state.otherPose = null;
   state.landmarkFilters = null;
   state.poseScores = { pinch: 0, fist: 0, gap: NaN };
 }
@@ -685,6 +721,14 @@ function computePinchScore(pose) {
   return closed * notFist;
 }
 
+// L-frame hand: index straight, the other three curled.
+function computeFrameHandScore(pose) {
+  if (!pose) return 0;
+  const indexStraight = clamp((60 - pose.straight[0]) / 30, 0, 1);
+  const othersCurled = clamp((average(pose.curl.slice(1)) - 100) / 50, 0, 1);
+  return indexStraight * othersCurled;
+}
+
 // ── Fist handler — closes an open photo. Never exits immersive mode;
 // that's reserved for the ✕ button and Escape.
 function onFistFire() {
@@ -692,9 +736,10 @@ function onFistFire() {
   if (state.openedRing || _isLightboxOpen()) {
     closeLightboxIfOpen();
     markFirstGesture('fist');
+  } else if (isZoomed()) {
+    resetZoom();
   }
-  // If no photo is open, fist is a no-op — the pulse still fires so the user
-  // sees their gesture was recognised.
+  // Otherwise a no-op — the pulse still shows the fist was recognised.
 }
 
 // The ring lightbox (main.js) toggles `.visible` on a `.ring-lightbox` node.
@@ -740,6 +785,7 @@ function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
   if (state.openedRing) return 0;
   if (isPinching()) return 0;   // moving while pinched is not a spin
+  if (isFraming()) return 0;    // two hands framing are not a swipe
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -1049,6 +1095,163 @@ function updateHoldMeter(nowMs) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  L-FRAME ZOOM
+//  Two L-hands make a box (bounding box of both index + thumb tips). Hold it
+//  FRAME_LOCK_MS and the view zooms so the box fills the screen. Zoom uses
+//  the CSS `translate` / `scale` properties, which stack on top of the
+//  element's own `transform` animations instead of replacing them.
+// ══════════════════════════════════════════════════════════════════
+
+let $frame = null, $frameLabel = null;
+
+function isFraming() {
+  return state.frame.sinceTs > 0;
+}
+
+function isZoomed() {
+  return state.zoom.scale > 1.001;
+}
+
+function zoomTargetEl() {
+  return wanderActive() ? document.getElementById('explorePlanet') : document.getElementById('orbitCamera');
+}
+
+// Screen-space box between both hands' index and thumb tips, or null.
+function currentFrameRect() {
+  if (!state.smoothedLandmarks || !state.otherHands.length) return null;
+  const a = state.smoothedLandmarks, b = state.otherHands[0];
+  const pts = [a[4], a[8], b[4], b[8]].map(landmarkToScreen);
+  const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+  const rect = { x: Math.min(...xs), y: Math.min(...ys) };
+  rect.w = Math.max(...xs) - rect.x;
+  rect.h = Math.max(...ys) - rect.y;
+  return rect.w >= FRAME_MIN_W_PX && rect.h >= FRAME_MIN_H_PX ? rect : null;
+}
+
+function framePoseHeld() {
+  const need = isFraming() ? FRAME_KEEP_SCORE : FRAME_POSE_SCORE;
+  return computeFrameHandScore(state.handPose) >= need && computeFrameHandScore(state.otherPose) >= need;
+}
+
+// Zoom that makes `rect` (screen px, as seen now) fill the viewport.
+// `current` is the zoom already applied: screen = O + T + S·(base − O),
+// where O is the target's transform origin on screen.
+function zoomForRect(rect, current, viewW, viewH) {
+  const { scale: S, tx, ty, ox, oy } = current;
+  const toBase = (x, y) => ({ x: ox + (x - ox - tx) / S, y: oy + (y - oy - ty) / S });
+  const a = toBase(rect.x, rect.y), b = toBase(rect.x + rect.w, rect.y + rect.h);
+  const w = b.x - a.x, h = b.y - a.y;
+  const scale = clamp(Math.min(viewW / w, viewH / h) * ZOOM_FILL, 1, ZOOM_MAX);
+  if (scale <= 1.001) return { scale: 1, tx: 0, ty: 0, ox, oy };
+  const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+  return { scale, tx: viewW / 2 - ox - scale * (cx - ox), ty: viewH / 2 - oy - scale * (cy - oy), ox, oy };
+}
+
+// Where the element's transform origin (its layout centre) sits on screen.
+// Its own transform may already shift it (e.g. the orbit's friends depth
+// slides it sideways), so undo that translation from the visible centre.
+function transformOrigin(el) {
+  const r = el.getBoundingClientRect();
+  const t = getComputedStyle(el).transform;
+  const m = t && t !== 'none' ? new DOMMatrixReadOnly(t) : { e: 0, f: 0 };
+  return { ox: r.left + r.width / 2 - m.e, oy: r.top + r.height / 2 - m.f };
+}
+
+function applyZoom(next) {
+  const el = state.zoom.el;
+  if (!el) return;
+  state.zoom = { ...state.zoom, ...next };
+  el.classList.add('is-hand-zoom-target');
+  el.style.translate = `${state.zoom.tx}px ${state.zoom.ty}px`;
+  el.style.scale = String(state.zoom.scale);
+  document.body.classList.toggle('is-hand-zoomed', isZoomed());
+}
+
+function zoomToRect(rect) {
+  const el = zoomTargetEl();
+  if (!el) return;
+  if (state.zoom.el !== el) {
+    resetZoom();
+    state.zoom = { el, scale: 1, tx: 0, ty: 0, ...transformOrigin(el) };
+  }
+  applyZoom(zoomForRect(rect, state.zoom, window.innerWidth, window.innerHeight));
+  pulseOnboardingIcon('frame');
+  dispatch('orbit:gesture-fired', { gesture: 'frame', scale: state.zoom.scale });
+}
+
+function resetZoom() {
+  const el = state.zoom.el;
+  if (el) {
+    el.style.translate = '';
+    el.style.scale = '';
+    // Keep the transition class until the zoom-out finishes animating.
+    setTimeout(() => { if (state.zoom.el !== el) el.classList.remove('is-hand-zoom-target'); }, 800);
+  }
+  state.zoom = { el: null, scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 };
+  document.body.classList.remove('is-hand-zoomed');
+}
+
+function ensureFrameOverlay() {
+  if ($frame) return;
+  $frame = document.createElement('div');
+  $frame.className = 'orbit-frame';
+  $frame.setAttribute('aria-hidden', 'true');
+  $frame.innerHTML = '<span class="orbit-frame-label"></span><span class="orbit-frame-progress"></span>';
+  $frameLabel = $frame.querySelector('.orbit-frame-label');
+  document.body.appendChild($frame);
+}
+
+function hideFrameOverlay() {
+  if ($frame) $frame.classList.remove('is-visible', 'is-locked');
+}
+
+function clearFrame() {
+  state.frame = { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, armed: true };
+  hideFrameOverlay();
+}
+
+// Called every loop tick while a hand is in view.
+function updateFrame(nowMs, dtSec) {
+  // Moved between the orbit and Wander while zoomed: the zoom belonged to
+  // the other view, so let it go.
+  if (isZoomed() && state.zoom.el !== zoomTargetEl()) resetZoom();
+  const f = state.frame;
+  const rect = framePoseHeld() ? currentFrameRect() : null;
+  if (rect) {
+    if (!f.sinceTs) f.sinceTs = nowMs;
+    f.lastValidTs = nowMs;
+    f.rect = rect;
+  } else if (f.sinceTs && nowMs - f.lastValidTs > FRAME_GRACE_MS) {
+    clearFrame();
+    return;
+  }
+  if (!f.sinceTs || !f.rect) return;
+  const progress = clamp((nowMs - f.sinceTs) / FRAME_LOCK_MS, 0, 1);
+  if (progress >= 1 && f.armed) {
+    f.armed = false;   // re-arms only when the hands drop out of the frame pose
+    zoomToRect(f.rect);
+  }
+  drawFrameOverlay(f, progress, dtSec);
+}
+
+function drawFrameOverlay(f, progress, dtSec) {
+  ensureFrameOverlay();
+  if (!f.shownRect) f.shownRect = { ...f.rect };
+  else {
+    const a = 1 - Math.exp(-((dtSec || 0.016) * 1000) / FRAME_RECT_GLIDE_MS);
+    for (const k of ['x', 'y', 'w', 'h']) f.shownRect[k] += (f.rect[k] - f.shownRect[k]) * a;
+  }
+  const r = f.shownRect;
+  $frame.style.transform = `translate(${r.x}px, ${r.y}px)`;
+  $frame.style.width = `${r.w}px`;
+  $frame.style.height = `${r.h}px`;
+  $frame.style.setProperty('--frame-progress', String(progress));
+  $frame.classList.add('is-visible');
+  $frame.classList.toggle('is-locked', !f.armed);
+  if ($frameLabel) $frameLabel.textContent = f.armed ? 'hold to zoom' : `zoomed ×${state.zoom.scale.toFixed(1)}`;
+}
+
+// ══════════════════════════════════════════════════════════════════
 //  HAND SKELETON — drawn on the HUD preview to prove tracking works
 // ══════════════════════════════════════════════════════════════════
 
@@ -1171,6 +1374,7 @@ function updateDebugOverlay(haveHand) {
     `hands ${hands}  span ${fmt(state.handSpan, 3)}  scale ×${fmt(scale, 2)}`,
     `pose ${pose.padEnd(5)} pinch ${fmt(s.pinch, 2)} (gap ${fmt(s.gap, 2)})  fist ${fmt(s.fist, 2)}`,
     `palm ${fmt(state.palmSpeed * 1000, 2)}/s  swipe ≥ ${fmt(SWIPE_MIN_AVG_VEL * scale * 1000, 2)}/s over ${fmt(SWIPE_MIN_DX * scale, 3)}`,
+    `frame L ${fmt(computeFrameHandScore(state.handPose), 2)} / ${fmt(computeFrameHandScore(state.otherPose), 2)}  ${isFraming() ? 'framing' : '—'}  zoom ×${fmt(state.zoom.scale, 2)}`,
     `spin ${fmt(state.currentVelocity, 0)}°/s  aim ${aimedRing(performance.now()) ? 'on' : 'off'}  active ${Object.keys(GESTURE_DEFS).filter((k) => gestureState[k].active).join(',') || '—'}`,
   ].join('\n');
 }
@@ -1225,7 +1429,8 @@ const GUIDE_RAIL_ITEMS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
   { key: 'aim',   icon: GESTURE_ICONS.point, label: 'move to aim' },
   { key: 'pinch', icon: GESTURE_ICONS.pinch, label: 'pinch to open' },
-  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
+  { key: 'frame', icon: GESTURE_ICONS.frame, label: 'L-frame to zoom' },
+  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close / zoom out' },
 ];
 
 function buildOnboardingCards() {
@@ -1720,12 +1925,14 @@ function detectLoop(now) {
       recordPalmSample(state.rawLandmarks || state.smoothedLandmarks, now);
     }
     evaluateGestures(state.smoothedLandmarks, state.handPose, handSpan, now, isFreshDetection);
+    updateFrame(now, dt);
     updateHoldMeter(now);
     updateLiveGuide();
   } else {
     hideCursor();
     clearHandSkeleton();
     setHoldMeter(0);
+    clearFrame();
   }
 
   // Ring spin: swipes accumulate momentum; a downward swipe closes a photo.
@@ -1827,6 +2034,8 @@ function exitImmersive(reason) {
   }
 
   closeLightboxIfOpen();
+  clearFrame();
+  resetZoom();
   hideOnboarding();
   hideCursor();
   clearHandSkeleton();
