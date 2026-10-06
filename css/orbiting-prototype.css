@@ -1462,3 +1462,23 @@ label.is-reminded { outline: 2px solid #d39aa8; outline-offset: 6px; border-radi
 .followed-orbit__sky { position: fixed; inset: 0; z-index: -1; }
 .wander-shared-sky { position: absolute; inset: 0; z-index: -1; }
 .friend-sky-where { display: block; }
+
+/* Shared constellations explain themselves: element tint, a small name label,
+   a glow when you share the sign, and a card with placements and meanings. */
+.shared-sky--fire { --element: 255, 170, 120; }
+.shared-sky--earth { --element: 196, 214, 160; }
+.shared-sky--air { --element: 190, 214, 255; }
+.shared-sky--water { --element: 150, 200, 230; }
+.shared-sky__constellation line { stroke: rgba(var(--element, 255,240,210), .62); }
+.shared-sky__constellation circle { fill: rgba(var(--element, 255,248,232), .96); }
+.shared-sky__constellation svg { filter: drop-shadow(0 0 .35rem rgba(var(--element, 255,240,210), .5)); }
+.shared-sky__constellation.is-shared svg { filter: drop-shadow(0 0 .55rem rgba(var(--element, 255,240,210), .95)) drop-shadow(0 0 1.2rem rgba(211,154,168,.6)); }
+.shared-sky__label { position: absolute; top: calc(100% + .1rem); left: 50%; transform: translateX(-50%); white-space: nowrap; color: rgba(var(--element, 255,240,210), .7); font: 500 .58rem/1 'Inter',sans-serif; letter-spacing: .14em; text-transform: uppercase; pointer-events: none; }
+.shared-sky__constellation.is-shared .shared-sky__label { color: #f1c4cf; }
+.shared-sky__tooltip { display: grid; gap: .3rem; width: min(17rem, 72vw); max-width: none; padding: .75rem .85rem; text-align: left; white-space: normal; }
+.shared-sky__sign { font: 400 1rem 'Playfair Display',Georgia,serif; color: #fff; }
+.shared-sky__themes { color: rgba(var(--element, 255,240,210), .9); font: .68rem/1.4 'Inter',sans-serif; text-transform: lowercase; }
+.shared-sky__person { margin-top: .25rem; color: #fff; font: 600 .74rem 'Inter',sans-serif; }
+.shared-sky__meaning { color: #d8d3e0; font: .74rem/1.45 'Inter',sans-serif; }
+.shared-sky__shared { margin-top: .3rem; padding-top: .45rem; border-top: 1px solid rgba(255,240,210,.2); color: #f1c4cf; font: .74rem/1.45 'Inter',sans-serif; }
+.shared-sky__constellation.opens-down .shared-sky__tooltip { top: calc(100% + 1.1rem); bottom: auto; }

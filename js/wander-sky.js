@@ -13,11 +13,11 @@
     try {
       const following = await api.listFollowing();
       const skies = await Promise.allSettled(following.map((person) => api.loadVisibleFollowedSky(person.followed_user_id)
-        .then((shared) => ({ name: `@${shared?.username || person.username}`, constellations: shared?.constellations || [] }))));
+        .then((shared) => ({ name: `@${shared?.username || person.username}`, constellations: shared?.constellations || [], placements: shared?.placements || [] }))));
       if (job !== sequence) return;
-      const own = window.OrbitSetup?.ownSkySigns?.() || [];
+      const own = window.OrbitSetup?.ownSkyPlacements?.() || [];
       const people = [
-        ...(own.length ? [{ name: window.OrbitSetup.username() ? `@${window.OrbitSetup.username()}` : 'you', constellations: own }] : []),
+        ...(own.length ? [{ name: 'you', self: true, placements: own }] : []),
         ...skies.flatMap((result) => result.status === 'fulfilled' && result.value.constellations.length ? [result.value] : [])
       ];
       const entries = window.OrbitingSharedSky.render(sky, people);

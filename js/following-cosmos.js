@@ -215,7 +215,9 @@
       if (job !== portalJob || dialog.hidden || !window.OrbitingSharedSky) return;
       const signs = Array.isArray(shared?.constellations) ? shared.constellations : [];
       if (!signs.length) return;
-      window.OrbitingSharedSky.render(friendSky, [{ name: `@${person.username}`, constellations: signs }]);
+      const own = window.OrbitSetup?.ownSkyPlacements?.() || [];
+      window.OrbitingSharedSky.render(friendSky, [{ name: `@${person.username}`, constellations: signs, placements: shared.placements || [] }],
+        { self: own.length ? { placements: own } : null });
       friendSky.hidden = false;
     } catch (_) { /* The page works without their sky. */ }
   }

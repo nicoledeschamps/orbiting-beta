@@ -270,36 +270,7 @@
   const hiddenMessages = [{ text: '', starIndex: null }];
   let activeHiddenMessage = 0;
   const zodiac = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const zodiacThemes = {
-    Aries: 'beginnings · courage · action', Taurus: 'comfort · devotion · the senses',
-    Gemini: 'curiosity · conversation · duality', Cancer: 'belonging · memory · care',
-    Leo: 'expression · play · being seen', Virgo: 'craft · care · attention',
-    Libra: 'balance · beauty · relationships', Scorpio: 'depth · trust · transformation',
-    Sagittarius: 'freedom · discovery · belief', Capricorn: 'ambition · structure · legacy',
-    Aquarius: 'community · originality · possibility', Pisces: 'dreams · empathy · imagination'
-  };
-  const placementMeanings = {
-    Sun: 'identity · vitality · life force',
-    Moon: 'emotion · instinct · inner self',
-    Rising: 'first impression · approach · becoming',
-    Mercury: 'mind · language · communication',
-    Venus: 'love · beauty · values',
-    Mars: 'drive · desire · action',
-    Jupiter: 'growth · belief · expansion',
-    Saturn: 'discipline · limits · lessons',
-    Uranus: 'freedom · disruption · invention',
-    Neptune: 'dreams · intuition · imagination',
-    Pluto: 'power · depth · transformation',
-    'North Node': 'growth edge · direction · purpose',
-    'South Node': 'familiar patterns · inherited gifts',
-    Chiron: 'tenderness · wound · healing',
-    Midheaven: 'public life · calling · reputation',
-    Descendant: 'partnership · attraction · the other',
-    IC: 'roots · home · private foundation',
-    Lilith: 'autonomy · shadow · raw desire',
-    'Part of Fortune': 'ease · joy · natural flow',
-    Vertex: 'fated encounters · turning points'
-  };
+  const { zodiacThemes, placementMeanings } = window.OrbitingSharedSky;
   const placementNames = ['Sun', 'Moon', 'Rising', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'North Node', 'South Node', 'Chiron', 'Lilith', 'Midheaven', 'Descendant', 'IC', 'Part of Fortune', 'Vertex'];
   const skyPositions = [
     [25, 80, 21], [86, 66, -1], [48, 23, -4], [59, 80, -4], [43, 87, 15],
@@ -1165,6 +1136,13 @@
     });
   });
 
+  // Placement names with their zodiac sign only (no degrees, houses, or birth details).
+  function ownSkyPlacements() {
+    return chartPlacements.filter((placement) => placement.available)
+      .map((placement) => ({ name: placement.name, sign: zodiac.find((sign) => placement.sign.endsWith(sign)) }))
+      .filter((placement) => placement.sign);
+  }
+
   function ownSkySigns() {
     return [...new Set(chartPlacements.filter((placement) => placement.available)
       .map((placement) => zodiac.find((sign) => placement.sign.endsWith(sign)))
@@ -1520,12 +1498,24 @@
         ? `Exact chart calculated for ${location.label} · ${location.timeZone}.`
         : 'Date-only chart at noon UTC. Add birth time and place for exact Moon timing, Rising, houses, and angles.';
       renderBirthSky();
+      upgradeSharedSky();
     } catch (error) {
       if (sequence !== calculationSequence) return;
       chartPlacements = placementNames.map((name) => buildPlacement(name, 0, null, false));
       skyCalculationNote.textContent = error.message || 'The chart engine could not load. Please try again.';
       renderBirthSky();
     }
+  }
+
+  // Skies shared before placements were added list only signs. Once the chart is ready, save
+  // once so friends see which placement sits in each sign.
+  let sharedSkyNeedsPlacements = false;
+  let orbitFullyLoaded = false;
+  function upgradeSharedSky() {
+    if (!sharedSkyNeedsPlacements || !orbitFullyLoaded || mediaRestoreFailed || !signedInUser || settingsMode
+      || !shareSkyWithFriends.checked || !ownSkyPlacements().length) return;
+    sharedSkyNeedsPlacements = false;
+    saveCurrentOrbit().catch(() => { sharedSkyNeedsPlacements = true; });
   }
 
   function scheduleBirthSkyCalculation() {
@@ -1614,7 +1604,7 @@
         enabled: hiddenStarEnabled.checked,
         messages: hiddenMessages.map(({ text, starIndex }) => ({ text: text.slice(0, 180), starIndex }))
       },
-      sharedSky: { enabled: shareSkyWithFriends.checked, constellations: shareSkyWithFriends.checked ? ownSkySigns() : [] },
+      sharedSky: { enabled: shareSkyWithFriends.checked, constellations: shareSkyWithFriends.checked ? ownSkySigns() : [], placements: shareSkyWithFriends.checked ? ownSkyPlacements() : [] },
       preferences: {
         portraitPosition: { size: Number(portraitSize.value), x: Number(portraitX.value), y: Number(portraitY.value) },
         wanderSize: Number(wanderSize.value), wanderSpeed: Number(wanderSpeed.value), lightUpSpace: lightUpSpace.checked,
@@ -1637,8 +1627,11 @@
   // Notifications recount setup reminders whenever a saved orbit loads or saves.
   function announceSetupChanged() { window.dispatchEvent(new CustomEvent('orbit:setup-changed')); }
   async function applyOrbitDataAndAnnounce(saved, preserveLocalMedia = false) {
+    orbitFullyLoaded = false;
     await applyOrbitData(saved, preserveLocalMedia);
+    orbitFullyLoaded = true;
     announceSetupChanged();
+    upgradeSharedSky();
   }
 
   async function applyOrbitData(saved, preserveLocalMedia = false) {
@@ -1706,6 +1699,7 @@
     activeHiddenMessage = 0;
     renderHiddenMessages();
     shareSkyWithFriends.checked = !accountTestingMode && saved.sharedSky?.enabled === true;
+    sharedSkyNeedsPlacements = shareSkyWithFriends.checked && !Array.isArray(saved.sharedSky?.placements);
     combineSkyWithFriends.checked = false;  // Friends' signs live on their page and in Wander now, not in your sky.
     friendSkyPicker.hidden = !combineSkyWithFriends.checked;
     friendSkyIds = new Set(!accountTestingMode && Array.isArray(saved.preferences?.friendSkyIds)
@@ -2104,7 +2098,7 @@
     document.querySelector('#accountEmail + small').textContent = 'We’ll send you a verification link. You can enter your orbit first.';
     document.querySelector('#accountPassword + small').textContent = 'At least 8 characters. Never use a password from another site.';
     setAccountMode(accountMode);
-    birthPrivacyNote.textContent = 'Your birth details are saved privately with your Orbit account to recreate your sky. Your place name is sent to Open-Meteo to find its coordinates and historical time zone. Friends see only your zodiac constellations if you turn on sky sharing.';
+    birthPrivacyNote.textContent = 'Your birth details are saved privately with your Orbit account to recreate your sky. Your place name is sent to Open-Meteo to find its coordinates and historical time zone. If you turn on sky sharing, friends see only which sign each planet sits in.';
     showStep(currentStep);
     const session = await window.OrbitingAccount.getSession();
     if (session && needsPasswordSetup) { window.location.replace('account-access.html'); return; }
@@ -3058,6 +3052,7 @@
   const DEMO_PORTRAIT_OWNERS = new Set(['huesofsaturn']);
   window.OrbitSetup = {
     ownSkySigns: () => ownSkySigns(),
+    ownSkyPlacements: () => ownSkyPlacements(),
     username: () => accountUsername.value.trim(),
     checklist() {
       if (!signedInUser) return [];
