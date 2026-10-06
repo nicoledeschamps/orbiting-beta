@@ -3122,6 +3122,8 @@
   // What a signed-in person hasn't set up yet, for reminders in notifications.
   // The demo portrait is Nicole's own face (from her portfolio), so her account never gets the portrait reminder.
   const DEMO_PORTRAIT_OWNERS = new Set(['huesofsaturn']);
+  // Tester accounts whose usernames Nicole set up for them: remind them to pick their own (gone once they change it).
+  const USERNAMES_TO_CHOOSE = new Set(['zachbell14', 'wiamhomir11']);
   window.OrbitSetup = {
     ownSkySigns: () => ownSkySigns(),
     ownSkyPlacements: () => ownSkyPlacements(),
@@ -3131,6 +3133,7 @@
       const ownPortrait = (savedMedia.portrait && !savedMedia.portrait.asset) || setupPortrait.src.startsWith('blob:')
         || DEMO_PORTRAIT_OWNERS.has(accountUsername.value.trim().toLowerCase());
       return [
+        USERNAMES_TO_CHOOSE.has(accountUsername.value.trim().toLowerCase()) && { id: 'username', text: 'Your username was set up for you. Pick the one you want people to find you by.', action: 'choose username', account: true },
         !ownPortrait && { id: 'portrait', text: 'Your planet still shows the demo face. Add your own portrait.', action: 'add portrait', step: 0 },
         !approvedSourceItems().length && !localPhotoUrls.length && { id: 'sources', text: 'Your rings are empty. Connect Pinterest, Spotify, Are.na, Cosmos, or add photos.', action: 'connect', step: 1 },
         !birthInputs[0].value && { id: 'sky', text: 'Add your birth date to light up your sky.', action: 'add birth date', step: 2 },

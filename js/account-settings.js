@@ -66,6 +66,7 @@
       username.value = saved; account = { ...account, username: saved };
       document.getElementById('accountUsername').value = saved;
       status.textContent = 'Username updated.';
+      window.dispatchEvent(new CustomEvent('orbit:setup-changed'));  // notifications drop the username reminder
     } catch (error) { status.textContent = error.message || 'Couldn’t update your username.'; }
     finally { setBusy(false); }
   });

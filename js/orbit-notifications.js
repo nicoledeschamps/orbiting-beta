@@ -90,6 +90,12 @@
       return;
     }
     close();
+    if (tip.account) {
+      // Account details live in the account dialog: open it with the username ready to change.
+      document.getElementById('openAccountSettings')?.click();
+      window.setTimeout(() => { const field = document.getElementById('settingsUsername'); field?.focus(); field?.select(); }, 600);
+      return;
+    }
     window.OrbitSetup.openStep(tip.step, tip.focus);
   }
 
