@@ -97,7 +97,7 @@
       const radius = orbit.fittedRingRadius ? orbit.fittedRingRadius(width, ratio, outer) : width * ratio;
       const visible = orbit.personalRingVisibleImages ? orbit.personalRingVisibleImages(ring.items, index) : ring.items.slice(0, 20);
       const tween = orbit.buildRing?.(visible, back, front, radius, [34, 48], [55 + index * 20, 75 + index * 20], ring.items,
-        { previewOnly: true, startAngle: index * 120 % 360 });
+        { previewOnly: false, startAngle: index * 120 % 360 });
       if (tween) tweens.push(tween);
     });
   }
@@ -202,10 +202,9 @@
     activePlanet?.focus();
   }
   close.addEventListener('click', leave);
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !dialog.hidden) leave(); });
-  world.addEventListener('click', event => {
-    const tile = event.target.closest('.ring-image');
-    if (tile) window.openRingLightbox?.(tile._mediaEl.src, tile._isVideo, tile._source, tile._boardUrl, tile._metadata);
+  // Escape closes an open photo first; the orbit only closes once no photo is showing.
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !dialog.hidden && !document.querySelector('.ring-lightbox.visible')) leave();
   });
 
   // Friends turn around you: a tilted ring for a few friends, a globe from six up.
