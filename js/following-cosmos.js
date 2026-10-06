@@ -203,9 +203,10 @@
   }
   close.addEventListener('click', leave);
   // Escape closes an open photo first; the orbit only closes once no photo is showing.
+  // Capture phase runs before the photo's own Escape handler hides it.
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !dialog.hidden && !document.querySelector('.ring-lightbox.visible')) leave();
-  });
+  }, true);
 
   // Friends turn around you: a tilted ring for a few friends, a globe from six up.
   // Planets on the near side pass in front of your planet; the far side passes behind it.
