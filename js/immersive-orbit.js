@@ -11,7 +11,8 @@
 //
 // Gestures (two-hand):
 //   • L-frame        → both hands as L's (index up, other fingers curled);
-//                      the dashed box between them zooms in after ~½s.
+//                      the dashed box between them zooms the orbit's photos
+//                      in after ~½s (the face in the middle stays put).
 //                      Swipe / pinch / fist keep working while zoomed; a fist
 //                      with no photo open zooms back out.
 //
@@ -151,7 +152,8 @@ const state = {
   poseScores: { pinch: 0, fist: 0, gap: NaN },
   otherPose: null,            // finger bends of the second hand (L-frame)
   frame: { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, armed: true },
-  zoom: { el: null, scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 },
+  zoom: { el: null, faces: [], scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 },   // target zoom
+  zoomShown: { scale: 1, tx: 0, ty: 0 },                                  // zoom on screen (animating)
   debug: false,
 
   // Palm history for swipe detection
@@ -1099,7 +1101,8 @@ function updateHoldMeter(nowMs) {
 //  Two L-hands make a box (bounding box of both index + thumb tips). Hold it
 //  FRAME_LOCK_MS and the view zooms so the box fills the screen. Zoom uses
 //  the CSS `translate` / `scale` properties, which stack on top of the
-//  element's own `transform` animations instead of replacing them.
+//  element's own `transform` animations instead of replacing them. In the
+//  orbit view the face gets an exact counter-zoom: only the rings grow.
 // ══════════════════════════════════════════════════════════════════
 
 let $frame = null, $frameLabel = null;
@@ -1147,47 +1150,117 @@ function zoomForRect(rect, current, viewW, viewH) {
   return { scale, tx: viewW / 2 - ox - scale * (cx - ox), ty: viewH / 2 - oy - scale * (cy - oy), ox, oy };
 }
 
-// Where the element's transform origin (its layout centre) sits on screen.
-// Its own transform may already shift it (e.g. the orbit's friends depth
-// slides it sideways), so undo that translation from the visible centre.
-function transformOrigin(el) {
+// Where an element's transform origin (its layout centre) sits on screen.
+// Its own transform may already shift it (the orbit's friends depth slides
+// it sideways; the face is centred with translate(-50%, -50%)), so undo that
+// translation — scaled by `k`, the element's px → screen px factor.
+function transformOrigin(el, k = 1) {
   const r = el.getBoundingClientRect();
   const t = getComputedStyle(el).transform;
   const m = t && t !== 'none' ? new DOMMatrixReadOnly(t) : { e: 0, f: 0 };
-  return { ox: r.left + r.width / 2 - m.e, oy: r.top + r.height / 2 - m.f };
+  return { ox: r.left + r.width / 2 - k * m.e, oy: r.top + r.height / 2 - k * m.f };
 }
 
-function applyZoom(next) {
-  const el = state.zoom.el;
-  if (!el) return;
-  state.zoom = { ...state.zoom, ...next };
-  el.classList.add('is-hand-zoom-target');
-  el.style.translate = `${state.zoom.tx}px ${state.zoom.ty}px`;
-  el.style.scale = String(state.zoom.scale);
-  document.body.classList.toggle('is-hand-zoomed', isZoomed());
+// Screen px per CSS px for this element (its ancestors' scale).
+function screenScale(el) {
+  return el.offsetWidth ? el.getBoundingClientRect().width / el.offsetWidth : 1;
+}
+
+// The face rides inside the zoomed orbit; give it the exact opposite zoom so
+// it stays where it was, at its normal size, while the rings grow around it.
+//   orbit:  screen = O + T + S·(p − O)
+//   face:   p → Of + k·Tf + p'·(p − Of) with p' = 1/S, solved for screen = p
+function faceCounterZoom(z, face) {
+  const S = z.scale;
+  return {
+    scale: 1 / S,
+    tx: ((1 - S) * (face.ox - z.ox) - z.tx) / (S * face.k),
+    ty: ((1 - S) * (face.oy - z.oy) - z.ty) / (S * face.k),
+  };
+}
+
+const NO_ZOOM = { scale: 1, tx: 0, ty: 0 };
+const ZOOM_ANIM_MS = 700;
+
+function setZoomStyles(el, z) {
+  const none = Math.abs(z.scale - 1) < 1e-4 && Math.abs(z.tx) < 0.01 && Math.abs(z.ty) < 0.01;
+  el.style.translate = none ? '' : `${z.tx}px ${z.ty}px`;
+  el.style.scale = none ? '' : String(z.scale);
+}
+
+function renderZoom(shown) {
+  const zm = state.zoom;
+  state.zoomShown = shown;
+  if (!zm.el) return;
+  setZoomStyles(zm.el, shown);
+  const z = { ...shown, ox: zm.ox, oy: zm.oy };
+  for (const face of zm.faces) setZoomStyles(face.el, faceCounterZoom(z, face));
+}
+
+// Driven frame by frame (not CSS transitions) so the orbit's zoom and the
+// face's counter-zoom stay exact at every moment of the animation.
+let _zoomRaf = 0;
+function animateZoomTo(target, onDone) {
+  cancelAnimationFrame(_zoomRaf);
+  const from = { ...state.zoomShown };
+  let reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  const t0 = performance.now();
+  const step = (now) => {
+    const t = reduce ? 1 : clamp((now - t0) / ZOOM_ANIM_MS, 0, 1);
+    const e = 1 - Math.pow(1 - t, 3);
+    renderZoom({
+      scale: from.scale + (target.scale - from.scale) * e,
+      tx: from.tx + (target.tx - from.tx) * e,
+      ty: from.ty + (target.ty - from.ty) * e,
+    });
+    if (t < 1) _zoomRaf = requestAnimationFrame(step);
+    else { _zoomRaf = 0; if (onDone) onDone(); }
+  };
+  _zoomRaf = requestAnimationFrame(step);
 }
 
 function zoomToRect(rect) {
   const el = zoomTargetEl();
   if (!el) return;
   if (state.zoom.el !== el) {
-    resetZoom();
-    state.zoom = { el, scale: 1, tx: 0, ty: 0, ...transformOrigin(el) };
+    clearZoomNow();
+    // Measured unzoomed. In the orbit view the face (portrait + glow) is
+    // held still; Wander has no face, so the whole planet zooms.
+    const faces = el.id === 'orbitCamera'
+      ? [...el.querySelectorAll('.saturn-glow, .saturn-body')].map((f) => {
+          const k = screenScale(f);
+          return { el: f, k, ...transformOrigin(f, k) };
+        })
+      : [];
+    state.zoom = { el, faces, ...NO_ZOOM, ...transformOrigin(el) };
   }
-  applyZoom(zoomForRect(rect, state.zoom, window.innerWidth, window.innerHeight));
+  const next = zoomForRect(rect, { ...state.zoomShown, ox: state.zoom.ox, oy: state.zoom.oy },
+    window.innerWidth, window.innerHeight);
+  state.zoom = { ...state.zoom, scale: next.scale, tx: next.tx, ty: next.ty };
+  document.body.classList.toggle('is-hand-zoomed', isZoomed());
+  animateZoomTo(next);
   pulseOnboardingIcon('frame');
-  dispatch('orbit:gesture-fired', { gesture: 'frame', scale: state.zoom.scale });
+  dispatch('orbit:gesture-fired', { gesture: 'frame', scale: next.scale });
 }
 
 function resetZoom() {
-  const el = state.zoom.el;
-  if (el) {
-    el.style.translate = '';
-    el.style.scale = '';
-    // Keep the transition class until the zoom-out finishes animating.
-    setTimeout(() => { if (state.zoom.el !== el) el.classList.remove('is-hand-zoom-target'); }, 800);
+  if (!state.zoom.el) return;
+  state.zoom = { ...state.zoom, ...NO_ZOOM };
+  document.body.classList.remove('is-hand-zoomed');
+  animateZoomTo(NO_ZOOM, clearZoomNow);
+}
+
+function clearZoomNow() {
+  cancelAnimationFrame(_zoomRaf);
+  _zoomRaf = 0;
+  const zm = state.zoom;
+  if (zm.el) {
+    setZoomStyles(zm.el, NO_ZOOM);
+    zm.faces.forEach((f) => setZoomStyles(f.el, NO_ZOOM));
   }
-  state.zoom = { el: null, scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 };
+  state.zoom = { el: null, faces: [], ...NO_ZOOM, ox: 0, oy: 0 };
+  state.zoomShown = { ...NO_ZOOM };
   document.body.classList.remove('is-hand-zoomed');
 }
 
@@ -1211,6 +1284,7 @@ function clearFrame() {
 }
 
 // Called every loop tick while a hand is in view.
+// (The frame box zooms the orbit's photos; the face in the middle stays put.)
 function updateFrame(nowMs, dtSec) {
   // Moved between the orbit and Wander while zoomed: the zoom belonged to
   // the other view, so let it go.

@@ -4529,15 +4529,6 @@ body.immersive-active .portal-star {
 }
 .orbit-frame.is-locked .orbit-frame-progress { opacity: 0; }
 
-/* Zoom rides on the separate translate/scale properties so the views keep
-   their own transform animations (orbit depth, Wander scroll zoom). */
-#orbitCamera.is-hand-zoom-target {
-  transition: transform .8s cubic-bezier(.22, 1, .36, 1), opacity .8s ease-in-out,
-              translate .7s cubic-bezier(.22, 1, .36, 1), scale .7s cubic-bezier(.22, 1, .36, 1);
-}
-#explorePlanet.is-hand-zoom-target {
-  transition: translate .7s cubic-bezier(.22, 1, .36, 1), scale .7s cubic-bezier(.22, 1, .36, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  #orbitCamera.is-hand-zoom-target, #explorePlanet.is-hand-zoom-target { transition: none; }
-}
+/* Zoom itself is driven frame by frame in JS on the separate translate /
+   scale properties (the face gets an exact counter-zoom), so no CSS
+   transitions here. */
