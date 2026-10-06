@@ -109,7 +109,9 @@ const FRAME_LOCK_MS         = 500;   // hold the frame this long to zoom
 const FRAME_MIN_W_PX        = 80;
 const FRAME_MIN_H_PX        = 60;
 const FRAME_RECT_GLIDE_MS   = 60;    // on-screen box smoothing (time constant)
-const ZOOM_MAX              = 4;
+const ZOOM_MAX              = 3;
+const ZOOM_STEP_MAX         = 2;     // one frame gesture at most doubles the zoom
+const FRAME_LOCK_GLIDE_MS   = 150;   // the zoom target averages the box over the hold, not one noisy tick
 const ZOOM_FILL             = 0.9;   // the framed area fills 90% of the screen
 const HOLD_METER_FADE_IN    = 0.04;  // progress below this → arc hidden
 const HOLD_METER_SMOOTH     = 0.35;  // EMA on displayed progress for smoothness
@@ -151,7 +153,7 @@ const state = {
   cursorPos: null,            // displayed cursor position (glides between detections)
   poseScores: { pinch: 0, fist: 0, gap: NaN },
   otherPose: null,            // finger bends of the second hand (L-frame)
-  frame: { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, armed: true },
+  frame: { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, lockRect: null, armed: true },
   zoom: { el: null, faces: [], scale: 1, tx: 0, ty: 0, ox: 0, oy: 0 },   // target zoom
   zoomShown: { scale: 1, tx: 0, ty: 0 },                                  // zoom on screen (animating)
   debug: false,
@@ -1144,10 +1146,10 @@ function zoomForRect(rect, current, viewW, viewH) {
   const toBase = (x, y) => ({ x: ox + (x - ox - tx) / S, y: oy + (y - oy - ty) / S });
   const a = toBase(rect.x, rect.y), b = toBase(rect.x + rect.w, rect.y + rect.h);
   const w = b.x - a.x, h = b.y - a.y;
-  const scale = clamp(Math.min(viewW / w, viewH / h) * ZOOM_FILL, 1, ZOOM_MAX);
-  if (scale <= 1.001) return { scale: 1, tx: 0, ty: 0, ox, oy };
-  const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
-  return { scale, tx: viewW / 2 - ox - scale * (cx - ox), ty: viewH / 2 - oy - scale * (cy - oy), ox, oy };
+  const scale = clamp(Math.min(viewW / w, viewH / h) * ZOOM_FILL, 1, Math.min(ZOOM_MAX, S * ZOOM_STEP_MAX));
+  // Zoom about the orbit's own centre: the face stays put, so panning toward the
+  // box would slide the rings off the face. The box sets only how far to zoom.
+  return scale <= 1.001 ? { scale: 1, tx: 0, ty: 0, ox, oy } : { scale, tx: 0, ty: 0, ox, oy };
 }
 
 // Where an element's transform origin (its layout centre) sits on screen.
@@ -1279,7 +1281,7 @@ function hideFrameOverlay() {
 }
 
 function clearFrame() {
-  state.frame = { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, armed: true };
+  state.frame = { sinceTs: 0, lastValidTs: 0, rect: null, shownRect: null, lockRect: null, armed: true };
   hideFrameOverlay();
 }
 
@@ -1295,6 +1297,11 @@ function updateFrame(nowMs, dtSec) {
     if (!f.sinceTs) f.sinceTs = nowMs;
     f.lastValidTs = nowMs;
     f.rect = rect;
+    if (!f.lockRect) f.lockRect = { ...rect };
+    else {
+      const a = 1 - Math.exp(-((dtSec || 0.016) * 1000) / FRAME_LOCK_GLIDE_MS);
+      for (const k of ['x', 'y', 'w', 'h']) f.lockRect[k] += (rect[k] - f.lockRect[k]) * a;
+    }
   } else if (f.sinceTs && nowMs - f.lastValidTs > FRAME_GRACE_MS) {
     clearFrame();
     return;
@@ -1303,7 +1310,7 @@ function updateFrame(nowMs, dtSec) {
   const progress = clamp((nowMs - f.sinceTs) / FRAME_LOCK_MS, 0, 1);
   if (progress >= 1 && f.armed) {
     f.armed = false;   // re-arms only when the hands drop out of the frame pose
-    zoomToRect(f.rect);
+    zoomToRect(f.lockRect || f.rect);
   }
   drawFrameOverlay(f, progress, dtSec);
 }

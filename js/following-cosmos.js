@@ -58,6 +58,9 @@
     try { return await promise; } catch (error) { cache.delete(person.followed_user_id); throw error; }
   }
 
+  const NEAR_TILE_SPACING = 46, NEAR_TILE_HALF = 11;
+  const nearRingRatio = index => .62 + index * .22;
+
   function drawOrbit(container, snapshot, person, near, tweens) {
     container.replaceChildren();
     const core = document.createElement('span');
@@ -79,6 +82,7 @@
     const width = container.getBoundingClientRect().width || (near ? 64 : 240);
     // Rings without images are listed in the status text but never take an orbital path.
     const filled = snapshot.rings.filter(ring => ring.items.length);
+    if (near) container.dataset.ringCount = String(filled.length);
     filled.forEach((ring, index) => {
       const back = document.createElement('span'), front = document.createElement('span');
       back.className = 'saturn-ring-back'; front.className = 'saturn-ring-front';
@@ -87,7 +91,10 @@
       const orbit = window.HuesOrbit || {};
       const ratio = orbit.ringRadiusRatio?.(index, filled.length) || .5;
       if (near) {
-        const tween = orbit.buildRing?.(ring.items.slice(0, 8), back, front, width * ratio,
+        // A small planet's rings start outside the face and spread apart, with only as many tiles as each path holds.
+        const radius = width * nearRingRatio(index);
+        const count = Math.min(ring.items.length, Math.max(5, Math.round(2 * Math.PI * radius / NEAR_TILE_SPACING)));
+        const tween = orbit.buildRing?.(ring.items.slice(0, count), back, front, radius,
           [16, 22], [65 + index * 20, 85 + index * 20], ring.items, { previewOnly: true, startAngle: index * 120 });
         if (tween) tweens.push(tween);
         return;
@@ -211,13 +218,36 @@
   // Friends turn around you: a tilted ring for a few friends, a globe from six up.
   // Planets on the near side pass in front of your planet; the far side passes behind it.
   const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  let turn = 0, frame = 0, paused = false;
+  let turn = 0, frame = 0, paused = false, ownRingRadius = null;
+  const hero = document.getElementById('hero');
+  // How far your own outermost ring reaches before the Friends pull-back scales it down.
+  function measureOwnRings() {
+    const saturn = document.getElementById('saturn');
+    const filled = saturn ? [...saturn.querySelectorAll('.saturn-ring-front')].filter(ring => ring.children.length) : [];
+    if (!filled.length) { ownRingRadius = 0; return; }
+    const outer = Math.max(...filled.map(ring => Number(ring.dataset.outerRadiusRatio) || .7));
+    const orbit = window.HuesOrbit || {};
+    ownRingRadius = (orbit.fittedRingRadius ? orbit.fittedRingRadius(saturn.offsetWidth, outer, outer) : saturn.offsetWidth * outer) + 24;
+  }
+  // Friends travel just outside your rings (and theirs), so at the sides of the turn the two orbits never collide.
+  function globeRadius(list, width, height) {
+    const base = Math.min(width, height) * (width < 680 ? .4 : .34);
+    if (ownRingRadius === null) measureOwnRings();
+    const scale = parseFloat(hero?.style?.getPropertyValue?.('--orbit-scale')) || 1;
+    const friendReach = Math.max(0, ...list.map(planet => {
+      const sphere = planet.querySelector?.('.following-cosmos__sphere');
+      const rings = Number(sphere?.dataset.ringCount) || 0;
+      return rings ? (sphere.offsetWidth || 64) * nearRingRatio(rings - 1) + NEAR_TILE_HALF : (sphere?.offsetWidth || 64) / 2;
+    })) * .875;
+    const clear = ownRingRadius * scale + friendReach + 16;
+    return Math.min(Math.max(base, clear), width / 2 - friendReach - 8);
+  }
   function placeGlobe() {
     const list = [...planets.children];
     const count = list.length;
     if (!count) return;
     const width = window.innerWidth || 1024, height = window.innerHeight || 768;
-    const radius = Math.min(width, height) * (width < 680 ? .4 : .34);
+    const radius = globeRadius(list, width, height);
     list.forEach((planet, index) => {
       let x, y, z;
       if (count < 6) {
@@ -246,7 +276,7 @@
   planets.addEventListener('mouseleave', () => { paused = false; });
   planets.addEventListener('focusin', () => { paused = true; });
   planets.addEventListener('focusout', () => { paused = false; });
-  window.addEventListener('resize', placeGlobe);
+  window.addEventListener('resize', () => { ownRingRadius = null; placeGlobe(); });
 
   // Wander mixes in what orbits the people you follow: every image from the rings they share with everyone.
   let wanderJob = 0;
@@ -382,6 +412,6 @@
     if (!visible) closeCard(false);
     sky.hidden = !visible; sky.inert = !visible;
     if (visible && !loaded) load();
-    if (visible) startSpin();
+    if (visible) { ownRingRadius = null; startSpin(); }
   });
 })();

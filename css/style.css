@@ -454,7 +454,11 @@ body {
 }
 
 .saturn-body img {
-  width: 190%;
+  /* A fixed share of the ring container (147% of a 68% body = 100%). Without
+     flex: none the flex row shrank this to the image's own pixel width, so the
+     face's size depended on the photo's resolution and the screen. */
+  flex: none;
+  width: 147%;
   height: auto;
   display: block;
   object-fit: contain;
@@ -4532,3 +4536,6 @@ body.immersive-active .portal-star {
 /* Zoom itself is driven frame by frame in JS on the separate translate /
    scale properties (the face gets an exact counter-zoom), so no CSS
    transitions here. */
+
+/* Hand zoom measures the face once; hold its float still so the zoomed face stays centred in the rings. */
+body.is-hand-zoomed .saturn-container { animation-play-state: paused; }

@@ -426,6 +426,10 @@
 .placement-reveal-copy { display: grid; gap: .35rem; color: var(--setup-muted); font: .65rem 'Inter',sans-serif; }
 .placement-reveal-copy textarea { min-height: 3.5rem; padding: .45rem 0; border: 0; border-bottom: 1px solid rgba(237,241,244,.3); border-radius: 0; background: transparent; color: var(--setup-ink); font: .9rem/1.4 'Playfair Display',serif; resize: vertical; }
 .placement-reveal-copy textarea:disabled { opacity: .35; }
+.bulk-placement-controls { display: grid; gap: .7rem; margin: 0 0 .9rem; padding: .85rem 1rem; border: 1px solid rgba(237,241,244,.16); border-radius: .75rem; }
+.bulk-placement-title { display: flex; justify-content: space-between; gap: 1rem; margin: 0; font: 600 .78rem 'Inter',sans-serif; }
+.bulk-placement-title small { color: var(--setup-muted); font-weight: 400; }
+.bulk-placement-controls .placement-return { justify-self: start; }
 .featured-visual-controls { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
 .constellation-control { display: grid; grid-template-columns: 1fr auto; gap: .25rem .5rem; color: var(--setup-muted); font: .62rem/1 'Inter',sans-serif; text-transform: uppercase; letter-spacing: .08em; }
 .constellation-control input { grid-column: 1 / -1; width: 100%; height: .9rem; accent-color: var(--setup-accent); }
@@ -610,15 +614,34 @@
 }
 
 .setup-planet > img {
-  position: relative;
+  /* Scale model of the finished orbit: there the face image is 100% of the
+     ring container (style.css .saturn-body img), centred, with the same mask. */
+  position: absolute;
   z-index: 2;
-  width: 56%;
-  height: 62%;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  transform: translate(-50%, -50%);
   object-fit: contain;
   filter: saturate(.72) contrast(1.04) drop-shadow(0 1.4rem 1.5rem rgba(0,0,0,.45));
-  -webkit-mask-image: radial-gradient(ellipse 45% 50% at 50% 48%, #000 82%, transparent 100%);
-  mask-image: radial-gradient(ellipse 45% 50% at 50% 48%, #000 82%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, #000 85%, transparent 100%);
+  mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, #000 85%, transparent 100%);
 }
+
+/* Rails for the portrait step: the three ring paths (radius .35/.52/.70 of the
+   planet, tilted like the real rings) and the zone the face should fill. */
+.portrait-guide-hint { margin: .2rem 0 0; color: var(--setup-muted); font: .72rem/1.45 'Inter',sans-serif; }
+.setup-face-guide { display: none; position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.orbit-setup[data-active-step="0"] .setup-face-guide { display: block; }
+.setup-face-guide span, .setup-face-guide i { position: absolute; top: 50%; left: 50%; border: 1px dashed rgba(237,241,244,.32); border-radius: 50%; transform: translate(-50%, -50%) rotate(-10deg); }
+.setup-face-guide span:nth-child(1) { width: 70%; height: 14.6%; }
+.setup-face-guide span:nth-child(2) { width: 104%; height: 21.6%; border-color: rgba(237,241,244,.22); }
+.setup-face-guide span:nth-child(3) { width: 140%; height: 29.1%; border-color: rgba(237,241,244,.14); }
+.setup-face-guide i { top: 47%; width: 58%; height: 72%; border: 1px solid rgba(211,154,168,.55); transform: translate(-50%, -50%); }
+.setup-face-guide em { position: absolute; left: 50%; top: calc(47% + 37%); transform: translateX(-50%); white-space: nowrap; color: rgba(237,241,244,.6); font: italic .72rem 'Inter',sans-serif; letter-spacing: .04em; }
 
 .setup-preview-rings {
   position: absolute;
@@ -1420,3 +1443,10 @@ body.is-cosmos .hero-title, body.is-cosmos .orbit-key { visibility: hidden; }
 /* Instagram Login block at the top of the Instagram source card. */
 .instagram-connect { display: grid; gap: .5rem; margin: .75rem 0 1rem; }
 .instagram-connect .source-input-hint { margin: 0; }
+
+/* Portrait step on phones: room for the true-scale face and its guide. */
+@media (max-width: 768px) {
+  .orbit-setup:not(.is-settings)[data-active-step="0"] .setup-preview { min-height: 20rem; }
+  .orbit-setup:not(.is-settings)[data-active-step="0"] .setup-planet { width: min(52%, 12rem); }
+  .setup-face-guide em { display: none; }
+}

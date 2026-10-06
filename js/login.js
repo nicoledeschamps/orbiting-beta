@@ -42,7 +42,7 @@
     if (!configured) throw new Error('Account sign-in is unavailable right now. Please try again later.');
     if (await account.getSession()) { window.location.replace('./?view=profile'); return; }
     if (await account.isInviteOnly()) {
-      document.getElementById('inviteNote').textContent = 'Orbiting is invite-only for now. Use the personal setup link from your invitation to choose a password.';
+      document.getElementById('inviteNote').textContent = 'Orbit is invite-only for now. Use the personal setup link from your invitation to choose a password.';
     } else document.getElementById('newAccount').hidden = false;
     setBusy(false);
   }).catch(error => { status.textContent = error.message || 'Couldn’t connect. Please reload to try again.'; });

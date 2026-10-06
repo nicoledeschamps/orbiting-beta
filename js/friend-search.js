@@ -94,7 +94,7 @@
       input.focus();
       discoverable.disabled = !ready;
       if (!ready) {
-        message(configured ? 'Sign in to search and follow people.' : 'Search and following need an Orbiting account connection. Nicole and Brandon are prototype examples.');
+        message(configured ? 'Sign in to search and follow people.' : 'Search and following need an Orbit account connection. Nicole and Brandon are prototype examples.');
         return;
       }
       const settings = await OrbitingAccount.getDiscoverySettings();

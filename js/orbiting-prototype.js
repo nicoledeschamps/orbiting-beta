@@ -6,8 +6,8 @@
   const hasDemoFriend = sharedWander;
   const walkthroughMode = requestedView === 'walkthrough' || window.location.hash === '#walkthrough';
   const accountTestingMode = walkthroughMode;
-  if (sharedWander) document.title = 'Wander · Orbiting';
-  if (walkthroughMode) document.title = 'Walkthrough · Orbiting';
+  if (sharedWander) document.title = 'Wander · Orbit';
+  if (walkthroughMode) document.title = 'Walkthrough · Orbit';
   const setup = document.getElementById('orbitSetup');
   const panels = [...document.querySelectorAll('[data-setup-panel]')];
   const stepButtons = [...document.querySelectorAll('[data-setup-step]')];
@@ -48,18 +48,19 @@
   const portraitRefine = document.getElementById('portraitRefine');
   const portraitSize = document.getElementById('portraitSize');
   const portraitX = document.getElementById('portraitX');
+  const portraitY = document.getElementById('portraitY');
   function updatePortraitPosition() {
     document.getElementById('portraitSizeValue').textContent = `${portraitSize.value}%`;
     [setupPortrait, finalPortrait].forEach((image) => {
       image.style.scale = String(Number(portraitSize.value) / 100);
-      image.style.translate = `${portraitX.value}% 0%`;
+      image.style.translate = `${portraitX.value}% ${portraitY.value}%`;
     });
   }
   function resetPortraitPosition() {
-    portraitSize.value = '100'; portraitX.value = '0';
+    portraitSize.value = '100'; portraitX.value = '0'; portraitY.value = '0';
     updatePortraitPosition();
   }
-  [portraitSize, portraitX].forEach((control) => control.addEventListener('input', updatePortraitPosition));
+  [portraitSize, portraitX, portraitY].forEach((control) => control.addEventListener('input', updatePortraitPosition));
   document.getElementById('portraitPositionReset').addEventListener('click', resetPortraitPosition);
   const portraitBackground = document.getElementById('portraitBackground');
   const portraitFrame = document.getElementById('portraitFrame');
@@ -97,6 +98,7 @@
   const constellation = document.getElementById('setupConstellation');
   const constellationPicker = document.getElementById('constellationPicker');
   const featuredPlacements = document.getElementById('featuredPlacements');
+  const bulkPlacementControls = document.getElementById('bulkPlacementControls');
   const otherPlacementGroups = document.getElementById('otherPlacementGroups');
   const featuredPlacementCount = document.getElementById('featuredPlacementCount');
   const otherPlacementCount = document.getElementById('otherPlacementCount');
@@ -352,6 +354,7 @@
       : awaitingChoice ? 'Choose public posts or collections to fill a ring.'
       : 'Choose what to share or add photos to see your rings.';
     renderSetupRings();
+    syncScanResult();
   }
 
   function sourceIsApproved(source) {
@@ -366,15 +369,26 @@
     return source === 'spotify' ? parts[0] === 'user' : parts.length === 1;
   }
 
+  // Same rules as the public-source-preview function: country Pinterest hosts, /intl-xx/ Spotify paths, share-sheet short links.
+  const PINTEREST_HOST = /^(?:[a-z]{2}\.)?pinterest\.(?:com|ca|co\.uk|com\.au|com\.mx|co\.kr|fr|de|es|it|pt|ie|nz|ch|at|se|dk|nl|ph|cl|jp|ru|in)$/;
+  const SHORT_LINK_HOSTS = { pinterest: 'pin.it', spotify: 'spotify.link' };
   function validateSourceUrl(source, raw) {
     const url = new URL(String(raw).trim());
-    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    let host = url.hostname.toLowerCase().replace(/^www\./, '');
+    if (url.protocol === 'https:' && host === SHORT_LINK_HOSTS[source] && /^\/[A-Za-z0-9_-]+\/?$/.test(url.pathname)) {
+      url.hash = '';
+      url.search = '';
+      return url.href;
+    }
+    if (source === 'pinterest' && PINTEREST_HOST.test(host)) { host = 'pinterest.com'; url.hostname = 'www.pinterest.com'; }
+    if (source === 'spotify' && host === 'open.spotify.com') url.pathname = url.pathname.replace(/^\/intl-[a-z]{2}(?:-[a-z]{2})?\//i, '/');
     const parts = url.pathname.split('/').filter(Boolean);
     const hosts = { cosmos: 'cosmos.so', arena: 'are.na', pinterest: 'pinterest.com', spotify: 'open.spotify.com', instagram: 'instagram.com' };
     if (url.protocol !== 'https:' || url.username || url.password || url.port || host !== hosts[source]) throw new Error(`Use a public ${sourceChoices[source].name} link.`);
     if (source === 'arena' && (parts.length < 1 || parts.length > 2 || !parts.every(part => /^[a-z0-9_-]+$/.test(part)))) throw new Error('Use a public Are.na profile or channel link.');
     if (source === 'cosmos' && (parts.length < 1 || parts.length > 2 || !parts.every(part => /^[a-z0-9-]+$/i.test(part)))) throw new Error('Use a public Cosmos profile or collection link.');
-    if (source === 'pinterest' && (parts.length < 1 || parts.length > 2 || !parts.every(part => /^[a-z0-9_-]+$/i.test(part)))) throw new Error('Use a public Pinterest profile or board link.');
+    if (source === 'pinterest' && !(parts[0] === 'pin' && parts.length === 2 && /^\d+$/.test(parts[1]))
+      && (parts.length < 1 || parts.length > 2 || !parts.every(part => /^[a-z0-9_-]+$/i.test(part)))) throw new Error('Use a public Pinterest profile, board, or pin link.');
     if (source === 'spotify' && (parts.length !== 2 || (parts[0] === 'playlist' ? !/^[a-z0-9]+$/i.test(parts[1]) : parts[0] !== 'user' || !/^[a-z0-9._-]+$/i.test(parts[1])))) throw new Error('Use a public Spotify profile or playlist link.');
     if (source === 'instagram' && !(
       parts.length === 1 && /^[a-z0-9._]{1,30}$/i.test(parts[0]) && !['p', 'reel'].includes(parts[0]) ||
@@ -390,7 +404,7 @@
     if (sourceChoices[source].prefix && /^@?[a-z0-9._-]+$/i.test(value)) {
       return validateSourceUrl(source, `${sourceChoices[source].prefix}${value.replace(/^@/, '')}`);
     }
-    return validateSourceUrl(source, value);
+    return validateSourceUrl(source, /^[a-z0-9-]+(\.[a-z0-9-]+)+\//i.test(value) ? `https://${value}` : value);
   }
 
   function sourceInputValue(source, url) {
@@ -465,6 +479,10 @@
         }
         if (choice.url !== url || choice.selectedUrls.join('\n') !== selectedUrls.join('\n')) return;
         hasCurrentResult = true;
+        const resolved = results[0]?.status === 'fulfilled' ? results[0].value.url : '';
+        if (resolved && resolved !== url && new URL(url).hostname === SHORT_LINK_HOSTS[source]) {
+          try { choice.url = validateSourceUrl(source, resolved); } catch (_) {}
+        }
         choice.previewLoading = false;
         const first = results[0]?.status === 'fulfilled' ? results[0].value : null;
         if (rediscover && first) {
@@ -489,23 +507,29 @@
             return true;
           });
         const failed = results.filter((result) => result.status === 'rejected').length;
-        if (source === activeSource) sourceAuthStatus.textContent = source === 'instagram' && sourceIsProfile(source, url) && !choice.selectedUrls.length
+        const firstError = results.find((result) => result.status === 'rejected')?.reason?.message;
+        const message = source === 'instagram' && sourceIsProfile(source, url) && !choice.selectedUrls.length
           ? choice.options.length ? `${choice.options.length} recent public posts found. Choose which ones enter your orbit.`
             : 'Instagram could not list public posts here. Private posts cannot be imported; you can add your own copies through My Photos.'
           : choice.options.length && !choice.selectedUrls.length
           ? `${choice.name}: ${choice.options.length} public choice${choice.options.length === 1 ? '' : 's'} found. Select what enters your orbit.`
           : choice.items.length
             ? `${choice.name}: ${choice.items.length} public image${choice.items.length === 1 ? '' : 's'} found.${sourceIsApproved(source) ? ' They are now in your ring preview.' : ' Choose what to share to see the ring.'}${failed ? ` ${failed} link group${failed === 1 ? '' : 's'} could not be read.` : ''}`
-            : `No signal yet. There are no public ${sourceUnits[source] || 'images'} here.`;
+            : firstError && !first && /^(Use|That|Add|Choose|Paste)\b/.test(firstError) ? `Nothing found. ${firstError}`
+            : `Nothing found for ${sourceInputValue(source, url) || 'this link'}. Check the spelling and that the profile or ${sourceUnits[source]?.replace(/s$/, '') || 'page'} is public, or paste the full link.`;
+        choice.scanResult = { state: choice.options.length || choice.items.length ? 'found' : 'empty', text: message };
+        if (source === activeSource) sourceAuthStatus.textContent = message;
       } catch (error) {
         if (choice.url !== url) return;
         hasCurrentResult = true;
         choice.previewLoading = false;
         choice.items = [];
         choice.options = [];
-        if (source === activeSource) sourceAuthStatus.textContent = source === 'instagram'
+        const message = source === 'instagram'
           ? 'Instagram public posts could not be read right now. Private posts cannot be imported; add your own copies through My Photos.'
           : `Couldn’t reach that link. Try a full link, like ${choice.example}.`;
+        choice.scanResult = { state: 'error', text: message };
+        if (source === activeSource) sourceAuthStatus.textContent = message;
       }
     }));
     if (!hasCurrentResult) return;
@@ -554,7 +578,7 @@
       button.className = 'source-link-approve';
       button.dataset.useInstagram = instagramServerStatus.username || '';
       button.textContent = `Use @${instagramServerStatus.username}'s posts`;
-      note.textContent = 'Your Instagram is already connected to Orbiting.';
+      note.textContent = 'Your Instagram is already connected to Orbit.';
     } else {
       button.className = 'source-link-approve';
       button.dataset.connectInstagram = '';
@@ -616,6 +640,38 @@
     try { useConnectedInstagram(JSON.parse(event.newValue).username); } catch (_) {}
   });
 
+  // A board, collection, or playlist link the person typed in is what they want shared; don't make them confirm it twice.
+  function shareFoundLink(source) {
+    const choice = sourceChoices[source];
+    if (!choice.url || sourceIsProfile(source, choice.url) || !choice.items.length || choice.baseShared) return;
+    choice.baseShared = true;
+    choice.scanResult = { state: 'found', text: `${choice.name}: ${choice.items.length} public image${choice.items.length === 1 ? '' : 's'} found and added to your orbit.` };
+    if (source === activeSource) sourceAuthStatus.textContent = choice.scanResult.text;
+    renderSourceSharing();
+    syncSourceButtons();
+    updateSourcePreview();
+    if (window.HuesOrbit?.setPersonalImages) window.HuesOrbit.setPersonalImages(ringGroups());
+    document.body.classList.toggle('orbit-empty', !approvedSourceItems().length);
+  }
+
+  // The scan outcome sits right under the input, so a link that found nothing never reads as confirmed.
+  function syncScanResult() {
+    const choice = activeSource && activeSource !== 'photos' ? sourceChoices[activeSource] : null;
+    const result = !choice ? null
+      : choice.previewLoading ? { state: 'loading', text: `Scanning ${choice.name}…` }
+      : choice.url ? choice.scanResult : null;
+    const line = sourceSharing.querySelector('.source-scan-result');
+    if (line) {
+      line.hidden = !result;
+      line.dataset.state = result?.state || '';
+      line.textContent = result ? `${{ found: '✓ ', empty: '! ', error: '! ' }[result.state] || ''}${result.text}` : '';
+    }
+    const finish = document.getElementById('finishSources');
+    const nothing = Boolean(choice?.url && !choice.previewLoading && result && result.state !== 'found' && !sourceIsApproved(activeSource));
+    finish.disabled = Boolean(choice?.previewLoading);
+    finish.textContent = choice?.previewLoading ? 'Scanning…' : nothing ? `Skip ${choice.name} for now →` : 'Continue →';
+  }
+
   function renderSourceSharing() {
     const advanceToChoose = sourceStageAdvance && !settingsMode && activeSource && activeSource !== 'photos' && sourceChoices[activeSource]?.options.length > 0;
     if (advanceToChoose) { sourceStageAdvance = false; sourceChoices[activeSource].pickerOpen = true; setSourceStage('choose'); }
@@ -675,6 +731,10 @@
       button.dataset.approveSource = source;
       button.textContent = source === 'instagram' ? choice.approved ? 'Check for recent public posts again' : 'Find my public posts' : choice.approved ? 'Scan again' : 'Scan for signals';
       card.append(button);
+      const scanResult = document.createElement('p');
+      scanResult.className = 'source-scan-result';
+      scanResult.setAttribute('role', 'status');
+      card.append(scanResult);
       if (choice.approved && choice.url && !sourceIsProfile(source, choice.url)) {
         const share = document.createElement('button');
         share.type = 'button';
@@ -768,7 +828,7 @@
         if (source === 'instagram') {
           const collectionNote = document.createElement('p');
           collectionNote.className = 'source-input-hint';
-          collectionNote.textContent = 'Saved Collections are visible only to you or invited collaborators. Copy the links for the public posts you want from one; only those posts enter Orbiting.';
+          collectionNote.textContent = 'Saved Collections are visible only to you or invited collaborators. Copy the links for the public posts you want from one; only those posts enter your orbit.';
           extraPanel.append(collectionNote);
         }
         const addButton = document.createElement('button');
@@ -912,7 +972,7 @@
 
   function updateSkyTitle() {
     const first = skyTitleFirst.value.trim() || 'Orbit';
-    const second = skyTitleSecond.value.trim() || (skyTitleFirst.value.trim() ? '' : 'ing');
+    const second = skyTitleSecond.value.trim() || '';
     const secondColor = skyTitleSecondColor.value;
     setupSkyTitle.children[0].textContent = first;
     setupSkyTitle.children[1].textContent = second;
@@ -1218,6 +1278,27 @@
       </details>`;
   }
 
+  // One pair of sliders sets every featured star, for people who don't want to tune each one.
+  function renderBulkPlacementControls(featured) {
+    const available = chartPlacements.filter((placement) => placement.available);
+    bulkPlacementControls.hidden = !available.length;
+    if (!available.length) { bulkPlacementControls.innerHTML = ''; return; }
+    const shared = (setting, fallback) => {
+      const values = [...new Set(featured.map((placement) => placement[setting]))];
+      return values.length === 1 ? values[0] : featured.length ? Math.round(featured.reduce((sum, placement) => sum + placement[setting], 0) / featured.length) : fallback;
+    };
+    const glow = shared('strength', 72);
+    const opacity = shared('opacity', 72);
+    const allFeatured = featured.length === available.length;
+    bulkPlacementControls.innerHTML = `
+      <p class="bulk-placement-title">All featured stars <small>${featured.length ? `sets ${featured.length} at once` : 'feature stars to adjust them together'}</small></p>
+      <div class="featured-visual-controls">
+        <label class="constellation-control"><span>glow · all</span><output>${glow}%</output><input type="range" min="10" max="100" value="${glow}" data-bulk-setting="strength" ${featured.length ? '' : 'disabled'}></label>
+        <label class="constellation-control"><span>opacity · all</span><output>${opacity}%</output><input type="range" min="5" max="100" value="${opacity}" data-bulk-setting="opacity" ${featured.length ? '' : 'disabled'}></label>
+      </div>
+      <button class="placement-return" type="button" data-bulk-action="${allFeatured ? 'unfeature-all' : 'feature-all'}">${allFeatured ? 'return all to ambient' : `feature all ${available.length} placements`}</button>`;
+  }
+
   function renderOtherPlacement(placement) {
     return `
       <div class="other-placement-row${placement.available ? '' : ' is-unavailable'}" data-placement-name="${placement.name}">
@@ -1233,6 +1314,7 @@
       ? featured.map(renderFeaturedPlacement).join('')
       : '<p class="featured-placement-empty">Choose a placement below to make it brighter or interactive.</p>';
     featuredPlacementCount.textContent = `${featured.length} featured`;
+    renderBulkPlacementControls(featured);
     otherPlacementCount.textContent = `${remaining.length} placement${remaining.length === 1 ? '' : 's'}`;
     otherPlacementGroups.innerHTML = placementGroups.map((group) => {
       const placements = group.names.map((name) => remaining.find((placement) => placement.name === name)).filter(Boolean);
@@ -1532,7 +1614,7 @@
       },
       sharedSky: { enabled: shareSkyWithFriends.checked, constellations: shareSkyWithFriends.checked ? ownSkySigns() : [] },
       preferences: {
-        portraitPosition: { size: Number(portraitSize.value), x: Number(portraitX.value), y: 0 },
+        portraitPosition: { size: Number(portraitSize.value), x: Number(portraitX.value), y: Number(portraitY.value) },
         wanderSize: Number(wanderSize.value), wanderSpeed: Number(wanderSpeed.value), lightUpSpace: lightUpSpace.checked,
         combineSkyWithFriends: combineSkyWithFriends.checked, friendSkyIds: [...friendSkyIds]
       },
@@ -1554,7 +1636,7 @@
     if (!saved || saved.version !== 1) return;
     if (!preserveLocalMedia) await restoreOrbitMedia(saved.media);
     const position = saved.preferences?.portraitPosition || {};
-    for (const [control, key, fallback] of [[portraitSize, 'size', 100], [portraitX, 'x', 0]]) {
+    for (const [control, key, fallback] of [[portraitSize, 'size', 100], [portraitX, 'x', 0], [portraitY, 'y', 0]]) {
       control.value = String(Number.isFinite(position[key]) ? Math.max(Number(control.min), Math.min(Number(control.max), position[key])) : fallback);
     }
     updatePortraitPosition();
@@ -1667,7 +1749,7 @@
     accountPanel.querySelector('h1').textContent = mode === 'signin' ? 'Welcome back.' : 'Save your orbit.';
     if (mode === 'signin') {
       accountPanel.querySelector('.setup-intro').textContent = 'Sign in to return to your saved portrait, rings, and sky.';
-      document.querySelector('#accountEmail + small').textContent = 'Use the email address on your Orbiting account.';
+      document.querySelector('#accountEmail + small').textContent = 'Use the email address on your Orbit account.';
     } else if (accountConnected) {
       accountPanel.querySelector('.setup-intro').textContent = 'Create your account and step into your orbit. Verify your email when you’re ready to save across devices.';
       document.querySelector('#accountEmail + small').textContent = 'We’ll send you a verification link. You can enter your orbit first.';
@@ -2003,7 +2085,7 @@
     document.querySelector('#accountEmail + small').textContent = 'We’ll send you a verification link. You can enter your orbit first.';
     document.querySelector('#accountPassword + small').textContent = 'At least 8 characters. Never use a password from another site.';
     setAccountMode(accountMode);
-    birthPrivacyNote.textContent = 'Your birth details are saved privately with your Orbiting account to recreate your sky. Your place name is sent to Open-Meteo to find its coordinates and historical time zone. Friends see only your zodiac constellations if you turn on sky sharing.';
+    birthPrivacyNote.textContent = 'Your birth details are saved privately with your Orbit account to recreate your sky. Your place name is sent to Open-Meteo to find its coordinates and historical time zone. Friends see only your zodiac constellations if you turn on sky sharing.';
     showStep(currentStep);
     const session = await window.OrbitingAccount.getSession();
     if (session && needsPasswordSetup) { window.location.replace('account-access.html'); return; }
@@ -2319,6 +2401,7 @@
     setSourceStage('link');
     renderSourceSharing();
     sourceAuthStatus.textContent = 'Choose image files or a folder below. Your photos stay on this device.';
+    syncScanResult();
     document.getElementById('choosePhotoFiles').focus();
   });
 
@@ -2489,6 +2572,7 @@
       clearTimeout(sourcePreviewTimers.get(source));
       const nextUrl = sourceInputUrl(source, input.value);
       if (choice.url !== nextUrl) {
+        choice.scanResult = null;
         choice.selectedUrls = [];
         choice.baseShared = false;
         choice.options = [];
@@ -2505,8 +2589,11 @@
       renderSourceSharing();
       updateSourcePreview();
       await refreshPublicSources(source);
+      shareFoundLink(source);
     } catch (error) {
       sourceAuthStatus.textContent = error.message || 'Enter a valid public link.';
+      const line = sourceSharing.querySelector('.source-scan-result');
+      if (line) Object.assign(line, { hidden: false, textContent: `! ${sourceAuthStatus.textContent}` }).dataset.state = 'error';
       input.focus();
     }
   });
@@ -2529,6 +2616,7 @@
     choice.options = [];
     choice.nextPage = null;
     choice.items = [];
+    choice.scanResult = null;
     choice.previewLoading = Boolean(nextUrl);
     choice.pendingInput = nextUrl;
     sourceAuthStatus.textContent = nextUrl ? `Finding public ${choice.name} choices…` : 'Enter a public profile or item link, then choose what to share.';
@@ -2539,6 +2627,7 @@
       choice.url = nextUrl;
       choice.approved = true;
       await refreshPublicSources(source);
+      shareFoundLink(source);
     }, 650));
   });
 
@@ -2606,6 +2695,20 @@
   }));
 
   constellationPicker.addEventListener('click', (event) => {
+    const bulkAction = event.target.closest('[data-bulk-action]');
+    if (bulkAction) {
+      const feature = bulkAction.dataset.bulkAction === 'feature-all';
+      chartPlacements.filter((placement) => placement.available).forEach((placement) => {
+        if (feature && !placement.featured) {
+          if (placement.strength <= 24) placement.strength = 72;
+          if (placement.opacity <= 20) placement.opacity = 72;
+        }
+        if (!feature) placement.interactive = false;
+        placement.featured = feature;
+      });
+      renderBirthSky();
+      return;
+    }
     const action = event.target.closest('[data-action]');
     if (!action) return;
     const placement = chartPlacements.find((item) => item.name === action.dataset.placement);
@@ -2621,6 +2724,18 @@
   });
 
   constellationPicker.addEventListener('input', (event) => {
+    const bulkSetting = event.target.dataset.bulkSetting;
+    if (bulkSetting) {
+      const value = Number(event.target.value);
+      event.target.previousElementSibling.textContent = `${value}%`;
+      chartPlacements.filter((placement) => placement.available && placement.featured).forEach((placement) => { placement[bulkSetting] = value; });
+      featuredPlacements.querySelectorAll(`[data-setting="${bulkSetting}"]`).forEach((input) => {
+        input.value = value;
+        input.previousElementSibling.textContent = `${value}%`;
+      });
+      updateConstellationPreview();
+      return;
+    }
     const card = event.target.closest('[data-placement-name]');
     const placement = card && chartPlacements.find((item) => item.name === card.dataset.placementName);
     if (!placement || !event.target.dataset.setting) return;

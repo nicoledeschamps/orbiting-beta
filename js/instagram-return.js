@@ -9,10 +9,10 @@
   (async () => {
     try {
       await window.OrbitingAccount.isConfigured();
-      if (!await window.OrbitingAccount.getSession()) throw new Error('Sign in to Orbiting first, then connect Instagram again from your sources.');
+      if (!await window.OrbitingAccount.getSession()) throw new Error('Sign in to Orbit first, then connect Instagram again from your sources.');
       const result = await window.OrbitingAccount.finishInstagramConnect(params);
       status.textContent = `Connected${result.username ? ` as @${result.username}` : ''}. Your posts are joining your orbit; you can close this tab.`;
-      back.textContent = 'Back to Orbiting';
+      back.textContent = 'Back to Orbit';
       setTimeout(() => window.close(), 1500);
     } catch (error) {
       status.textContent = error.message || 'Instagram did not connect. Try again from your sources.';

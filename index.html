@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORBITING — prototype</title>
-  <meta name="description" content="Orbiting — a quiet social universe built from Hues of Saturn">
-  <meta property="og:title" content="Orbiting">
+  <title>ORBIT — prototype</title>
+  <meta name="description" content="Orbit — a quiet social universe built from Hues of Saturn">
+  <meta property="og:title" content="Orbit">
   <meta property="og:description" content="See what is moving through the lives and minds of the people you care about">
   <meta property="og:image" content="assets/saturn-face-transparent.webp">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261006-face">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261005-portrait-hand">
+  <link rel="stylesheet" href="css/style.css?v=20261006-feedback">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261006-feedback">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261005-hand-zoom">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-feedback">
   <script type="importmap">
   {
     "imports": {
@@ -37,7 +37,7 @@
   </section>
   <div class="orbit-setup is-leaving" id="orbitSetup" role="dialog" aria-modal="true" aria-label="Set up your orbit" aria-hidden="true" inert>
     <header class="setup-header">
-      <span class="setup-wordmark" id="setupWordmark">Orbiting</span>
+      <span class="setup-wordmark" id="setupWordmark">Orbit</span>
       <span class="setup-tagline">what orbits you</span>
       <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
       <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
@@ -93,13 +93,15 @@
             <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
             <label>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="50" max="200" value="100"></label>
             <label>Horizontal position<input id="portraitX" type="range" min="-50" max="50" value="0"></label>
+            <label>Vertical position<input id="portraitY" type="range" min="-50" max="50" value="0"></label>
+            <p class="portrait-guide-hint">Fit your face inside the outline in the preview. The dashed lines show where your rings will pass.</p>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
             <p>Write your name, a phrase, or anything that feels like yours. It will appear in two lines across your sky.</p>
             <div class="sky-title-fields">
               <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" autocomplete="off"></label>
-              <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="ing" autocomplete="off"></label>
+              <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="optional" autocomplete="off"></label>
             </div>
             <label class="sky-bio-field">Short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
             <label class="sky-title-color">Second-line color
@@ -183,6 +185,7 @@
                 <strong id="featuredPlacementTitle">Featured in your sky</strong>
                 <small id="featuredPlacementCount">0 featured</small>
               </div>
+              <div class="bulk-placement-controls" id="bulkPlacementControls" hidden></div>
               <div id="featuredPlacements"></div>
             </section>
             <details class="placement-accordion" id="placementAccordion">
@@ -241,7 +244,7 @@
       <aside class="setup-preview" aria-label="Live preview of your planet">
         <div class="setup-preview-stars" aria-hidden="true"></div>
         <div class="setup-preview-meta"><span>live preview</span><span id="previewState">portrait ready</span></div>
-        <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span>ing</span><span class="setup-sky-bio"></span></div>
+        <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span></span><span class="setup-sky-bio"></span></div>
         <div class="setup-constellation" id="setupConstellation" aria-label="Interactive preview of your birth sky">
           <svg viewBox="0 0 120 90">
             <g class="constellation-lines"><line x1="15" y1="65" x2="42" y2="32"/><line x1="42" y1="32" x2="66" y2="50"/><line x1="66" y1="50" x2="96" y2="18"/><line x1="66" y1="50" x2="103" y2="72"/></g>
@@ -252,6 +255,7 @@
         <div class="setup-hidden-thought" id="setupHiddenThought" role="status" hidden></div>
         <div class="setup-planet" id="setupPlanet" aria-hidden="true">
           <div class="setup-preview-rings" id="setupPreviewRings"></div>
+          <div class="setup-face-guide" aria-hidden="true"><span></span><span></span><span></span><i></i><em>face zone · rings pass in front</em></div>
           <img id="setupPortraitPreview" src="assets/saturn-face-transparent.webp" alt="">
         </div>
         <div class="editor-hotspots" id="editorHotspots" aria-label="Edit parts of your orbit" hidden>
@@ -441,7 +445,7 @@
       </div>
       <div class="people-search">
         <button class="people-search__toggle" id="peopleSearchToggle" type="button" aria-expanded="false" aria-controls="peopleSearchPanel">search ✦</button>
-        <section class="people-search__panel" id="peopleSearchPanel" aria-label="Find people in Orbiting" hidden>
+        <section class="people-search__panel" id="peopleSearchPanel" aria-label="Find people in Orbit" hidden>
           <div class="people-search__top"><strong>Find someone</strong><button id="peopleSearchClose" type="button" aria-label="Close people search">×</button></div>
           <label for="peopleSearchInput">Search by username</label>
           <input id="peopleSearchInput" type="search" placeholder="start typing a name" autocomplete="off" spellcheck="false" maxlength="20">
@@ -494,7 +498,7 @@
 
     <div class="hero-title">
       <h1 class="title-main" id="heroTitleFirst">Orbit</h1>
-      <h1 class="title-main title-saturn" id="heroTitleSecond">ing</h1>
+      <h1 class="title-main title-saturn" id="heroTitleSecond" hidden></h1>
       <p class="hero-bio" id="heroBio" hidden></p>
     </div>
 
@@ -532,7 +536,7 @@
 
   <section class="resources-page" id="resourcesPage" role="dialog" aria-modal="true" aria-labelledby="resourcesTitle" hidden>
     <header class="resources-page__header">
-      <span class="resources-page__wordmark">Orbiting</span>
+      <span class="resources-page__wordmark">Orbit</span>
       <button id="closeOrbitResources" type="button">← back to your orbit</button>
     </header>
     <div class="resources-page__body">
@@ -853,15 +857,15 @@
   <script src="js/gallery-data.js?v=20260407"></script>
   <script type="module" src="js/gallery-3d.js?v=20260410"></script>
   <script src="js/main.js?v=20261005-friendkey"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20261006-face"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261006-feedback"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261005-hand"></script>
-  <script src="js/orbiting-account.js?v=20261005-instagram"></script>
-  <script src="js/friend-search.js?v=20261004-pages"></script>
+  <script src="js/orbiting-account.js?v=20261006-feedback"></script>
+  <script src="js/friend-search.js?v=20261006-feedback"></script>
   <script src="js/shared-sky.js?v=2"></script>
-  <script src="js/following-cosmos.js?v=20261005-spaces"></script>
+  <script src="js/following-cosmos.js?v=20261006-friend-rings"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261005-wander-zoom"></script>
+  <script src="js/orbiting-prototype.js?v=20261006-feedback"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
