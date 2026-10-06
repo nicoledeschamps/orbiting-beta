@@ -4,6 +4,7 @@
   const sky = document.getElementById('wanderSharedSky');
   if (!layer || !sky) return;
   let loaded = false;
+  const grow = (rect, by) => ({ left: rect.left - by, right: rect.right + by, top: rect.top - by, bottom: rect.bottom + by });
   let sequence = 0;
 
   async function load() {
@@ -20,14 +21,26 @@
         ...(own.length ? [{ name: 'you', self: true, placements: own }] : []),
         ...skies.flatMap((result) => result.status === 'fulfilled' && result.value.constellations.length ? [result.value] : [])
       ];
-      const entries = window.OrbitingSharedSky.render(sky, people);
+      const rectOf = (element) => element && !element.hidden && element.offsetParent !== null ? element.getBoundingClientRect() : null;
+      const planet = document.getElementById('explorePlanet');
+      const entries = window.OrbitingSharedSky.render(sky, people, {
+        // Stay off Wander's planet of clippings, its heading, search, and the controls under it.
+        avoid: () => [rectOf(planet) && grow(rectOf(planet), 24), ...['.explore-layer__heading', '.people-search', '.wander-controls', '.wander-tools', '.wander-filters', '.explore-layer__empty']
+          .map((selector) => rectOf(layer.querySelector(selector))), rectOf(document.getElementById('cosmosDepthControl')),
+          rectOf(document.querySelector('.orbit-page-nav'))]
+      });
       sky.hidden = !entries.length;
       loaded = skies.every((result) => result.status === 'fulfilled');
     } catch (_) { /* Wander works without the shared sky. */ }
   }
 
   // Load when Wander opens; reload after following someone new.
-  new MutationObserver(() => { if (layer.getAttribute('aria-hidden') === 'false' && !loaded) load(); })
+  // Wander zooms in as it opens, so re-check the spacing once it has settled at full size.
+  const settle = () => { setTimeout(() => sky._keepClear?.(), 1000); };
+  new MutationObserver(() => {
+    if (layer.getAttribute('aria-hidden') !== 'false') return;
+    if (!loaded) load().then(settle); else settle();
+  })
     .observe(layer, { attributes: true, attributeFilter: ['aria-hidden'] });
   window.addEventListener('orbiting:following-changed', () => { loaded = false; if (layer.getAttribute('aria-hidden') === 'false') load(); });
   window.addEventListener('orbit:setup-changed', () => { loaded = false; });

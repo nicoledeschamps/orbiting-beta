@@ -203,6 +203,7 @@
       // With the key in place, the plain list of ring names is only kept for rings that have no images.
       if (buildKey(snapshot)) worldStatus.textContent = snapshot.rings.filter(ring => !ring.items.length).map(ring => ring.name + ' (no images available)').join(' · ');
       if (snapshot.failed) worldStatus.textContent += ' · Some source images could not load. Refresh your cosmos to retry.';
+      friendSky?._keepClear?.();  // The key and status just changed size; re-check the sky's spacing.
     } catch (_) { if (job === portalJob) worldStatus.textContent = 'This orbit could not load. Return to your cosmos and refresh to retry.'; }
   }
   // Their zodiac signs fill the sky of their page, only if they chose to share them.
@@ -216,8 +217,13 @@
       const signs = Array.isArray(shared?.constellations) ? shared.constellations : [];
       if (!signs.length) return;
       const own = window.OrbitSetup?.ownSkyPlacements?.() || [];
-      window.OrbitingSharedSky.render(friendSky, [{ name: `@${person.username}`, constellations: signs, placements: shared.placements || [] }],
-        { self: own.length ? { placements: own } : null });
+      const rectOf = (element) => element && !element.hidden ? element.getBoundingClientRect() : null;
+      window.OrbitingSharedSky.render(friendSky, [{ name: `@${person.username}`, constellations: signs, placements: shared.placements || [] }], {
+        self: own.length ? { placements: own } : null,
+        // Stay off their rings, their planet, and the page's title, back button, key and status.
+        avoid: () => [window.OrbitingSharedSky.orbitBand(world), rectOf(world), rectOf(dialog.querySelector('.followed-orbit__head')),
+          rectOf(close), rectOf(key), rectOf(worldStatus)]
+      });
       friendSky.hidden = false;
     } catch (_) { /* The page works without their sky. */ }
   }

@@ -1482,3 +1482,5 @@ label.is-reminded { outline: 2px solid #d39aa8; outline-offset: 6px; border-radi
 .shared-sky__meaning { color: #d8d3e0; font: .74rem/1.45 'Inter',sans-serif; }
 .shared-sky__shared { margin-top: .3rem; padding-top: .45rem; border-top: 1px solid rgba(255,240,210,.2); color: #f1c4cf; font: .74rem/1.45 'Inter',sans-serif; }
 .shared-sky__constellation.opens-down .shared-sky__tooltip { top: calc(100% + 1.1rem); bottom: auto; }
+/* An open or hovered constellation's card rises above the orbit's images. */
+.orbiting-shared-sky:has(.shared-sky__constellation:hover, .shared-sky__constellation:focus-visible, .shared-sky__constellation.is-open) { z-index: 40; }

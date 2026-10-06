@@ -39,6 +39,12 @@
     [78, 51, -16], [89, 73, 5], [67, 84, 13], [42, 87, -10],
     [18, 79, 16], [12, 58, -5], [24, 37, 8], [58, 31, -14]
   ];
+  // Free spots to move a constellation to when its own spot is covered by the orbit or the page's controls.
+  const spareSpots = [
+    [12, 12], [28, 9], [50, 8], [72, 9], [88, 12], [11, 26], [89, 26], [20, 20], [80, 20],
+    [12, 88], [28, 91], [50, 92], [72, 91], [88, 88], [11, 74], [89, 74], [20, 82], [80, 82],
+    [34, 16], [66, 16], [34, 86], [66, 86]
+  ];
   const svgNS = 'http://www.w3.org/2000/svg';
 
   // A person's placements grouped by sign. Older shares only list signs, so those keep a sign with no placements.
@@ -157,8 +163,52 @@
       fragment.append(button);
     });
     container.replaceChildren(fragment);
+    if (options.avoid) keepClear(container, options.avoid);
     return entries;
   }
 
-  window.OrbitingSharedSky = { merge, render, zodiacThemes, placementMeanings, elements };
+  // Move any constellation that would sit on something in `avoid()` (rectangles in screen pixels:
+  // ring bands, the face, buttons, titles) to the nearest free spare spot, so nothing overlaps.
+  function keepClear(container, avoid) {
+    const place = () => {
+      const box = container.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      const blocked = avoid().filter(Boolean);
+      const taken = [];
+      const hits = (rect) => [...blocked, ...taken].some((other) => rect.left < other.right && rect.right > other.left && rect.top < other.bottom && rect.bottom > other.top);
+      const rectAt = (button, left, top) => {
+        const width = button.offsetWidth + 24, height = button.offsetHeight + 24;
+        const x = box.left + box.width * left / 100, y = box.top + box.height * top / 100;
+        return { left: x - width / 2, right: x + width / 2, top: y - height / 2, bottom: y + height / 2 };
+      };
+      container.querySelectorAll('.shared-sky__constellation').forEach((button) => {
+        const home = [parseFloat(button.dataset.homeLeft ?? (button.dataset.homeLeft = parseFloat(button.style.left))), parseFloat(button.dataset.homeTop ?? (button.dataset.homeTop = parseFloat(button.style.top)))];
+        const spot = [home, ...spareSpots.slice().sort((a, b) => Math.hypot(a[0] - home[0], a[1] - home[1]) - Math.hypot(b[0] - home[0], b[1] - home[1]))]
+          .find(([left, top]) => !hits(rectAt(button, left, top)));
+        button.hidden = !spot;
+        if (!spot) return;
+        button.style.left = `${spot[0]}%`;
+        button.style.top = `${spot[1]}%`;
+        button.classList.toggle('opens-down', spot[1] < 45);
+        button.style.setProperty('--shared-tip-shift', spot[0] > 65 ? '-78%' : spot[0] < 35 ? '-22%' : '-50%');
+        taken.push(rectAt(button, spot[0], spot[1]));
+      });
+    };
+    place();
+    clearTimeout(container._keepClearTimer);
+    window.removeEventListener('resize', container._keepClear);
+    container._keepClear = () => { clearTimeout(container._keepClearTimer); container._keepClearTimer = setTimeout(place, 150); };
+    window.addEventListener('resize', container._keepClear);
+  }
+
+  // The band the rings sweep around a planet of this element: rings reach .7 of the planet's
+  // width out to each side and are tilted nearly flat, plus room for the images on them.
+  function orbitBand(planet) {
+    const rect = planet?.getBoundingClientRect();
+    if (!rect?.width) return null;
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2, reach = rect.width * .78;
+    return { left: cx - reach, right: cx + reach, top: cy - rect.width * .3, bottom: cy + rect.width * .3 };
+  }
+
+  window.OrbitingSharedSky = { merge, render, orbitBand, zodiacThemes, placementMeanings, elements };
 })();
