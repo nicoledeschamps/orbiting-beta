@@ -2,16 +2,17 @@
 // IMMERSIVE ORBIT v4 — hand-tracked Saturn
 //
 // Gestures (one-hand):
-//   • point          → aim: the photo under your fingertip lights up
-//   • open hand      → open the photo you just aimed at (hold ~¼s, hand still)
+//   • move           → aim: the cursor sits between thumb and index tips; the
+//                      photo under it lights up
+//   • pinch          → open that photo (thumb + index tips touch, like a click)
 //   • fist           → close the open photo (hold ~⅓s)
-//   • swipe (L/R)    → spin burst with a fast open hand, decays naturally
+//   • swipe (L/R)    → spin burst with a fast hand, decays naturally
 //   • swipe down     → also closes an open photo
 //
 // Onboarding:
 //   • "you're seen" flash on first hand detection (one shot)
-//   • progressive cards: spin → point-then-open → fist; the guide rail stays
-//     visible and lights up whichever pose it currently sees
+//   • progressive cards: spin → pinch → fist; the guide rail stays visible
+//     and lights up whatever the camera currently reads
 //
 // Wander: when the Wander planet is showing (body.is-explore), the same
 //   gestures spin that planet and open its clippings instead of the rings.
@@ -80,12 +81,16 @@ const SWIPE_REBOUND_BLOCK_MS = 350;  // after a swipe, ignore opposite-direction
 const DISMISS_MIN_DY        = 0.12;  // normalized frame-height downward displacement
 const DISMISS_DIR_RATIO     = 0.62;  // min |dy| / (|dx| + |dy|) — mostly vertical
 
-// ── Pose gestures: point to aim, open hand to open, fist to close ──
-const POINT_AIM_SCORE       = 0.7;   // clear finger-point needed to aim
-const AIM_MEMORY_MS         = 1500;  // the aimed photo stays chosen while the hand opens
-const OPEN_HOLD_MS          = 250;
+// ── Pose gestures: move to aim, pinch to open, fist to close ──────
+// Pinch gap = thumb-tip ↔ index-tip distance / hand size (wrist ↔ middle
+// MCP), on the aspect-corrected image. Real pinches measured 0.07–0.24;
+// points and open hands ≥ 0.55 (scripts/fixtures/hand-poses.json).
+const PINCH_CLOSED_GAP      = 0.25;  // at or below → fully pinched
+const PINCH_OPEN_GAP        = 0.40;  // at or above → not pinching
+const PINCH_BRAKE_GAP       = 0.45;  // fingers closing on a photo → hold the rings still
+const PINCH_METER_GAP       = 0.55;  // cursor ring starts filling below this gap
+const AIM_MEMORY_MS         = 400;   // a photo stays targeted briefly if the pinch nudges the cursor off it
 const FIST_HOLD_MS          = 300;
-const OPEN_MAX_PALM_SPEED   = 0.0004; // normalized units / ms — a faster open hand is a swipe, not an open
 const HOLD_METER_FADE_IN    = 0.04;  // progress below this → arc hidden
 const HOLD_METER_SMOOTH     = 0.35;  // EMA on displayed progress for smoothness
 
@@ -124,7 +129,7 @@ const state = {
   lastHandSeenTs: 0,
   handSpan: REFERENCE_HAND_SPAN,
   cursorPos: null,            // displayed cursor position (glides between detections)
-  poseScores: { point: 0, open: 0, fist: 0 },
+  poseScores: { pinch: 0, fist: 0, gap: NaN },
   debug: false,
 
   // Palm history for swipe detection
@@ -156,7 +161,6 @@ const state = {
 
   // Pose flags (kept for compatibility while the active UX stays simple)
   palmBraking: false,          // true while open-palm pose holds — decays spin fast
-  pointActive: false,          // true while index-point pose holds — cursor/hover mode
 };
 
 // ── DOM handles (resolved on init) ─────────────────────────────────
@@ -266,22 +270,14 @@ const GESTURE_ICONS = {
 // ══════════════════════════════════════════════════════════════════
 
 const GESTURE_DEFS = {
-  // Point: aim. Continuous — the cursor targets photos while the pose holds.
-  point: {
-    compute: (lm) => computePointScore(lm),
-    threshold: 0.6, releaseThreshold: 0.4,
-    fireHoldMs: 80, releaseHoldMs: 150, cooldown: 0,
-    priority: 1, mutualExclusion: ['open', 'fist'], continuous: true,
-    onFire: () => setPointing(true),
-    onRelease: () => setPointing(false),
-  },
-  // Open hand: opens the aimed photo. Speed-gated so a swipe never opens.
-  open: {
-    compute: (lm) => (state.palmSpeed > OPEN_MAX_PALM_SPEED * handScale() ? 0 : computePalmOpenScore(lm)),
-    threshold: 0.6, releaseThreshold: 0.3,
-    fireHoldMs: OPEN_HOLD_MS, releaseHoldMs: 200, cooldown: 600,
-    priority: 2,
-    onFire: () => onOpenFire(),
+  // Pinch: a click. Fires once as thumb and index tips meet; opens the photo
+  // under the cursor. Re-arms once the fingers part.
+  pinch: {
+    compute: (pose) => computePinchScore(pose),
+    threshold: 0.6, releaseThreshold: 0.1,
+    fireHoldMs: 60, releaseHoldMs: 80, cooldown: 300,
+    priority: 2, mutualExclusion: ['fist'],
+    onFire: () => onPinchFire(),
   },
   // Fist: closes the open photo. Does nothing else.
   fist: {
@@ -418,8 +414,8 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
         if (def.onFire) def.onFire(smoothed, raw);
       } catch (e) { console.warn('[ImmersiveOrbit] onFire threw:', e); }
       // NB: card advancement is driven by each gesture's specific handler
-      // (detectSwipe, onOpenFire, onFistFire) — not by generic pose entry.
-      // Point, in particular, advances only when an image actually opens.
+      // (detectSwipe, onPinchFire, onFistFire) — not by generic pose entry.
+      // Pinch, in particular, advances only when a photo actually opens.
       dispatch('orbit:gesture-fired', { gesture: key, score: scores[key] });
     } else if (outcome === 'wantStayActive') {
       if (def.continuous && def.onHold) {
@@ -457,16 +453,15 @@ function onHandLost() {
   updateLiveGuide();
 }
 
-function setPointing(on) {
-  state.pointActive = on;
-  if ($cursor) $cursor.classList.toggle('is-pointing', on);
-  if (on) pulseOnboardingIcon('point');
+function isPinching() {
+  return !!(gestureState.pinch && gestureState.pinch.active);
 }
 
-// Aiming = a clear point, with no photo open. Looser "pointActive" lingers
-// while the hand opens; aiming stops as soon as the index stops leading.
-function isAiming() {
-  return state.pointActive && !state.openedRing && state.poseScores.point >= POINT_AIM_SCORE;
+// Fingers closing toward a pinch over a photo: hold the rings still so the
+// target doesn't slide out from under the click.
+function isPinchApproaching(nowMs) {
+  const gap = state.handPose ? state.handPose.gap : Infinity;
+  return !state.openedRing && gap < PINCH_BRAKE_GAP && !!aimedRing(nowMs);
 }
 
 function aimedRing(nowMs) {
@@ -474,21 +469,30 @@ function aimedRing(nowMs) {
   return ring && ring.isConnected && nowMs - state.aimTs <= AIM_MEMORY_MS ? ring : null;
 }
 
-function onOpenFire() {
+function onPinchFire() {
+  if ($cursor) {
+    $cursor.classList.add('is-pinching');
+    setTimeout(() => { if ($cursor) $cursor.classList.remove('is-pinching'); }, 220);
+  }
+  pulseOnboardingIcon('pinch');
   if (state.openedRing) return;
   const ring = aimedRing(performance.now());
   if (!ring || !openTarget(ring)) return;
-  pulseOnboardingIcon('open');
-  markFirstGesture('open');
+  markFirstGesture('pinch');
 }
 
-// Guide rail: light up the pose the camera currently reads, so the user can
-// see what it thinks their hand is doing.
+// Guide rail: light up what the camera reads right now — aim while the
+// cursor is on a photo, pinch/fist while those poses are held.
 function updateLiveGuide() {
   if (!$guide) return;
-  for (const key of Object.keys(GESTURE_DEFS)) {
+  const live = {
+    aim: !state.openedRing && !!state.lastCursoredRing,
+    pinch: isPinching(),
+    fist: !!(gestureState.fist && gestureState.fist.active),
+  };
+  for (const [key, on] of Object.entries(live)) {
     const row = $guide.querySelector(`.orbit-hud-guide-row[data-gesture-key="${key}"]`);
-    if (row) row.classList.toggle('is-live', !!(gestureState[key] && gestureState[key].active));
+    if (row) row.classList.toggle('is-live', on);
   }
 }
 
@@ -602,9 +606,9 @@ function acceptHandDetection(hands, worldHands, nowMs) {
   state.handSpan = handSpanOf(primary);
   state.lastHandSeenTs = nowMs;
   state.poseScores = {
-    point: computePointScore(state.handPose),
-    open: computePalmOpenScore(state.handPose),
+    pinch: computePinchScore(state.handPose),
     fist: computeFistScore(state.handPose),
+    gap: state.handPose.gap,
   };
 }
 
@@ -614,7 +618,7 @@ function clearTracking() {
   state.handPose = null;
   state.otherHands = [];
   state.landmarkFilters = null;
-  state.poseScores = { point: 0, open: 0, fist: 0 };
+  state.poseScores = { pinch: 0, fist: 0, gap: NaN };
 }
 
 
@@ -652,7 +656,9 @@ function fingerBends(lm, useZ, xScale) {
 function handPose(image, world, xScale) {
   const flat = fingerBends(image, false, xScale);
   const deep = fingerBends(world || image, true, 1);
+  const flatDist = (a, b) => Math.hypot((a.x - b.x) * xScale, a.y - b.y);
   return {
+    gap: flatDist(image[4], image[8]) / Math.max(flatDist(image[0], image[9]), 1e-4),
     flat,
     curl: flat.map((b, i) => Math.max(b, deep[i])),
     straight: flat.map((b, i) => Math.min(b, deep[i])),
@@ -670,19 +676,13 @@ function computeFistScore(pose) {
   return curled * indexNotStraight;
 }
 
-// Open hand: every finger straight in at least one view and not strongly
-// bent overall.
-function computePalmOpenScore(pose) {
+// Pinch: thumb and index tips together — but not a fist, where the thumb
+// often rests on the curled index (real fists measured gaps down to 0.06).
+function computePinchScore(pose) {
   if (!pose) return 0;
-  return clamp((80 - Math.max(...pose.straight)) / 30, 0, 1) * clamp((110 - average(pose.curl)) / 30, 0, 1);
-}
-
-// Point: index straight, the other three curled.
-function computePointScore(pose) {
-  if (!pose) return 0;
-  const indexStraight = clamp((60 - pose.straight[0]) / 30, 0, 1);
-  const othersCurled = clamp((average(pose.curl.slice(1)) - 100) / 50, 0, 1);
-  return indexStraight * othersCurled;
+  const closed = clamp((PINCH_OPEN_GAP - pose.gap) / (PINCH_OPEN_GAP - PINCH_CLOSED_GAP), 0, 1);
+  const notFist = clamp((0.6 - computeFistScore(pose)) / 0.2, 0, 1);
+  return closed * notFist;
 }
 
 // ── Fist handler — closes an open photo. Never exits immersive mode;
@@ -739,7 +739,7 @@ function recordPalmSample(landmarks, nowMs) {
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
   if (state.openedRing) return 0;
-  if (isAiming()) return 0;   // moving a pointed finger is aiming, not spinning
+  if (isPinching()) return 0;   // moving while pinched is not a spin
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -973,7 +973,12 @@ function clearOpenedRingState() {
 // so it moves smoothly instead of stepping.
 function updateCursorPosition(landmarks, dtSec, nowMs) {
   if (!$cursor) return;
-  const target = landmarkToScreen(landmarks[8]);
+  // Between thumb and index tips: as they pinch together this point barely
+  // moves, so the click lands where you aimed.
+  const target = landmarkToScreen({
+    x: (landmarks[4].x + landmarks[8].x) / 2,
+    y: (landmarks[4].y + landmarks[8].y) / 2,
+  });
   if (!state.cursorPos) {
     state.cursorPos = target;
   } else {
@@ -989,11 +994,14 @@ function updateCursorPosition(landmarks, dtSec, nowMs) {
     $cursor.classList.add('is-visible');
     $cursor.setAttribute('aria-hidden', 'false');
   }
-  // Only a deliberate point picks a target. The last aim is remembered
-  // briefly so it survives the hand opening to select it.
-  if (isAiming()) {
-    state.aimRing = findRingImageAt(tip.x, tip.y);
-    state.aimTs = nowMs;
+  // Whatever is under the cursor is the target. Keep the last one briefly
+  // so a pinch that nudges the cursor off its edge still lands.
+  if (!state.openedRing) {
+    const under = findRingImageAt(tip.x, tip.y);
+    if (under || nowMs - state.aimTs > AIM_MEMORY_MS) {
+      state.aimRing = under;
+      state.aimTs = nowMs;
+    }
   }
   const hoveredRing = state.openedRing ? null : aimedRing(nowMs);
   if (hoveredRing !== state.lastCursoredRing) {
@@ -1027,14 +1035,16 @@ function setHoldMeter(rawProgress) {
   }
 }
 
-// The cursor ring fills while a pose is being held toward firing: an open
-// hand over an aimed photo, or a fist while a photo is open.
+// The cursor ring fills as thumb and index close on a photo (how near the
+// click is), or while a fist is held with a photo open.
 function updateHoldMeter(nowMs) {
-  const key = state.openedRing ? 'fist' : (aimedRing(nowMs) ? 'open' : null);
-  const st = key ? gestureState[key] : null;
-  const progress = st && !st.active && st.aboveSinceTs > 0
-    ? clamp((nowMs - st.aboveSinceTs) / GESTURE_DEFS[key].fireHoldMs, 0, 1)
-    : 0;
+  let progress = 0;
+  if (state.openedRing) {
+    const st = gestureState.fist;
+    if (st && !st.active && st.aboveSinceTs > 0) progress = clamp((nowMs - st.aboveSinceTs) / FIST_HOLD_MS, 0, 1);
+  } else if (aimedRing(nowMs) && state.handPose && !isPinching()) {
+    progress = clamp((PINCH_METER_GAP - state.handPose.gap) / (PINCH_METER_GAP - PINCH_CLOSED_GAP), 0, 1);
+  }
   setHoldMeter(progress);
 }
 
@@ -1153,13 +1163,13 @@ function updateDebugOverlay(haveHand) {
   if (!$debugPanel) return;
   const scale = handScale();
   const s = state.poseScores;
-  const best = Object.entries(s).sort((a, b) => b[1] - a[1])[0];
+  const best = [['pinch', s.pinch], ['fist', s.fist]].sort((a, b) => b[1] - a[1])[0];
   const pose = best && best[1] >= 0.6 ? best[0] : '—';
   const hands = haveHand ? 1 + state.otherHands.length : 0;
   $debugPanel.textContent = [
     `delegate ${state.delegate || '…'}  infer ${fmt(state.inferMsAvg, 1)}ms  ${fmt(state.detectHzAvg, 0)}Hz`,
     `hands ${hands}  span ${fmt(state.handSpan, 3)}  scale ×${fmt(scale, 2)}`,
-    `pose ${pose.padEnd(5)} point ${fmt(s.point, 2)}  open ${fmt(s.open, 2)}  fist ${fmt(s.fist, 2)}`,
+    `pose ${pose.padEnd(5)} pinch ${fmt(s.pinch, 2)} (gap ${fmt(s.gap, 2)})  fist ${fmt(s.fist, 2)}`,
     `palm ${fmt(state.palmSpeed * 1000, 2)}/s  swipe ≥ ${fmt(SWIPE_MIN_AVG_VEL * scale * 1000, 2)}/s over ${fmt(SWIPE_MIN_DX * scale, 3)}`,
     `spin ${fmt(state.currentVelocity, 0)}°/s  aim ${aimedRing(performance.now()) ? 'on' : 'off'}  active ${Object.keys(GESTURE_DEFS).filter((k) => gestureState[k].active).join(',') || '—'}`,
   ].join('\n');
@@ -1202,20 +1212,19 @@ function fireCursorSparkle() {
 //  ONBOARDING HUD
 // ══════════════════════════════════════════════════════════════════
 
-// First-impression cards: spin, then the select loop (point → open hand),
-// then close. The guide rail below keeps every gesture visible.
+// First-impression cards: spin, then pinch to open, then fist to close. The guide rail below keeps every gesture visible.
 const ONBOARDING_CARDS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'open',  icon: GESTURE_ICONS.point, label: 'point, then open hand' },
+  { key: 'pinch', icon: GESTURE_ICONS.pinch, label: 'pinch to open' },
   { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
 ];
 
 // Persistent guide rail — every gesture, always visible. Rows light up
-// (is-live) while the camera reads that pose.
+// (is-live) while the camera reads them.
 const GUIDE_RAIL_ITEMS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'point', icon: GESTURE_ICONS.point, label: 'point to aim' },
-  { key: 'open',  icon: GESTURE_ICONS.palm,  label: 'open hand to open' },
+  { key: 'aim',   icon: GESTURE_ICONS.point, label: 'move to aim' },
+  { key: 'pinch', icon: GESTURE_ICONS.pinch, label: 'pinch to open' },
   { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
 ];
 
@@ -1615,7 +1624,6 @@ function beginImmersiveSession() {
   state.aimRing = null;
   state.aimTs = 0;
   state.palmBraking = false;
-  state.pointActive = false;
   state.handSeenOnce = false;
   state.onboardingStarted = false;
   state.onboardingComplete = false;
@@ -1741,8 +1749,8 @@ function detectLoop(now) {
 
   // Brake only applies while we actually see the hand — tracking drops should
   // not freeze the spin.
-  // Aiming holds the rings still so the target doesn't slide away.
-  if (haveHand && (state.palmBraking || isAiming())) {
+  // Closing a pinch on a photo holds the rings still so it doesn't slide away.
+  if (haveHand && (state.palmBraking || isPinchApproaching(now))) {
     // Strong exponential decay toward 0 while palm-open held.
     state.currentVelocity *= Math.exp(-BRAKE_DECAY_RATE * dt);
     if (Math.abs(state.currentVelocity) < 1) state.currentVelocity = 0;
@@ -1803,7 +1811,6 @@ function exitImmersive(reason) {
   state.aimTs = 0;
   state.openedRing = null;
   state.palmBraking = false;
-  state.pointActive = false;
   state.lastSwipeDirection = 0;
   state.lastDismissTime = 0;
 

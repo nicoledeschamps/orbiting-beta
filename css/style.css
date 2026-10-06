@@ -4076,9 +4076,7 @@ body.immersive-active .orbit-hud {
 }
 
 /* While actually pinching — hold that bright state + pulse core */
-/* A relaxed hand only moves the cursor; pointing brightens it to show it can aim. */
-body.immersive-active .orbit-cursor.is-visible:not(.is-pointing) { opacity: 0.5; }
-.orbit-cursor.is-pointing .orbit-cursor-core,
+/* Pinch = click: the core pops as thumb and index meet. */
 .orbit-cursor.is-pinching .orbit-cursor-core {
   transform: scale(1.35);
   background: #fff3dc;
