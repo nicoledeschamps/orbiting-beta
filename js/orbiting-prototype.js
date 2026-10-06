@@ -46,6 +46,7 @@
   const clearPhotos = document.getElementById('clearPhotos');
   const portraitStatus = document.getElementById('portraitStatus');
   const portraitRefine = document.getElementById('portraitRefine');
+  const editSavedPortrait = document.getElementById('editSavedPortrait');
   const portraitSize = document.getElementById('portraitSize');
   const portraitX = document.getElementById('portraitX');
   const portraitY = document.getElementById('portraitY');
@@ -2156,6 +2157,12 @@
     finalPortrait.src = url;
     setupPortrait.style.opacity = '';
     finalPortrait.style.opacity = '';
+    syncEditSavedPortrait();
+  }
+
+  // A portrait saved earlier can be adjusted (background, zoom, touch up) without re-uploading.
+  function syncEditSavedPortrait() {
+    editSavedPortrait.hidden = !(portraitRefine.hidden && setupPortrait.src.startsWith('blob:') && setupPortrait.style.opacity !== '0');
   }
 
   const lassoHints = {
@@ -2212,10 +2219,10 @@
     }
   }
 
-  async function loadPortraitFile(file) {
+  async function loadPortraitFile(file, { saved = false } = {}) {
     if (!file) return;
     const job = ++portraitJob;
-    resetPortraitPosition();
+    if (!saved) resetPortraitPosition();
     window.clearTimeout(edgeTimer);
     if (originalPortraitUrl) URL.revokeObjectURL(originalPortraitUrl);
     if (cutoutPortraitUrl) URL.revokeObjectURL(cutoutPortraitUrl);
@@ -2238,13 +2245,27 @@
       if (job !== portraitJob) return;
       portraitCutout = cutout;
       portraitRefine.hidden = false;
+      syncEditSavedPortrait();
       await renderPortrait(job);
+      if (saved && job === portraitJob) {
+        portraitStatus.textContent += ' Only the finished portrait was saved, so “bring back” can restore only what’s in it. To start over, choose the original photo.';
+      }
     } catch (error) {
       if (job !== portraitJob) return;
-      portraitStatus.textContent = 'Could not prepare this photo. You can keep it as is or try another.';
+      portraitStatus.textContent = saved ? 'Could not open your saved portrait for editing. It is unchanged.' : 'Could not prepare this photo. You can keep it as is or try another.';
       portraitRefine.hidden = true;
+      syncEditSavedPortrait();
     }
   }
+
+  editSavedPortrait.addEventListener('click', async () => {
+    try {
+      const blob = await (await fetch(setupPortrait.src)).blob();
+      await loadPortraitFile(new File([blob], 'saved-portrait.png', { type: blob.type || 'image/png' }), { saved: true });
+    } catch (_) {
+      portraitStatus.textContent = 'Could not open your saved portrait for editing. It is unchanged.';
+    }
+  });
 
   portraitInput.addEventListener('change', () => {
     loadPortraitFile(portraitInput.files && portraitInput.files[0]);

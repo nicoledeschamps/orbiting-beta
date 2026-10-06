@@ -616,15 +616,16 @@
 .setup-planet > img {
   /* Scale model of the finished orbit: there the face image is 100% of the
      ring container (style.css .saturn-body img), centred, with the same mask. */
+  /* Centred with inset + auto margins, not transform: translate(-50%, -50%), because the
+     face's own scale (size slider, portrait-centre.js fitting) would scale that offset too. */
   position: absolute;
   z-index: 2;
-  top: 50%;
-  left: 50%;
+  inset: 0;
   width: 100%;
   max-width: none;
   height: auto;
-  margin: 0;
-  transform: translate(-50%, -50%);
+  margin: auto;
+  transform: none;
   object-fit: contain;
   filter: saturate(.72) contrast(1.04) drop-shadow(0 1.4rem 1.5rem rgba(0,0,0,.45));
   -webkit-mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), #000 85%, transparent 100%);
