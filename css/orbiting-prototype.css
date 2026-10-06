@@ -640,8 +640,8 @@
 .setup-face-guide span:nth-child(1) { width: 70%; height: 14.6%; }
 .setup-face-guide span:nth-child(2) { width: 104%; height: 21.6%; border-color: rgba(237,241,244,.22); }
 .setup-face-guide span:nth-child(3) { width: 140%; height: 29.1%; border-color: rgba(237,241,244,.14); }
-.setup-face-guide i { top: 47%; width: 58%; height: 72%; border: 1px solid rgba(211,154,168,.55); transform: translate(-50%, -50%); }
-.setup-face-guide em { position: absolute; left: 50%; top: calc(47% + 37%); transform: translateX(-50%); white-space: nowrap; color: rgba(237,241,244,.6); font: italic .72rem 'Inter',sans-serif; letter-spacing: .04em; }
+.setup-face-guide i { top: 50%; width: 58%; height: 72%; border: 1px solid rgba(211,154,168,.55); transform: translate(-50%, -50%); }
+.setup-face-guide em { position: absolute; left: 50%; top: calc(50% + 37%); transform: translateX(-50%); white-space: nowrap; color: rgba(237,241,244,.6); font: italic .72rem 'Inter',sans-serif; letter-spacing: .04em; }
 
 .setup-preview-rings {
   position: absolute;

@@ -2209,7 +2209,7 @@
     portraitRefine.hidden = true;
     showPortrait(originalPortraitUrl);
     try {
-      const { cutOutPortrait } = await import('./portrait-cutout.js?v=5');
+      const { cutOutPortrait } = await import('./portrait-cutout.js?v=6');
       const cutout = await cutOutPortrait(file, (message) => {
         if (job === portraitJob) portraitStatus.textContent = message;
       });
@@ -2262,7 +2262,7 @@
     const box = lassoBox();
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.globalAlpha = 0.2;
-    context.drawImage(original, box.x * original.width, box.y * original.height, box.w * original.width, box.h * original.height, 0, 0, canvas.width, canvas.height);
+    portraitCutout.drawRegion(context, original, box, canvas.width, canvas.height);
     context.globalAlpha = 1;
     if (lassoPreview) context.drawImage(lassoPreview, 0, 0, canvas.width, canvas.height);
     if (!lassoDraft.length) return;

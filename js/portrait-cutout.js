@@ -5,8 +5,11 @@ const SEGMENTER_MODEL = 'https://storage.googleapis.com/mediapipe-models/image_s
 const FACE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite';
 const SEGMENT_SIZE = 1024;
 const OUTPUT_SIZE = 2048;
-// Crop only when the head-and-shoulders frame covers less than this share of the photo.
-const FRAME_MAX_AREA = 0.6;
+// Every framed portrait puts the face where the demo portrait's sits: centred
+// across, its centre 54% down, the face box 47% of the square crop's width.
+// The finished orbit centres the image on the rings, so this keeps faces centred.
+const FACE_SHARE = 0.467;
+const FACE_CENTER_Y = 0.54;
 let visionPromise;
 let segmenterPromise;
 let faceDetectorPromise;
@@ -57,15 +60,21 @@ function canvasBlob(canvas) {
   });
 }
 
-// Head-and-shoulders box around a detected face, in 0–1 photo coordinates.
+// Square box placing the detected face like the demo, in 0–1 photo coordinates.
+// It may reach past the photo's edges; that area stays transparent rather than
+// sliding the face off centre.
 function frameAroundFace(face, width, height) {
-  const boxWidth = Math.min(width, face.width * 3.2);
-  const boxHeight = Math.min(height, boxWidth * 1.15);
-  const centerX = face.originX + face.width / 2;
-  const left = Math.max(0, Math.min(width - boxWidth, centerX - boxWidth / 2));
-  const top = Math.max(0, Math.min(height - boxHeight, face.originY - face.height * 0.75));
-  const frame = { x: left / width, y: top / height, w: boxWidth / width, h: boxHeight / height };
-  return frame.w * frame.h < FRAME_MAX_AREA ? frame : null;
+  const side = face.width / FACE_SHARE;
+  const left = face.originX + face.width / 2 - side / 2;
+  const top = face.originY + face.height / 2 - side * FACE_CENTER_Y;
+  return { x: left / width, y: top / height, w: side / width, h: side / height };
+}
+
+// Draw the `box` region (0–1 coordinates, possibly past the edges) of `image` to fill the canvas.
+export function drawRegion(context, image, box, width, height) {
+  const scaleX = width / (box.w * image.width);
+  const scaleY = height / (box.h * image.height);
+  context.drawImage(image, -box.x * image.width * scaleX, -box.y * image.height * scaleY, image.width * scaleX, image.height * scaleY);
 }
 
 function largestFace(detector, image) {
@@ -192,12 +201,13 @@ export async function cutOutPortrait(file, onProgress = () => {}) {
     context.drawImage(buildMask(removeBackground, edge, edits), 0, 0);
     if (!framed || !frame) return URL.createObjectURL(await canvasBlob(output));
     const crop = canvasOf(frame.w * full.width, frame.h * full.height);
-    crop.getContext('2d').drawImage(output, frame.x * full.width, frame.y * full.height, crop.width, crop.height, 0, 0, crop.width, crop.height);
+    drawRegion(crop.getContext('2d'), output, frame, crop.width, crop.height);
     return URL.createObjectURL(await canvasBlob(crop));
   }
 
   return {
     render,
+    drawRegion,
     automaticReady,
     framingReady,
     original: full,
