@@ -795,7 +795,7 @@ body.orbit-personalized .constellations > :not(.orbiting-birth-sky):not(.orbitin
 .orbiting-sky-star:disabled { cursor: default; }
 .orbiting-shared-sky { position: absolute; inset: 0; pointer-events: none; }
 .orbiting-shared-sky[hidden] { display: none; }
-.shared-sky__constellation { position: absolute; width: clamp(3rem, 7vw, 6rem); min-width: 2.75rem; padding: 0; border: 0; background: transparent; color: #fff2dc; pointer-events: auto; cursor: help; }
+.shared-sky__constellation { position: absolute; width: clamp(3rem, 7vw, 6rem); min-width: 2.75rem; padding: 0; border: 0; background: transparent; color: #fff2dc; pointer-events: auto; cursor: pointer; }
 .shared-sky__constellation svg { display: block; width: 100%; overflow: visible; filter: drop-shadow(0 0 .35rem rgba(255,240,210,.55)); }
 .shared-sky__constellation line { stroke: rgba(255,240,210,.62); stroke-width: .85; }
 .shared-sky__constellation circle { fill: rgba(255,248,232,.96); }
