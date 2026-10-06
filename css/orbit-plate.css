@@ -463,7 +463,9 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 .friend-card__status:empty { display: none; }
 .friend-card__status { margin: .75rem 0 0; color: var(--op-rose); font: 400 12px var(--op-ui); }
 @media (max-width: 767px) {
-  .cosmos-heading { top: max(1rem, env(safe-area-inset-top)); left: max(1rem, env(safe-area-inset-left)); max-width: calc(100vw - 2rem); }
+  /* Below the top links (notifications · settings · resources · sign out), which fill a phone's width. */
+  .explore-layer__heading { top: calc(max(.85rem, env(safe-area-inset-top)) + 44px); }
+  .cosmos-heading { top: calc(max(.85rem, env(safe-area-inset-top)) + 44px); left: max(1rem, env(safe-area-inset-left)); max-width: calc(100vw - 2rem); }
   .cosmos-heading__title { font-size: clamp(1.4rem, 5.4vw, 2rem); }
   .friend-card { top: auto; right: 1rem; left: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); width: auto; max-height: 70%; transform: none; }
   .friend-card__planet { width: 120px; margin: .5rem auto; }
@@ -508,9 +510,15 @@ body.friend-entering .cosmos-heading { opacity: 0; }
    shoulders and sides softly, sized to the person, so square crops never show hard edges. */
 .saturn-body img.is-fitted,
 .setup-planet > img.is-fitted,
-.followed-orbit__planet > .following-cosmos__core.has-cutout > img.is-fitted {
+.followed-orbit__planet > .following-cosmos__core.has-cutout > img.is-fitted,
+.following-cosmos__sphere > .following-cosmos__core.has-cutout > img.is-fitted {
   -webkit-mask-image: linear-gradient(to bottom, transparent var(--top-edge, 0%), #000 var(--top-solid, 0%), #000 var(--keep-top, 50%), transparent var(--keep-top, 50%)), radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), #000 70%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent var(--top-edge, 0%), #000 var(--top-solid, 0%), #000 var(--keep-top, 50%), transparent var(--keep-top, 50%)), radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), #000 70%, transparent 100%);
   -webkit-mask-composite: source-over;
   mask-composite: add;
 }
+
+/* A friend's small planet is a scale model of their full orbit: the same face box and fitting
+   as .followed-orbit__planet, instead of the old 2x zoom that let uncut photos spill out. */
+.following-cosmos__sphere > .following-cosmos__core.has-cutout { inset: 16%; display: flex; align-items: center; justify-content: center; overflow: visible; }
+.following-cosmos__sphere > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; transform-origin: 50% 50%; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); }

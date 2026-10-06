@@ -76,13 +76,10 @@
       portrait.src = ownPortrait ? snapshot.portraitSrc : snapshot.portraitAsset;
       if (ownPortrait) core.classList?.add('has-cutout');
       portrait.alt = `${person.username}'s portrait`;
-      // On their full page their face is fitted like every face: centred, the same size for everyone.
-      if (!near && ownPortrait) {
-        const size = 100;
-        const centre = window.OrbitPortraitCentre;
-        if (centre) { centre.apply(portrait, null, size); centre.watch(portrait, (placement) => centre.apply(portrait, placement, size)); }
-        else portrait.style.scale = String(size / 100);
-      }
+      // Their face is fitted like every face, on their full page and on their small planet alike:
+      // centred, the same size for everyone (portrait-centre.js).
+      const centre = window.OrbitPortraitCentre;
+      if (ownPortrait && centre) { centre.apply(portrait, null); centre.watch(portrait, (placement) => centre.apply(portrait, placement)); }
       // A site copy may leave a supplied portrait out; fall back to the initial instead of a broken image.
       portrait.onerror = () => { core.replaceChildren(); core.textContent = person.username.slice(0, 1).toUpperCase(); };
       core.append(portrait);
