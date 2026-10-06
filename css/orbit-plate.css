@@ -390,7 +390,7 @@
 .followed-orbit__planet > .following-cosmos__core.has-cutout { inset: 16%; display: flex; align-items: center; justify-content: center; overflow: visible; box-shadow: none; }
 /* Same scale as your own face (style.css .saturn-body img: 147% of a 68% body = the ring container's width).
    Undo the small planet's zoom (position: absolute + scale(2)), which made a friend's face ~2.6x too big. */
-.followed-orbit__planet > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%); }
+.followed-orbit__planet > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; transform-origin: 50% 50%; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); }
 @media (max-width: 680px) { .followed-orbit__head { padding-top: 76px; max-width: 86vw; } #closeFollowedOrbit { top: 14px; left: 20px; right: auto; padding: 0; margin: 0; } }
 
 /* Wander: under "Welcome to the death of the algorithm.", a line on what this space is. */
@@ -503,3 +503,14 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 .orbit-setup-tip__actions { display: flex; align-items: center; gap: 14px; }
 .orbit-notifications__item .orbit-setup-tip__ignore { min-height: 36px; padding: 0 4px; background: none; color: var(--op-gray); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
 .orbit-notifications__item .orbit-setup-tip__ignore:hover { background: none; color: var(--op-soft); }
+
+/* A fitted portrait (portrait-centre.js): keep the top half whole (hair, hats) and fade the
+   shoulders and sides softly, sized to the person, so square crops never show hard edges. */
+.saturn-body img.is-fitted,
+.setup-planet > img.is-fitted,
+.followed-orbit__planet > .following-cosmos__core.has-cutout > img.is-fitted {
+  -webkit-mask-image: linear-gradient(to bottom, transparent var(--top-edge, 0%), #000 var(--top-solid, 0%), #000 var(--keep-top, 50%), transparent var(--keep-top, 50%)), radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), #000 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent var(--top-edge, 0%), #000 var(--top-solid, 0%), #000 var(--keep-top, 50%), transparent var(--keep-top, 50%)), radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), #000 70%, transparent 100%);
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+}

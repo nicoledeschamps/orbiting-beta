@@ -51,15 +51,14 @@
   const portraitY = document.getElementById('portraitY');
   function updatePortraitPosition() {
     document.getElementById('portraitSizeValue').textContent = `${portraitSize.value}%`;
+    // Faces are fitted to the demo portrait's place and size (portrait-centre.js), then the size slider applies.
     [setupPortrait, finalPortrait].forEach((image) => {
-      image.style.scale = String(Number(portraitSize.value) / 100);
-      // centreShift centres a cutout whose person sits off to one side (portrait-centre.js).
-      image.style.translate = `${Number(portraitX.value) + Number(image.dataset.centreShift || 0)}% ${portraitY.value}%`;
+      if (window.OrbitPortraitCentre) window.OrbitPortraitCentre.apply(image, image._orbitPlacement || null, Number(portraitSize.value));
+      else image.style.scale = String(Number(portraitSize.value) / 100);
     });
   }
-  [setupPortrait, finalPortrait].forEach((image) => window.OrbitPortraitCentre?.watch(image, (shift) => {
-    image.dataset.centreShift = String(shift);
-    image.style.setProperty('--centre-shift', `${shift}%`);  // keeps the soft edge fade on the face
+  [setupPortrait, finalPortrait].forEach((image) => window.OrbitPortraitCentre?.watch(image, (placement) => {
+    image._orbitPlacement = placement;
     updatePortraitPosition();
   }));
   function resetPortraitPosition() {
@@ -2173,7 +2172,7 @@
     portraitBackground.textContent = removed ? 'background removed' : 'original background';
     portraitFrame.hidden = !portraitCutout?.frame;
     portraitFrame.setAttribute('aria-pressed', String(portraitFramed));
-    portraitFrame.textContent = portraitFramed ? 'zoomed to your face' : 'full photo';
+    portraitFrame.textContent = portraitFramed ? (portraitCutout?.frame?.byFace === false ? 'centred on you' : 'zoomed to your face') : 'full photo';
     portraitEdgeField.hidden = !removed;
     portraitLassoUndo.disabled = !portraitEdits.length;
     portraitLassoClear.disabled = !portraitEdits.length;
@@ -2182,7 +2181,9 @@
   function portraitSummary() {
     if (!portraitCutout) return '';
     const parts = [portraitCutout.automaticAvailable && portraitRemoveBg ? 'Background removed.' : 'Original background.'];
-    if (portraitCutout.frame && portraitFramed) parts.push('We zoomed in on your face so it fills the planet.');
+    if (portraitCutout.frame && portraitFramed) parts.push(portraitCutout.frame.byFace === false
+      ? 'We couldn\'t find your face clearly, so we centred you in the planet.'
+      : 'We zoomed in on your face so it fills the planet.');
     else if (portraitCutout.frame) parts.push('Showing your full photo.');
     if (!portraitCutout.automaticAvailable) parts.push('We couldn’t find a clear outline. Use touch up to trim it yourself.');
     return parts.join(' ');
@@ -2228,7 +2229,7 @@
     portraitRefine.hidden = true;
     showPortrait(originalPortraitUrl);
     try {
-      const { cutOutPortrait } = await import('./portrait-cutout.js?v=6');
+      const { cutOutPortrait } = await import('./portrait-cutout.js?v=7');
       const cutout = await cutOutPortrait(file, (message) => {
         if (job === portraitJob) portraitStatus.textContent = message;
       });

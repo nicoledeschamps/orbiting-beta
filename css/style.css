@@ -464,8 +464,8 @@ body {
   object-fit: contain;
   /* Soften cutout edges */
   filter: brightness(1.02) contrast(1.02);
-  mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%);
+  mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%);
 }
 
 /* Subtle glow highlight — overlaps the face shape */

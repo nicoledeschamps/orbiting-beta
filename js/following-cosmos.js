@@ -85,14 +85,10 @@
       // On their full page, their face uses the size they chose, exactly like their own orbit does,
       // and sits in the centre even if their saved cutout has them off to one side.
       if (!near && ownPortrait) {
-        const pos = snapshot.portraitPosition || { size: 100, x: 0, y: 0 };
-        portrait.style.scale = String(pos.size / 100);
-        const place = (shift = 0) => {
-          portrait.style.translate = `${pos.x + shift}% ${pos.y}%`;
-          portrait.style.setProperty('--centre-shift', `${shift}%`);  // keeps the soft edge fade on the face
-        };
-        place();
-        window.OrbitPortraitCentre?.watch(portrait, place);
+        const size = snapshot.portraitPosition?.size ?? 100;
+        const centre = window.OrbitPortraitCentre;
+        if (centre) { centre.apply(portrait, null, size); centre.watch(portrait, (placement) => centre.apply(portrait, placement, size)); }
+        else portrait.style.scale = String(size / 100);
       }
       // A site copy may leave a supplied portrait out; fall back to the initial instead of a broken image.
       portrait.onerror = () => { core.replaceChildren(); core.textContent = person.username.slice(0, 1).toUpperCase(); };

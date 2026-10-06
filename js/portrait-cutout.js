@@ -70,6 +70,16 @@ function frameAroundFace(face, width, height) {
   return { x: left / width, y: top / height, w: side / width, h: side / height };
 }
 
+// No face found (sunglasses, a profile, a hat's shadow, far away): frame the person's outline
+// instead, centred, with a little room around it, so the portrait is still centred and sized.
+const PERSON_MARGIN = 1.12;
+function frameAroundPerson(person, width, height) {
+  const side = Math.max(person.width, person.height) * PERSON_MARGIN;
+  const left = person.x + person.width / 2 - side / 2;
+  const top = person.y + person.height / 2 - side / 2;
+  return { x: left / width, y: top / height, w: side / width, h: side / height, byFace: false };
+}
+
 // Draw the `box` region (0–1 coordinates, possibly past the edges) of `image` to fill the canvas.
 export function drawRegion(context, image, box, width, height) {
   const scaleX = width / (box.w * image.width);
@@ -138,7 +148,8 @@ export async function cutOutPortrait(file, onProgress = () => {}) {
       const found = largestFace(detector, crop);
       if (found) face = { originX: found.originX + left, originY: found.originY + person.y, width: found.width, height: found.height };
     }
-    frame = face ? frameAroundFace(face, source.width, source.height) : null;
+    frame = face ? { ...frameAroundFace(face, source.width, source.height), byFace: true }
+      : person ? frameAroundPerson(person, source.width, source.height) : null;
     return Boolean(frame);
   }).catch(() => false);
 
