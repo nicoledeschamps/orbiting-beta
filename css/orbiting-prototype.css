@@ -627,8 +627,8 @@
   transform: translate(-50%, -50%);
   object-fit: contain;
   filter: saturate(.72) contrast(1.04) drop-shadow(0 1.4rem 1.5rem rgba(0,0,0,.45));
-  -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, #000 85%, transparent 100%);
-  mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, #000 85%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, #000 85%, transparent 100%);
+  mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, #000 85%, transparent 100%);
 }
 
 /* Rails for the portrait step: the three ring paths (radius .35/.52/.70 of the

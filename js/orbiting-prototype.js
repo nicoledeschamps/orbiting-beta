@@ -53,9 +53,15 @@
     document.getElementById('portraitSizeValue').textContent = `${portraitSize.value}%`;
     [setupPortrait, finalPortrait].forEach((image) => {
       image.style.scale = String(Number(portraitSize.value) / 100);
-      image.style.translate = `${portraitX.value}% ${portraitY.value}%`;
+      // centreShift centres a cutout whose person sits off to one side (portrait-centre.js).
+      image.style.translate = `${Number(portraitX.value) + Number(image.dataset.centreShift || 0)}% ${portraitY.value}%`;
     });
   }
+  [setupPortrait, finalPortrait].forEach((image) => window.OrbitPortraitCentre?.watch(image, (shift) => {
+    image.dataset.centreShift = String(shift);
+    image.style.setProperty('--centre-shift', `${shift}%`);  // keeps the soft edge fade on the face
+    updatePortraitPosition();
+  }));
   function resetPortraitPosition() {
     portraitSize.value = '100'; portraitX.value = '0'; portraitY.value = '0';
     updatePortraitPosition();

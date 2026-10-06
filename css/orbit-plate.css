@@ -390,7 +390,7 @@
 .followed-orbit__planet > .following-cosmos__core.has-cutout { inset: 16%; display: flex; align-items: center; justify-content: center; overflow: visible; box-shadow: none; }
 /* Same scale as your own face (style.css .saturn-body img: 147% of a 68% body = the ring container's width).
    Undo the small planet's zoom (position: absolute + scale(2)), which made a friend's face ~2.6x too big. */
-.followed-orbit__planet > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, black 85%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at 50% 48%, black 85%, transparent 100%); }
+.followed-orbit__planet > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at calc(50% - var(--centre-shift, 0%)) 48%, black 85%, transparent 100%); }
 @media (max-width: 680px) { .followed-orbit__head { padding-top: 76px; max-width: 86vw; } #closeFollowedOrbit { top: 14px; left: 20px; right: auto; padding: 0; margin: 0; } }
 
 /* Wander: under "Welcome to the death of the algorithm.", a line on what this space is. */
