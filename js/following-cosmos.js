@@ -65,7 +65,8 @@
     try { return await promise; } catch (error) { cache.delete(person.followed_user_id); throw error; }
   }
 
-  const NEAR_TILE_SPACING = 46, NEAR_TILE_HALF = 11;
+  // Small tiles with room between them, so a friend's planet reads as a tiny copy of an orbit, not a smear of images.
+  const NEAR_TILE_SPACING = 40, NEAR_TILE_SIZE = [11, 14], NEAR_TILE_HALF = 7;
   const nearRingRatio = index => .62 + index * .22;
 
   function drawOrbit(container, snapshot, person, near, tweens) {
@@ -108,7 +109,7 @@
         const radius = width * nearRingRatio(index);
         const count = Math.min(ring.items.length, Math.max(5, Math.round(2 * Math.PI * radius / NEAR_TILE_SPACING)));
         const tween = orbit.buildRing?.(ring.items.slice(0, count), back, front, radius,
-          [16, 22], [65 + index * 20, 85 + index * 20], ring.items, { previewOnly: true, startAngle: index * 120 });
+          NEAR_TILE_SIZE, [65 + index * 20, 85 + index * 20], ring.items, { previewOnly: true, startAngle: index * 120 });
         if (tween) tweens.push(tween);
         return;
       }
@@ -285,6 +286,10 @@
     if (!count) return;
     const width = window.innerWidth || 1024, height = window.innerHeight || 768;
     const radius = globeRadius(list, width, height);
+    // A tall phone screen has no room beside your rings, so there friends circle you up and down instead.
+    const tall = height > width * 1.2;
+    const reachY = tall ? Math.min(height * .3, height / 2 - 140) : radius * .8;
+    const reachX = tall ? Math.min(radius, width / 2 - 56) : radius;
     list.forEach((planet, index) => {
       let x, y, z;
       if (count < 6) {
@@ -295,8 +300,10 @@
         x = Math.cos(angle) * ring; z = Math.sin(angle) * ring;
         y = lat * .9 - z * .4;
       }
+      // Up and down on an ellipse: the near side swings right of your planet, the far side left, never across your face.
+      if (tall) [x, y] = [-y * 1.6, x];
       const near = (z + 1) / 2;
-      planet.style.transform = `translate(-50%, -50%) translate(${(x * radius).toFixed(1)}px, ${(y * radius * .8).toFixed(1)}px) scale(${(.6 + .55 * near).toFixed(3)})`;
+      planet.style.transform = `translate(-50%, -50%) translate(${(x * reachX).toFixed(1)}px, ${(y * reachY).toFixed(1)}px) scale(${(.6 + .55 * near).toFixed(3)})`;
       planet.style.zIndex = z > 0 ? '6' : '2';
       planet.style.opacity = (.45 + .55 * near).toFixed(2);
       planet.dataset.near = String(near > .62);
