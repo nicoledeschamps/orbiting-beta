@@ -473,3 +473,24 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 /* Wander: the planet zooms in from the distance with your scroll/swipe instead of sliding in from the right. */
 .explore-planet { transform: scale(var(--explore-zoom, 1)); transform-origin: 50% 50%; }
 .explore-layer.is-active .explore-planet { animation: none; }
+
+/* Notifications tab: a badge on the top nav and a small panel under it. */
+#openOrbitNotifications { position: relative; }
+.orbit-notifications__badge { position: absolute; top: 2px; right: -14px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--op-wine); color: #fff; font: 600 10px/16px var(--op-ui); text-align: center; letter-spacing: 0; }
+.orbit-notifications { position: absolute; z-index: 31; top: calc(clamp(1rem, 3vw, 2.3rem) + 48px); right: clamp(1rem, 3vw, 2.5rem); width: min(22rem, calc(100vw - 2rem)); max-height: min(28rem, 70vh); overflow-y: auto; padding: 14px 16px 16px; border: 1px solid var(--op-line); border-radius: 14px; background: rgba(7, 8, 11, .94); color: var(--op-silver); font-family: var(--op-ui); box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, .55); backdrop-filter: blur(10px); }
+.orbit-notifications[hidden] { display: none; }
+.orbit-notifications__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.orbit-notifications__top strong { font: 400 18px var(--op-read); }
+.orbit-notifications__top button { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--op-soft); font-size: 22px; cursor: pointer; }
+.orbit-notifications__list { margin: 0; padding: 0; list-style: none; }
+.orbit-notifications__item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--op-line); }
+.orbit-notifications__item p { margin: 0; font-size: 14px; line-height: 1.4; color: var(--op-soft); }
+.orbit-notifications__item strong { color: #fff; font-weight: 500; }
+.orbit-notifications__item small { display: block; color: var(--op-gray); font-size: 12px; }
+.orbit-notifications__item.is-unread p::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--op-rose); vertical-align: middle; }
+.orbit-notifications__item button { flex: none; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--op-wine); color: #fff; font: 500 13px var(--op-ui); cursor: pointer; }
+.orbit-notifications__item button:hover { background: var(--op-wine-hover); }
+.orbit-notifications__item button:disabled { opacity: .55; cursor: progress; }
+.orbit-notifications__item > span { flex: none; color: var(--op-gray); font-size: 12px; }
+.orbit-notifications__status { margin: 8px 0 0; color: var(--op-gray); font: italic 400 14px/1.5 var(--op-read); }
+.orbit-notifications__status:empty { display: none; }
