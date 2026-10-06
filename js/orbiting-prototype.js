@@ -3140,7 +3140,7 @@
         birthInputs[0].value && !shareSkyWithFriends.checked && { id: 'shared_sky', text: 'You can show your zodiac signs to people who orbit you, on your page and in their Wander. Your birth details stay private.', action: 'turn on sharing', step: 2, focus: 'shareSkyWithFriends' },
         !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 },
         // Hand control needs a camera and a fine pointer (immersive-orbit.js turns phones away), so only offer it there.
-        window.matchMedia?.('(hover: hover) and (pointer: fine)').matches && { id: 'hand_control', text: 'Try hand control: step inside your orbit and spin it, open photos and zoom with your hands. Nothing is recorded and nothing leaves your browser.', action: 'try it', hands: true }
+        window.matchMedia?.('(hover: hover) and (pointer: fine)').matches && { id: 'hand_control', text: 'Try hand control: step inside your orbit and spin it, open photos and zoom with your hands. Nothing is recorded and nothing leaves your browser.', action: 'try it', hands: true, learn: 'how it works' }
       ].filter(Boolean);
     },
     openStep(step, focusId) {

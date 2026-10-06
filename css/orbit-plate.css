@@ -535,3 +535,16 @@ body.friend-entering .cosmos-heading { opacity: 0; }
   .orbit-refresh { left: .5rem; bottom: calc(1.1rem + 44px); max-width: calc(100vw - 2rem); }
   .orbit-refresh__button { font-size: 11px; }
 }
+
+/* Resources: a short guide to hand control, with the same icons as the in-orbit guide. */
+.resources-hands { margin: 0 0 2.5rem; padding: 1.25rem 1.4rem; border: 1px solid var(--op-line); border-radius: 14px; }
+.resources-hands h3 { margin: 0 0 .5rem; color: #fff; font: 400 clamp(1.4rem, 3vw, 1.8rem) var(--op-read); }
+.resources-hands > p { margin: 0; color: var(--op-soft); font: 400 14px/1.55 var(--op-ui); }
+.resources-hands__moves { display: grid; gap: .6rem; margin: 1rem 0; padding: 0; list-style: none; }
+.resources-hands__moves li { display: flex; align-items: center; gap: .85rem; color: var(--op-soft); font: italic 400 1rem/1.45 var(--op-read); }
+.resources-hands__moves strong { color: #fff; font-style: normal; font-weight: 400; }
+.resources-hands__icon { flex: none; width: 28px; height: 28px; color: var(--op-silver); }
+.resources-hands__icon svg { width: 100%; height: 100%; }
+.resources-hands > p.resources-hands__note { color: var(--op-gray); font-size: 12px; }
+.orbit-notifications__item .orbit-setup-tip__learn { min-height: 36px; padding: 0 4px; background: none; color: var(--op-soft); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.orbit-notifications__item .orbit-setup-tip__learn:hover { background: none; color: #fff; }

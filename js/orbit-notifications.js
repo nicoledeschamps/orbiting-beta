@@ -68,7 +68,21 @@
       ignore.textContent = 'ignore';
       ignore.setAttribute('aria-label', `Ignore: ${tip.text}`);
       ignore.addEventListener('click', () => ignoreTip(tip, ignore));
-      actions.append(go, ignore);
+      actions.append(go);
+      if (tip.learn) {
+        // A page to read what the moves are before trying them: Resources, at its hand-control guide.
+        const learn = document.createElement('button');
+        learn.type = 'button';
+        learn.className = 'orbit-setup-tip__learn';
+        learn.textContent = tip.learn;
+        learn.addEventListener('click', () => {
+          close();
+          document.getElementById('openOrbitResources')?.click();
+          window.setTimeout(() => document.getElementById('resourcesHandControl')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 100);
+        });
+        actions.append(learn);
+      }
+      actions.append(ignore);
       row.append(text, actions);
       tipsList.append(row);
     }

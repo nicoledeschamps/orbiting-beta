@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261006-fit">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261006-editportrait">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-refresh">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-handsguide">
   <script type="importmap">
   {
     "imports": {
@@ -564,6 +564,18 @@
       <p class="resources-page__eyebrow">a small constellation of places</p>
       <h2 id="resourcesTitle">Resources<span>.</span></h2>
       <p class="resources-page__intro">A few places for making, collecting, and getting lost in an idea.</p>
+      <section class="resources-hands" id="resourcesHandControl" aria-labelledby="resourcesHandTitle">
+        <h3 id="resourcesHandTitle">Hand control</h3>
+        <p>Move through your orbit with your hands. On a computer with a camera, press the ✦ under your planet. Nothing is recorded and nothing leaves your browser.</p>
+        <ul class="resources-hands__moves">
+          <li><span class="resources-hands__icon" data-gesture-icon="swipe" aria-hidden="true"></span><span><strong>Swipe</strong> a flat hand quickly across to spin your rings.</span></li>
+          <li><span class="resources-hands__icon" data-gesture-icon="point" aria-hidden="true"></span><span><strong>Move</strong> your hand to aim at a photo.</span></li>
+          <li><span class="resources-hands__icon" data-gesture-icon="pinch" aria-hidden="true"></span><span><strong>Pinch</strong> your thumb and index finger together to open it.</span></li>
+          <li><span class="resources-hands__icon" data-gesture-icon="frame" aria-hidden="true"></span><span><strong>Frame</strong>: make an L with both hands and hold to zoom into your orbit’s photos.</span></li>
+          <li><span class="resources-hands__icon" data-gesture-icon="fist" aria-hidden="true"></span><span><strong>Fist</strong>: close a photo, or zoom back out.</span></li>
+        </ul>
+        <p class="resources-hands__note">It works in Wander too. Inside hand control, press ? to see the moves again.</p>
+      </section>
       <div class="resources-page__list">
         <a href="https://nicoledeschamps.github.io/cut-it-out/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">01</span><span><strong>Cut It Out</strong><small>a hand-cut digital collage tool</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
         <a href="https://www.are.na/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">02</span><span><strong>Are.na</strong><small>collect and connect ideas</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
@@ -879,7 +891,7 @@
   <script src="js/gallery-data.js?v=20260407"></script>
   <script type="module" src="js/gallery-3d.js?v=20260410"></script>
   <script src="js/main.js?v=20261005-friendkey"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20261006-feedback"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261006-handsguide"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261005-hand"></script>
   <script src="js/orbiting-account.js?v=20261006-setuptips"></script>
@@ -888,9 +900,9 @@
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
   <script src="js/following-cosmos.js?v=20261006-smallplanets"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
-  <script src="js/orbit-notifications.js?v=20261006-hands"></script>
+  <script src="js/orbit-notifications.js?v=20261006-handsguide"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261006-hands"></script>
+  <script src="js/orbiting-prototype.js?v=20261006-handsguide"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>

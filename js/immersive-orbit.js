@@ -1763,6 +1763,7 @@ function openModal(opts) {
   } else {
     const beats = [
       'your camera becomes a quiet controller.',
+      'spin your orbit, pinch a photo to open it, frame it with both hands to zoom.',
       'nothing is recorded. nothing leaves your browser.',
       "once you're inside, the first move will show itself.",
     ];
@@ -2204,13 +2205,22 @@ function onScroll() {
   if (rect.bottom < window.innerHeight * 0.35) exitImmersive('scroll');
 }
 
+// The Resources page lists the same moves with the same icons.
+function fillGestureIcons() {
+  document.querySelectorAll('[data-gesture-icon]').forEach((el) => {
+    const icon = GESTURE_ICONS[el.dataset.gestureIcon];
+    if (icon) el.innerHTML = icon;
+  });
+}
+
 function dispatch(name, detail) {
   try { window.dispatchEvent(new CustomEvent(name, { detail: detail || {} })); } catch (e) {}
 }
 
 // ── Boot ────────────────────────────────────────────────────────
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => { fillGestureIcons(); init(); });
 } else {
+  fillGestureIcons();
   init();
 }
