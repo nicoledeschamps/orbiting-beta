@@ -90,7 +90,7 @@
       return;
     }
     close();
-    window.OrbitSetup.openStep(tip.step);
+    window.OrbitSetup.openStep(tip.step, tip.focus);
   }
 
   async function ignoreTip(tip, control) {

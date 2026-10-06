@@ -1450,3 +1450,6 @@ body.is-cosmos .hero-title, body.is-cosmos .orbit-key { visibility: hidden; }
   .orbit-setup:not(.is-settings)[data-active-step="0"] .setup-planet { width: min(52%, 12rem); }
   .setup-face-guide em { display: none; }
 }
+
+/* A notification reminder pointed here: pulse the setting once. */
+label.is-reminded { outline: 2px solid #d39aa8; outline-offset: 6px; border-radius: 6px; transition: outline-color .4s; }

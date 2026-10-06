@@ -3038,21 +3038,31 @@
   });
 
   // What a signed-in person hasn't set up yet, for reminders in notifications.
+  // The demo portrait is Nicole's own face (from her portfolio), so her account never gets the portrait reminder.
+  const DEMO_PORTRAIT_OWNERS = new Set(['huesofsaturn']);
   window.OrbitSetup = {
     checklist() {
       if (!signedInUser) return [];
-      const ownPortrait = (savedMedia.portrait && !savedMedia.portrait.asset) || setupPortrait.src.startsWith('blob:');
+      const ownPortrait = (savedMedia.portrait && !savedMedia.portrait.asset) || setupPortrait.src.startsWith('blob:')
+        || DEMO_PORTRAIT_OWNERS.has(accountUsername.value.trim().toLowerCase());
       return [
         !ownPortrait && { id: 'portrait', text: 'Your planet still shows the demo face. Add your own portrait.', action: 'add portrait', step: 0 },
         !approvedSourceItems().length && !localPhotoUrls.length && { id: 'sources', text: 'Your rings are empty. Connect Pinterest, Spotify, Are.na, Cosmos, or add photos.', action: 'connect', step: 1 },
         !birthInputs[0].value && { id: 'sky', text: 'Add your birth date to light up your sky.', action: 'add birth date', step: 2 },
+        birthInputs[0].value && !shareSkyWithFriends.checked && { id: 'shared_sky', text: 'You can let friends include your zodiac signs in their shared sky. Your birth details stay private.', action: 'turn on sharing', step: 2, focus: 'shareSkyWithFriends' },
         !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 }
       ].filter(Boolean);
     },
-    openStep(step) {
+    openStep(step, focusId) {
       settingsButton.click();
       showStep(step);
-      stepButtons[step].focus();
+      const target = focusId && document.getElementById(focusId);
+      if (!target) { stepButtons[step].focus(); return; }
+      target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      window.setTimeout(() => target.focus({ preventScroll: true }), 450);
+      const row = target.closest('label');
+      row?.classList.add('is-reminded');
+      window.setTimeout(() => row?.classList.remove('is-reminded'), 2400);
     }
   };
 
