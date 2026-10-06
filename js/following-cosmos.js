@@ -49,7 +49,10 @@
           if (blob && window.URL?.createObjectURL) portraitSrc = window.URL.createObjectURL(blob);
         } catch (_) { /* fall back to the initial */ }
       }
-      return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
+      const pos = orbit.portraitPosition && typeof orbit.portraitPosition === 'object' ? orbit.portraitPosition : {};
+      const clamp = (value, min, max, fallback) => Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+      const portraitPosition = { size: clamp(pos.size, 50, 200, 100), x: clamp(pos.x, -50, 50, 0), y: clamp(pos.y, -50, 50, 0) };
+      return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, portraitPosition, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
         provider: (ring.sources || [ring.source])[0],
         items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
@@ -75,6 +78,12 @@
       portrait.src = ownPortrait ? snapshot.portraitSrc : snapshot.portraitAsset;
       if (ownPortrait) core.classList?.add('has-cutout');
       portrait.alt = `${person.username}'s portrait`;
+      // On their full page, their face uses the size and position they chose, exactly like their own orbit does.
+      const pos = snapshot.portraitPosition;
+      if (!near && ownPortrait && pos) {
+        portrait.style.scale = String(pos.size / 100);
+        portrait.style.translate = `${pos.x}% ${pos.y}%`;
+      }
       // A site copy may leave a supplied portrait out; fall back to the initial instead of a broken image.
       portrait.onerror = () => { core.replaceChildren(); core.textContent = person.username.slice(0, 1).toUpperCase(); };
       core.append(portrait);
