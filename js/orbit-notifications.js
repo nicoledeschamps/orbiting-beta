@@ -1,15 +1,20 @@
-// Notifications tab: tells you when someone starts orbiting (following) you.
+// Notifications tab: tells you when someone starts orbiting (following) you,
+// and reminds new people of setup steps they haven't finished until they do them or ignore them.
 (() => {
   const button = document.getElementById('openOrbitNotifications');
   const badge = document.getElementById('orbitNotificationsBadge');
   const panel = document.getElementById('orbitNotifications');
   const list = document.getElementById('orbitNotificationsList');
   const status = document.getElementById('orbitNotificationsStatus');
+  const tipsSection = document.getElementById('orbitSetupTips');
+  const tipsList = document.getElementById('orbitSetupTipsList');
   const signOut = document.getElementById('signOutOrbit');
   const REFRESH_MS = 90 * 1000;
   let items = [];
+  let tips = [];
   let timer = 0;
   let loading = false;
+  let again = false;
   const api = () => window.OrbitingAccount;
 
   function timeAgo(value) {
@@ -27,15 +32,84 @@
   }
 
   function renderBadge() {
-    const unread = items.filter((item) => item.unread).length;
+    const unread = items.filter((item) => item.unread).length + tips.length;
     badge.hidden = !unread;
     badge.textContent = unread > 9 ? '9+' : String(unread);
     button.setAttribute('aria-label', unread ? `Notifications, ${unread} new` : 'Notifications');
   }
 
+  async function loadTips() {
+    const checklist = window.OrbitSetup?.checklist?.() || [];
+    const [dismissed, discovery] = await Promise.all([
+      api().listDismissedSetupTips(),
+      api().getDiscoverySettings().catch(() => ({ discoverable: true }))
+    ]);
+    if (!discovery.discoverable) checklist.push({ id: 'findable', text: 'Friends can’t find you in search yet.', action: 'make me findable' });
+    tips = checklist.filter((tip) => !dismissed.includes(tip.id));
+  }
+
+  function renderTips() {
+    tipsList.replaceChildren();
+    tipsSection.hidden = !tips.length;
+    for (const tip of tips) {
+      const row = document.createElement('li');
+      row.className = 'orbit-notifications__item orbit-setup-tip';
+      const text = document.createElement('p');
+      text.textContent = tip.text;
+      const actions = document.createElement('div');
+      actions.className = 'orbit-setup-tip__actions';
+      const go = document.createElement('button');
+      go.type = 'button';
+      go.textContent = tip.action;
+      go.addEventListener('click', () => doTip(tip, go));
+      const ignore = document.createElement('button');
+      ignore.type = 'button';
+      ignore.className = 'orbit-setup-tip__ignore';
+      ignore.textContent = 'ignore';
+      ignore.setAttribute('aria-label', `Ignore: ${tip.text}`);
+      ignore.addEventListener('click', () => ignoreTip(tip, ignore));
+      actions.append(go, ignore);
+      row.append(text, actions);
+      tipsList.append(row);
+    }
+  }
+
+  async function doTip(tip, control) {
+    if (tip.id === 'findable') {
+      control.disabled = true;
+      try {
+        await api().setDiscoverable(true);
+        tips = tips.filter((entry) => entry.id !== tip.id);
+        renderTips();
+        renderBadge();
+        status.textContent = 'People can now find you by your username.';
+      } catch (error) {
+        control.disabled = false;
+        status.textContent = error.message || 'Could not change that right now.';
+      }
+      return;
+    }
+    close();
+    window.OrbitSetup.openStep(tip.step);
+  }
+
+  async function ignoreTip(tip, control) {
+    control.disabled = true;
+    try {
+      await api().dismissSetupTip(tip.id);
+      tips = tips.filter((entry) => entry.id !== tip.id);
+      renderTips();
+      renderBadge();
+    } catch (error) {
+      control.disabled = false;
+      status.textContent = error.message || 'Could not ignore that right now.';
+    }
+  }
+
   function renderList() {
+    renderTips();
     list.replaceChildren();
-    status.textContent = items.length ? '' : 'No one has started orbiting you yet. When someone does, they show up here.';
+    status.textContent = items.length || tips.length ? '' : 'No one has started orbiting you yet. When someone does, they show up here.';
     for (const item of items) {
       const row = document.createElement('li');
       row.className = `orbit-notifications__item${item.unread ? ' is-unread' : ''}`;
@@ -62,16 +136,19 @@
   }
 
   async function refresh() {
-    if (loading || !api()?.listNotifications) return;
+    if (!api()?.listNotifications) return;
+    if (loading) { again = true; return; }
     loading = true;
     try {
-      items = await api().listNotifications();
+      const [follows] = await Promise.all([api().listNotifications(), loadTips().catch(() => {})]);
+      items = follows;
       renderBadge();
       if (!panel.hidden) renderList();
     } catch (error) {
       if (!panel.hidden) status.textContent = error.message || 'Notifications could not load. Try again soon.';
     } finally {
       loading = false;
+      if (again) { again = false; refresh(); }
     }
   }
 
@@ -100,10 +177,10 @@
     if (!items.some((item) => item.unread)) return;
     try {
       await api().markNotificationsSeen();
-      // Keep the dots visible while the panel is open; the badge clears now.
-      badge.hidden = true;
-      button.setAttribute('aria-label', 'Notifications');
+      // Keep the dots visible while the panel is open; follows leave the badge now.
+      // Setup reminders stay counted until they are done or ignored.
       items = items.map((item) => ({ ...item, unread: false }));
+      renderBadge();
     } catch (_) { /* The badge stays; it clears on the next successful open. */ }
   }
 
@@ -122,6 +199,7 @@
   button.addEventListener('click', () => (panel.hidden ? open() : close()));
   document.getElementById('orbitNotificationsClose').addEventListener('click', () => { close(); button.focus(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !panel.hidden) { close(); button.focus(); } });
+  window.addEventListener('orbit:setup-changed', () => { if (timer) refresh(); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && timer) refresh(); });
 
   // The orbit shows "sign out" once someone is signed in; notifications follow it.

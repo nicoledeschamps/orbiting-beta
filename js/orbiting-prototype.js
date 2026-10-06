@@ -192,7 +192,9 @@
     }
     savedMedia = { portrait, uploads };
     savedPortraitSrc = setupPortrait.src;
-    return window.OrbitingAccount.saveOrbit(collectOrbitData(), signedInUser.id);
+    const result = await window.OrbitingAccount.saveOrbit(collectOrbitData(), signedInUser.id);
+    announceSetupChanged();
+    return result;
   }
 
   async function restoreOrbitMedia(media) {
@@ -1632,6 +1634,13 @@
     };
   }
 
+  // Notifications recount setup reminders whenever a saved orbit loads or saves.
+  function announceSetupChanged() { window.dispatchEvent(new CustomEvent('orbit:setup-changed')); }
+  async function applyOrbitDataAndAnnounce(saved, preserveLocalMedia = false) {
+    await applyOrbitData(saved, preserveLocalMedia);
+    announceSetupChanged();
+  }
+
   async function applyOrbitData(saved, preserveLocalMedia = false) {
     if (!saved || saved.version !== 1) return;
     if (!preserveLocalMedia) await restoreOrbitMedia(saved.media);
@@ -1820,8 +1829,8 @@
         });
         signedInUser = result.user;
         const pending = readPendingOrbit(result.user?.email);
-        if (pending) { await applyOrbitData(pending, true); shouldSave = true; }
-        else if (result.profile?.orbit_data?.version === 1) await applyOrbitData(result.profile.orbit_data);
+        if (pending) { await applyOrbitDataAndAnnounce(pending, true); shouldSave = true; }
+        else if (result.profile?.orbit_data?.version === 1) await applyOrbitDataAndAnnounce(result.profile.orbit_data);
       }
       if (shouldSave) await saveCurrentOrbit();
       if (readPendingOrbit(signedInUser?.email)) {
@@ -2056,7 +2065,7 @@
     try {
       if (!walkthroughMode) {
         const saved = JSON.parse(localStorage.getItem(demoOrbitKey) || 'null');
-        if (saved?.version === 1) await applyOrbitData(saved, true);
+        if (saved?.version === 1) await applyOrbitDataAndAnnounce(saved, true);
       }
     } catch (_) {}
     openAccountSetup(0);
@@ -2068,7 +2077,7 @@
       if (!walkthroughMode) {
         try {
           const saved = JSON.parse(localStorage.getItem(demoOrbitKey) || 'null');
-          if (saved?.version === 1) await applyOrbitData(saved, true);
+          if (saved?.version === 1) await applyOrbitDataAndAnnounce(saved, true);
         } catch (_) {}
       }
       openAccountSetup(0);
@@ -2098,7 +2107,7 @@
       const pending = readPendingOrbit(session.user?.email);
       const saved = profile.orbit_data?.version === 1 ? profile.orbit_data : pending;
       if (saved && !walkthroughMode) {
-        await applyOrbitData(saved);
+        await applyOrbitDataAndAnnounce(saved);
         if (pending && !profile.orbit_data?.version) {
           await saveCurrentOrbit();
           localStorage.removeItem(pendingOrbitKey);
@@ -2112,7 +2121,7 @@
       if (pending && !walkthroughMode) {
         pendingVerificationEmail = pending.email;
         accountEmail.value = pending.email;
-        await applyOrbitData(pending.orbit, true);
+        await applyOrbitDataAndAnnounce(pending.orbit, true);
         showVerificationReminder();
         if (ringGroups().some((ring) => ring.items.length)) { enterOrbit(false); profileLoading.hidden = true; }
         else { openAccountSetup(1); accountStatus.textContent = 'Your draft is here. Re-add any local images to restore their rings.'; }
@@ -3027,6 +3036,25 @@
     showStep(0);
     stepButtons[0].focus();
   });
+
+  // What a signed-in person hasn't set up yet, for reminders in notifications.
+  window.OrbitSetup = {
+    checklist() {
+      if (!signedInUser) return [];
+      const ownPortrait = (savedMedia.portrait && !savedMedia.portrait.asset) || setupPortrait.src.startsWith('blob:');
+      return [
+        !ownPortrait && { id: 'portrait', text: 'Your planet still shows the demo face. Add your own portrait.', action: 'add portrait', step: 0 },
+        !approvedSourceItems().length && !localPhotoUrls.length && { id: 'sources', text: 'Your rings are empty. Connect Pinterest, Spotify, Are.na, Cosmos, or add photos.', action: 'connect', step: 1 },
+        !birthInputs[0].value && { id: 'sky', text: 'Add your birth date to light up your sky.', action: 'add birth date', step: 2 },
+        !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 }
+      ].filter(Boolean);
+    },
+    openStep(step) {
+      settingsButton.click();
+      showStep(step);
+      stepButtons[step].focus();
+    }
+  };
 
   resourcesButton.addEventListener('click', () => {
     resourcesPage.hidden = false;

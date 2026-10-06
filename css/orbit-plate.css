@@ -494,3 +494,10 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 .orbit-notifications__item > span { flex: none; color: var(--op-gray); font-size: 12px; }
 .orbit-notifications__status { margin: 8px 0 0; color: var(--op-gray); font: italic 400 14px/1.5 var(--op-read); }
 .orbit-notifications__status:empty { display: none; }
+.orbit-setup-tips[hidden] { display: none; }
+.orbit-setup-tips { margin-bottom: 6px; }
+.orbit-setup-tips__heading { margin: 4px 0 2px; color: var(--op-rose); font: 500 11px var(--op-ui); letter-spacing: .14em; text-transform: uppercase; }
+.orbit-setup-tip { flex-direction: column; align-items: stretch; gap: 8px; }
+.orbit-setup-tip__actions { display: flex; align-items: center; gap: 14px; }
+.orbit-notifications__item .orbit-setup-tip__ignore { min-height: 36px; padding: 0 4px; background: none; color: var(--op-gray); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.orbit-notifications__item .orbit-setup-tip__ignore:hover { background: none; color: var(--op-soft); }
