@@ -90,6 +90,11 @@
       return;
     }
     close();
+    if (tip.hands) {
+      // The ✦ star's own intro explains the camera and asks before starting.
+      document.getElementById('portalStarBtn')?.click();
+      return;
+    }
     if (tip.account) {
       // Account details live in the account dialog: open it with the username ready to change.
       document.getElementById('openAccountSettings')?.click();
@@ -206,6 +211,14 @@
   document.getElementById('orbitNotificationsClose').addEventListener('click', () => { close(); button.focus(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !panel.hidden) { close(); button.focus(); } });
   window.addEventListener('orbit:setup-changed', () => { if (timer) refresh(); });
+  // Once someone has actually entered hand control, the reminder has done its job.
+  window.addEventListener('orbit:enter', async () => {
+    if (!tips.some((tip) => tip.id === 'hand_control')) return;
+    try { await api().dismissSetupTip('hand_control'); } catch (_) { return; }
+    tips = tips.filter((tip) => tip.id !== 'hand_control');
+    renderTips();
+    renderBadge();
+  });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && timer) refresh(); });
 
   // The orbit shows "sign out" once someone is signed in; notifications follow it.

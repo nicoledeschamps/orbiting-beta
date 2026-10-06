@@ -3138,7 +3138,9 @@
         !approvedSourceItems().length && !localPhotoUrls.length && { id: 'sources', text: 'Your rings are empty. Connect Pinterest, Spotify, Are.na, Cosmos, or add photos.', action: 'connect', step: 1 },
         !birthInputs[0].value && { id: 'sky', text: 'Add your birth date to light up your sky.', action: 'add birth date', step: 2 },
         birthInputs[0].value && !shareSkyWithFriends.checked && { id: 'shared_sky', text: 'You can show your zodiac signs to people who orbit you, on your page and in their Wander. Your birth details stay private.', action: 'turn on sharing', step: 2, focus: 'shareSkyWithFriends' },
-        !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 }
+        !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 },
+        // Hand control needs a camera and a fine pointer (immersive-orbit.js turns phones away), so only offer it there.
+        window.matchMedia?.('(hover: hover) and (pointer: fine)').matches && { id: 'hand_control', text: 'Try hand control: step inside your orbit and spin it, open photos and zoom with your hands. Nothing is recorded and nothing leaves your browser.', action: 'try it', hands: true }
       ].filter(Boolean);
     },
     openStep(step, focusId) {
