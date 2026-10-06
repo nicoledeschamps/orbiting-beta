@@ -90,11 +90,12 @@
             </div>
           </div>
           <div class="portrait-position">
-            <button class="setup-text-action" id="portraitPositionReset" type="button">reset size and position</button>
+            <button class="setup-text-action" id="portraitPositionReset" type="button">reset size</button>
             <label>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="70" max="120" value="100"></label>
-            <label>Horizontal position<input id="portraitX" type="range" min="-20" max="20" value="0"></label>
-            <label>Vertical position<input id="portraitY" type="range" min="-20" max="20" value="0"></label>
-            <p class="portrait-guide-hint">Fit your face inside the outline in the preview. The dashed lines show where your rings will pass.</p>
+            <!-- Faces always sit in the centre of the orbit: position is fixed at 0 (kept so saved values clamp to it). -->
+            <label hidden>Horizontal position<input id="portraitX" type="range" min="0" max="0" value="0"></label>
+            <label hidden>Vertical position<input id="portraitY" type="range" min="0" max="0" value="0"></label>
+            <p class="portrait-guide-hint">Your face always sits in the centre of your orbit. Use size to fit it inside the outline; the dashed lines show where your rings will pass.</p>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
@@ -876,7 +877,7 @@
   <script src="js/orbiting-account.js?v=20261006-setuptips"></script>
   <script src="js/friend-search.js?v=20261006-feedback"></script>
   <script src="js/shared-sky.js?v=20261006-clear"></script>
-  <script src="js/following-cosmos.js?v=20261006-facelimits"></script>
+  <script src="js/following-cosmos.js?v=20261006-facecentre"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261006-zodiac"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>

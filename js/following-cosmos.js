@@ -53,7 +53,7 @@
       const clamp = (value, min, max, fallback) => Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
       // The same limits as the portrait sliders (index.html), so no saved value can make a face bigger or further off-centre.
       const range = (id, min, max) => { const input = document.getElementById(id); return [Number(input?.min ?? min), Number(input?.max ?? max)]; };
-      const [sizeMin, sizeMax] = range('portraitSize', 70, 120), [xMin, xMax] = range('portraitX', -20, 20), [yMin, yMax] = range('portraitY', -20, 20);
+      const [sizeMin, sizeMax] = range('portraitSize', 70, 120), [xMin, xMax] = range('portraitX', 0, 0), [yMin, yMax] = range('portraitY', 0, 0);
       const portraitPosition = { size: clamp(pos.size, sizeMin, sizeMax, 100), x: clamp(pos.x, xMin, xMax, 0), y: clamp(pos.y, yMin, yMax, 0) };
       return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, portraitPosition, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
