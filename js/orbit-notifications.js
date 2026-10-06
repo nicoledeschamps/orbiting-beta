@@ -78,7 +78,9 @@
         learn.addEventListener('click', () => {
           close();
           document.getElementById('openOrbitResources')?.click();
-          window.setTimeout(() => document.getElementById('resourcesHandControl')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 100);
+          const guide = document.getElementById('resourcesHandControl');
+          if (guide) guide.open = true;  // they came to read it, so it opens already
+          window.setTimeout(() => guide?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 100);
         });
         actions.append(learn);
       }

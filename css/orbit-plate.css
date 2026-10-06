@@ -538,7 +538,15 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 
 /* Resources: a short guide to hand control, with the same icons as the in-orbit guide. */
 .resources-hands { margin: 0 0 2.5rem; padding: 1.25rem 1.4rem; border: 1px solid var(--op-line); border-radius: 14px; }
-.resources-hands h3 { margin: 0 0 .5rem; color: #fff; font: 400 clamp(1.4rem, 3vw, 1.8rem) var(--op-read); }
+.resources-hands summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: .35rem 1rem; min-height: 44px; cursor: pointer; list-style: none; }
+.resources-hands summary::-webkit-details-marker { display: none; }
+.resources-hands summary::after { content: '▸'; margin-left: auto; color: var(--op-gray); transition: transform .25s ease; }
+.resources-hands[open] summary::after { transform: rotate(90deg); }
+.resources-hands summary:focus-visible { outline: 2px solid var(--op-rose); outline-offset: 6px; border-radius: 6px; }
+.resources-hands__title { color: #fff; font: 400 clamp(1.4rem, 3vw, 1.8rem) var(--op-read); }
+.resources-hands__hint { color: var(--op-gray); font: italic 400 .95rem var(--op-read); }
+.resources-hands[open] .resources-hands__hint { display: none; }
+.resources-hands[open] summary { margin-bottom: .5rem; }
 .resources-hands > p { margin: 0; color: var(--op-soft); font: 400 14px/1.55 var(--op-ui); }
 .resources-hands__moves { display: grid; gap: .6rem; margin: 1rem 0; padding: 0; list-style: none; }
 .resources-hands__moves li { display: flex; align-items: center; gap: .85rem; color: var(--op-soft); font: italic 400 1rem/1.45 var(--op-read); }
