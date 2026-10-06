@@ -1301,6 +1301,9 @@ body.is-explore-detail .explore-layer { z-index: 100; }
 
 /* Save belongs to the settings panel, with its own space below the fields. */
 .settings-save-actions { display: none; }
+.orbit-setup.is-settings .settings-save-actions { gap: .75rem; }
+.orbit-setup.is-settings .settings-exit { flex: none; min-height: 46px; padding: 0 1.1rem; border: 1px solid rgba(237,241,244,.35); border-radius: 999px; background: transparent; color: inherit; font: 500 .85rem 'Inter',sans-serif; cursor: pointer; }
+.orbit-setup.is-settings .settings-exit:hover, .orbit-setup.is-settings .settings-exit:focus-visible { border-color: currentColor; }
 .orbit-setup.is-settings .settings-save-actions { display: flex; justify-content: flex-end; position: sticky; bottom: -2.5rem; z-index: 11; margin-top: 1.5rem; padding: 1rem 0 1.25rem; background: var(--setup-silver); border-top: 1px solid rgba(237,241,244,.16); }
 .orbit-setup.is-settings .settings-save-actions .setup-skip { width: 100%; min-height: 46px; background: var(--setup-oxblood); border-color: var(--setup-oxblood); color: #fff7f0; }
 @media(max-width:820px) { .orbit-setup.is-settings .settings-save-actions { bottom: -3rem; } }

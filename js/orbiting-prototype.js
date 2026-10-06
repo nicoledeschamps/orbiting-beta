@@ -1966,6 +1966,16 @@
     if (!settingsMode) setCosmosDepth(0);
     enterOrbit(false, !accountConnected);
   });
+  document.getElementById('settingsExit').addEventListener('click', async () => {
+    const changed = settingsSnapshot !== null
+      && (JSON.stringify(collectOrbitData()) !== settingsSnapshot || editorMediaKey() !== settingsMediaAtOpen);
+    if (changed && !window.confirm('Leave without saving? Your changes in the editor will be discarded.')) return;
+    if (changed) {
+      try { await applyOrbitDataAndAnnounce(JSON.parse(settingsSnapshot)); }
+      catch (_) { window.location.reload(); return; }
+    }
+    enterOrbit(false, !accountConnected, true);
+  });
   stepButtons.forEach((button) => button.addEventListener('click', () => showStep(Number(button.dataset.setupStep))));
   editorHotspots.addEventListener('click', (event) => {
     const button = event.target.closest('[data-editor-target]');
@@ -3018,7 +3028,13 @@
   let brandonNearOrbitBuilt = false;
   let brandonFullOrbitBuilt = false;
 
+  // The orbit as it was when the editor opened, so "exit without saving" can put it back.
+  let settingsSnapshot = null;
+  let settingsMediaAtOpen = '';
+  const editorMediaKey = () => [setupPortrait.src, ...localPhotoUrls].join('\n');
   settingsButton.addEventListener('click', () => {
+    settingsSnapshot = JSON.stringify(collectOrbitData());
+    settingsMediaAtOpen = editorMediaKey();
     settingsMode = true;
     window.clearTimeout(setupCloseTimer);
     setupWordmark.textContent = 'Orbit editor';
