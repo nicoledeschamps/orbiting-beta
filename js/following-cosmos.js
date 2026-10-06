@@ -49,13 +49,7 @@
           if (blob && window.URL?.createObjectURL) portraitSrc = window.URL.createObjectURL(blob);
         } catch (_) { /* fall back to the initial */ }
       }
-      const pos = orbit.portraitPosition && typeof orbit.portraitPosition === 'object' ? orbit.portraitPosition : {};
-      const clamp = (value, min, max, fallback) => Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
-      // The same limits as the portrait sliders (index.html), so no saved value can make a face bigger or further off-centre.
-      const range = (id, min, max) => { const input = document.getElementById(id); return [Number(input?.min ?? min), Number(input?.max ?? max)]; };
-      const [sizeMin, sizeMax] = range('portraitSize', 70, 120), [xMin, xMax] = range('portraitX', 0, 0), [yMin, yMax] = range('portraitY', 0, 0);
-      const portraitPosition = { size: clamp(pos.size, sizeMin, sizeMax, 100), x: clamp(pos.x, xMin, xMax, 0), y: clamp(pos.y, yMin, yMax, 0) };
-      return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, portraitPosition, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
+      return { failed, portraitAsset: orbit.portraitAsset, portraitSrc, title: skyTitle, rings: (orbit.rings || []).map(ring => ({
         name: ring.words || ring.source || 'Shared ring',
         provider: (ring.sources || [ring.source])[0],
         items: (ring.sources || [ring.source]).flatMap(provider => sources.get(provider) || [])
@@ -82,10 +76,9 @@
       portrait.src = ownPortrait ? snapshot.portraitSrc : snapshot.portraitAsset;
       if (ownPortrait) core.classList?.add('has-cutout');
       portrait.alt = `${person.username}'s portrait`;
-      // On their full page, their face uses the size they chose, exactly like their own orbit does,
-      // and sits in the centre even if their saved cutout has them off to one side.
+      // On their full page their face is fitted like every face: centred, the same size for everyone.
       if (!near && ownPortrait) {
-        const size = snapshot.portraitPosition?.size ?? 100;
+        const size = 100;
         const centre = window.OrbitPortraitCentre;
         if (centre) { centre.apply(portrait, null, size); centre.watch(portrait, (placement) => centre.apply(portrait, placement, size)); }
         else portrait.style.scale = String(size / 100);
