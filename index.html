@@ -12,7 +12,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20261006-feedback">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261006-exit">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261006-skies">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-setuptips">
   <script type="importmap">
@@ -206,8 +206,9 @@
           </div>
           <section class="friend-sky-settings" aria-labelledby="friendSkyTitle">
             <h2 id="friendSkyTitle">Shared constellations</h2>
-            <label><input id="shareSkyWithFriends" type="checkbox" disabled> <span>Let friends include my zodiac signs in a shared sky<small id="sharedSkyHelp">Sign in to share your zodiac signs. Birth details and hidden messages stay private.</small></span></label>
-            <label><input id="combineSkyWithFriends" type="checkbox" disabled> <span>Combine my sky with friends</span></label>
+            <label><input id="shareSkyWithFriends" type="checkbox" disabled> <span>Show my zodiac signs to people who orbit me<small class="friend-sky-where">They appear on your page when friends visit it, and in their Wander. Never in someone else’s own sky.</small><small id="sharedSkyHelp">Sign in to share your zodiac signs. Birth details and hidden messages stay private.</small></span></label>
+            <!-- Friends' signs no longer merge into your own sky; they show on their page and in Wander. -->
+            <label hidden><input id="combineSkyWithFriends" type="checkbox" disabled> <span>Combine my sky with friends</span></label>
             <div class="friend-sky-picker" id="friendSkyPicker" hidden>
               <div id="friendSkyChoices" role="group" aria-label="Choose friends for your shared sky"></div>
               <p id="friendSkyStatus" role="status">Sign in, then choose friends who share their skies.</p>
@@ -465,6 +466,7 @@
           <p id="peopleSearchStatus" role="status" aria-live="polite"></p>
         </section>
       </div>
+      <div class="orbiting-shared-sky wander-shared-sky" id="wanderSharedSky" aria-label="Zodiac signs of you and the people you orbit" hidden></div>
       <div class="explore-stage">
         <div class="explore-planet" id="explorePlanet" aria-label="Rotating planet of clippings from your orbit">
           <div class="explore-planet__items" id="explorePlanetItems"></div>
@@ -571,6 +573,7 @@
       <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
       <h2 id="followedOrbitTitle"></h2>
     </header>
+    <div class="orbiting-shared-sky followed-orbit__sky" id="followedOrbitSky" aria-label="Their zodiac signs" hidden></div>
     <div id="followedOrbitPlanet" class="followed-orbit__planet"></div>
     <div class="friend-key" id="followedOrbitKey" hidden>
       <button class="orbit-key-trigger" id="followedOrbitKeyTrigger" type="button" aria-expanded="false" aria-controls="followedOrbitKeyChart">what's in their orbit</button>
@@ -873,10 +876,11 @@
   <script src="js/orbiting-account.js?v=20261006-setuptips"></script>
   <script src="js/friend-search.js?v=20261006-feedback"></script>
   <script src="js/shared-sky.js?v=2"></script>
-  <script src="js/following-cosmos.js?v=20261006-friend-rings"></script>
+  <script src="js/following-cosmos.js?v=20261006-skies"></script>
+  <script src="js/wander-sky.js?v=20261006-skies"></script>
   <script src="js/orbit-notifications.js?v=20261006-zodiac"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261006-exit"></script>
+  <script src="js/orbiting-prototype.js?v=20261006-skies"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>

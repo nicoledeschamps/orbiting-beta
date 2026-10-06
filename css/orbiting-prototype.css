@@ -1456,3 +1456,9 @@ body.is-cosmos .hero-title, body.is-cosmos .orbit-key { visibility: hidden; }
 
 /* A notification reminder pointed here: pulse the setting once. */
 label.is-reminded { outline: 2px solid #d39aa8; outline-offset: 6px; border-radius: 6px; transition: outline-color .4s; }
+
+/* Shared zodiac signs: behind a friend's planet on their page, and behind Wander's planet. */
+/* z-index -1 sits above the dialog's own background but under all of its content. */
+.followed-orbit__sky { position: fixed; inset: 0; z-index: -1; }
+.wander-shared-sky { position: absolute; inset: 0; z-index: -1; }
+.friend-sky-where { display: block; }

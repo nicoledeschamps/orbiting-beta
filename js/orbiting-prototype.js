@@ -1706,7 +1706,7 @@
     activeHiddenMessage = 0;
     renderHiddenMessages();
     shareSkyWithFriends.checked = !accountTestingMode && saved.sharedSky?.enabled === true;
-    combineSkyWithFriends.checked = !accountTestingMode && saved.preferences?.combineSkyWithFriends === true;
+    combineSkyWithFriends.checked = false;  // Friends' signs live on their page and in Wander now, not in your sky.
     friendSkyPicker.hidden = !combineSkyWithFriends.checked;
     friendSkyIds = new Set(!accountTestingMode && Array.isArray(saved.preferences?.friendSkyIds)
       ? saved.preferences.friendSkyIds.filter((id) => typeof id === 'string' && /^[0-9a-f-]{36}$/i.test(id)).slice(0, 100)
@@ -3057,6 +3057,8 @@
   // The demo portrait is Nicole's own face (from her portfolio), so her account never gets the portrait reminder.
   const DEMO_PORTRAIT_OWNERS = new Set(['huesofsaturn']);
   window.OrbitSetup = {
+    ownSkySigns: () => ownSkySigns(),
+    username: () => accountUsername.value.trim(),
     checklist() {
       if (!signedInUser) return [];
       const ownPortrait = (savedMedia.portrait && !savedMedia.portrait.asset) || setupPortrait.src.startsWith('blob:')
@@ -3065,7 +3067,7 @@
         !ownPortrait && { id: 'portrait', text: 'Your planet still shows the demo face. Add your own portrait.', action: 'add portrait', step: 0 },
         !approvedSourceItems().length && !localPhotoUrls.length && { id: 'sources', text: 'Your rings are empty. Connect Pinterest, Spotify, Are.na, Cosmos, or add photos.', action: 'connect', step: 1 },
         !birthInputs[0].value && { id: 'sky', text: 'Add your birth date to light up your sky.', action: 'add birth date', step: 2 },
-        birthInputs[0].value && !shareSkyWithFriends.checked && { id: 'shared_sky', text: 'You can let friends include your zodiac signs in their shared sky. Your birth details stay private.', action: 'turn on sharing', step: 2, focus: 'shareSkyWithFriends' },
+        birthInputs[0].value && !shareSkyWithFriends.checked && { id: 'shared_sky', text: 'You can show your zodiac signs to people who orbit you, on your page and in their Wander. Your birth details stay private.', action: 'turn on sharing', step: 2, focus: 'shareSkyWithFriends' },
         !skyTitleFirst.value.trim() && { id: 'title', text: 'Give your sky a title of your own.', action: 'add title', step: 0 }
       ].filter(Boolean);
     },

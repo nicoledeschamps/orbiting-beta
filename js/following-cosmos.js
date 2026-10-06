@@ -11,6 +11,7 @@
   const bioLine = document.getElementById('followedOrbitBio');
   const worldStatus = document.getElementById('followedOrbitStatus');
   const close = document.getElementById('closeFollowedOrbit');
+  const friendSky = document.getElementById('followedOrbitSky');
   if (!sky || !window.OrbitingAccount) return;
   let sequence = 0, loaded = false, activePlanet, portalJob = 0;
   let nearTweens = [], worldTweens = [];
@@ -185,6 +186,7 @@
     dialog.hidden = false;
     document.getElementById('hero').inert = true;
     close.focus();
+    showFriendSky(person, job);
     try {
       const snapshot = await sharedOrbit(person);
       if (job !== portalJob || dialog.hidden) return;
@@ -203,6 +205,21 @@
       if (snapshot.failed) worldStatus.textContent += ' · Some source images could not load. Refresh your cosmos to retry.';
     } catch (_) { if (job === portalJob) worldStatus.textContent = 'This orbit could not load. Return to your cosmos and refresh to retry.'; }
   }
+  // Their zodiac signs fill the sky of their page, only if they chose to share them.
+  async function showFriendSky(person, job) {
+    if (!friendSky) return;
+    friendSky.hidden = true;
+    friendSky.replaceChildren();
+    try {
+      const shared = await window.OrbitingAccount.loadVisibleFollowedSky(person.followed_user_id);
+      if (job !== portalJob || dialog.hidden || !window.OrbitingSharedSky) return;
+      const signs = Array.isArray(shared?.constellations) ? shared.constellations : [];
+      if (!signs.length) return;
+      window.OrbitingSharedSky.render(friendSky, [{ name: `@${person.username}`, constellations: signs }]);
+      friendSky.hidden = false;
+    } catch (_) { /* The page works without their sky. */ }
+  }
+
   function leave() {
     ++portalJob; kill(worldTweens); dialog.hidden = true;
     document.getElementById('hero').inert = false;
