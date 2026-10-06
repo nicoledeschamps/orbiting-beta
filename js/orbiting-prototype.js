@@ -1867,9 +1867,53 @@
     return false;
   }
 
+  // "refresh my orbit": re-read the boards someone already shared, so new public images join their
+  // rings without redoing setup. Only boards they chose; it never adds new boards on its own.
+  const orbitRefresh = document.getElementById('orbitRefresh');
+  const refreshMyOrbit = document.getElementById('refreshMyOrbit');
+  const refreshMyOrbitStatus = document.getElementById('refreshMyOrbitStatus');
+  let refreshStatusTimer = 0;
+  function syncOrbitRefresh() {
+    orbitRefresh.hidden = !(signedInUser && [...selectedSources].some((source) => sourceChoices[source]?.approved && sourceChoices[source]?.url));
+  }
+  refreshMyOrbit.addEventListener('click', async () => {
+    const before = new Set(approvedSourceItems().map((item) => item.src));
+    // Keep each board's current images: a board that can't be reached right now must not empty its ring.
+    const previous = new Map([...selectedSources].map((source) => [source, sourceChoices[source] && { items: sourceChoices[source].items, options: sourceChoices[source].options }]));
+    window.clearTimeout(refreshStatusTimer);
+    refreshMyOrbit.disabled = true;
+    refreshMyOrbitStatus.textContent = 'Checking your boards for new images…';
+    try {
+      await refreshPublicSources(null, false);
+      const failed = [];
+      previous.forEach((kept, source) => {
+        const choice = sourceChoices[source];
+        if (!kept || !choice || choice.items.length || !kept.items.length) return;
+        choice.items = kept.items;
+        choice.options = kept.options;
+        failed.push(choice.name);
+      });
+      if (failed.length && window.HuesOrbit?.setPersonalImages) window.HuesOrbit.setPersonalImages(ringGroups());
+      const items = approvedSourceItems();
+      const added = items.filter((item) => !before.has(item.src)).length;
+      window.OrbitingExplore?.setPersonalImages(items);
+      refreshMyOrbitStatus.textContent = failed.length && !added
+        ? `${failed.join(' and ')} couldn’t be reached, so your orbit is unchanged. Try again in a moment.`
+        : added
+          ? `${added} new image${added === 1 ? '' : 's'} joined your orbit.${failed.length ? ` ${failed.join(' and ')} couldn’t be reached; try again in a moment.` : ''}`
+          : 'Your orbit is up to date.';
+    } catch (_) {
+      refreshMyOrbitStatus.textContent = 'Your orbit couldn’t refresh right now. Try again in a moment.';
+    } finally {
+      refreshMyOrbit.disabled = false;
+      refreshStatusTimer = window.setTimeout(() => { refreshMyOrbitStatus.textContent = ''; }, 8000);
+    }
+  });
+
   function enterOrbit(forceEmpty = false, previewHues = false, restoringProfile = false) {
     if (!restoringProfile && !requireFilledRing()) return;
     const items = approvedSourceItems();
+    syncOrbitRefresh();
     // Wander's filters can find your images by the name of the ring they sit in.
     const ringOf = new Map();
     [...ringBuilder.querySelectorAll('.ring-row')].forEach((row) => itemsForRingSources(ringSourceList(row)).forEach((item) => {

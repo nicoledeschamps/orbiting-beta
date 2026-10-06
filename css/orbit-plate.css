@@ -522,3 +522,16 @@ body.friend-entering .cosmos-heading { opacity: 0; }
    as .followed-orbit__planet, instead of the old 2x zoom that let uncut photos spill out. */
 .following-cosmos__sphere > .following-cosmos__core.has-cutout { inset: 16%; display: flex; align-items: center; justify-content: center; overflow: visible; }
 .following-cosmos__sphere > .following-cosmos__core.has-cutout > img { position: static; inset: auto; transform: none; transform-origin: 50% 50%; flex: none; width: 147%; max-width: none; height: auto; border-radius: 0; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); mask-image: radial-gradient(ellipse var(--fade-w, 48%) var(--fade-h, 50%) at var(--fade-x, 50%) var(--fade-y, 48%), black 85%, transparent 100%); }
+
+/* "refresh my orbit": bottom-left, mirroring "pull back into the cosmos" on the right. */
+.orbit-refresh { position: absolute; z-index: 14; left: clamp(1rem, 3vw, 2.5rem); bottom: clamp(1.3rem, 4vh, 2.5rem); display: flex; flex-direction: column-reverse; align-items: flex-start; gap: .35rem; max-width: min(22rem, 40vw); }
+.orbit-refresh[hidden], body.is-cosmos .orbit-refresh, body.is-explore .orbit-refresh { display: none; }
+.orbit-refresh__button { min-height: 44px; padding: .55rem .65rem; border: 0; background: transparent; color: var(--op-gray); font: 400 12px var(--op-ui); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.orbit-refresh__button:hover, .orbit-refresh__button:focus-visible { color: #fff; }
+.orbit-refresh__button:disabled { cursor: progress; color: var(--op-soft); }
+.orbit-refresh__status { margin: 0; padding: 0 .65rem; color: var(--op-soft); font: italic 400 13px/1.45 var(--op-read); }
+.orbit-refresh__status:empty { display: none; }
+@media (max-width: 767px) {
+  .orbit-refresh { left: .5rem; bottom: calc(1.1rem + 44px); max-width: calc(100vw - 2rem); }
+  .orbit-refresh__button { font-size: 11px; }
+}

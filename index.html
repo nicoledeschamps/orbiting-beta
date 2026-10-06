@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261006-fit">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261006-editportrait">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-smallplanets">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-refresh">
   <script type="importmap">
   {
     "imports": {
@@ -517,6 +517,12 @@
       <p class="hero-bio" id="heroBio" hidden></p>
     </div>
 
+    <!-- Pull in what's new on the boards you shared (Cosmos, Are.na, …) without redoing setup. -->
+    <div class="orbit-refresh" id="orbitRefresh" hidden>
+      <button class="orbit-refresh__button" id="refreshMyOrbit" type="button"><span aria-hidden="true">↻</span> <span class="orbit-refresh__label">refresh my orbit</span></button>
+      <p class="orbit-refresh__status" id="refreshMyOrbitStatus" role="status" aria-live="polite"></p>
+    </div>
+
     <button class="cosmos-depth-control" id="cosmosDepthControl" type="button" aria-label="Pull back to see people in your orbit">
       <span class="cosmos-depth-control__symbol" aria-hidden="true">⌁</span>
       <span id="cosmosDepthControlText">scroll down to pull back</span>
@@ -884,7 +890,7 @@
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261006-zodiac"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261006-samesize"></script>
+  <script src="js/orbiting-prototype.js?v=20261006-refresh"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
