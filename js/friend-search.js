@@ -41,16 +41,16 @@
       await search();
       message(`@${person.username} is now in your cosmos.`);
       window.dispatchEvent(new CustomEvent('orbiting:following-changed', { detail: { following } }));
-    } catch (error) { message(error.message || 'Could not follow that person.'); }
+    } catch (error) { message(error.message || 'Could not add that person to your orbit.'); }
   }
   async function unfollow(person) {
     try {
       await OrbitingAccount.unfollowPerson(person.user_id);
       await refreshFollowing();
       await search();
-      message(`You stopped following @${person.username}.`);
+      message(`You stopped orbiting @${person.username}.`);
       window.dispatchEvent(new CustomEvent('orbiting:following-changed', { detail: { following } }));
-    } catch (error) { message(error.message || 'Could not unfollow that person.'); }
+    } catch (error) { message(error.message || 'Could not stop orbiting that person.'); }
   }
   async function search() {
     const version = ++searchVersion;
@@ -70,8 +70,8 @@
       message('');
       people.forEach((person) => {
         const isFollowing = following.some((item) => item.followed_user_id === person.user_id);
-        const action = isFollowing ? button('following · unfollow', () => unfollow(person))
-          : button('follow', () => follow(person));
+        const action = isFollowing ? button('orbiting · stop', () => unfollow(person))
+          : button('orbit', () => follow(person));
         results.append(row(person.username, action));
       });
     } catch (error) { if (version === searchVersion) message(error.message || 'Search is unavailable.'); }
@@ -94,7 +94,7 @@
       input.focus();
       discoverable.disabled = !ready;
       if (!ready) {
-        message(configured ? 'Sign in to search and follow people.' : 'Search and following need an Orbit account connection. Nicole and Brandon are prototype examples.');
+        message(configured ? 'Sign in to search and orbit people.' : 'Search and orbiting need an Orbit account connection. Nicole and Brandon are prototype examples.');
         return;
       }
       const settings = await OrbitingAccount.getDiscoverySettings();
@@ -118,11 +118,25 @@
     hide();
     window.dispatchEvent(new CustomEvent('orbiting:open-cosmos'));
   });
+  // One search for both pages: it sits in Wander, and moves into the Friends page while that page is showing.
+  const searchBox = toggle.closest?.('.people-search');
+  const wanderHome = searchBox?.parentElement;
+  const friendsPage = document.getElementById('followingCosmos');
+  const friendsButton = document.getElementById('peopleSearchFriends');
+  if (searchBox && wanderHome && friendsPage) window.addEventListener('orbiting:depth-changed', (event) => {
+    const onFriends = Boolean(event.detail?.active && !event.detail?.demo);
+    const target = onFriends ? friendsPage : wanderHome;
+    if (searchBox.parentElement === target) return;
+    if (!panel.hidden) hide();
+    target.append(searchBox);
+    searchBox.classList.toggle('people-search--friends', onFriends);
+    friendsButton.hidden = onFriends;  // already on the Friends page
+  });
   input.addEventListener('input', () => { ++searchVersion; clearTimeout(searchTimer); searchTimer = setTimeout(search, 220); });
   discoverable.addEventListener('change', async () => {
     try {
       await OrbitingAccount.setDiscoverable(discoverable.checked);
-      message(discoverable.checked ? 'People can now find your username.' : 'Your username is hidden from new searches. Existing follows remain.');
+      message(discoverable.checked ? 'People can now find your username.' : 'Your username is hidden from new searches. People already orbiting you stay.');
     } catch (error) {
       discoverable.checked = !discoverable.checked;
       message(error.message || 'Could not change discoverability.');

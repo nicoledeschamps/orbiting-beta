@@ -1206,7 +1206,7 @@
         ? `${next.size} shared ${next.size === 1 ? 'sky' : 'skies'} available.${failed ? ' Some could not load.' : ''} Choose whose constellations join yours.`
         : failed ? 'Friends’ skies could not load yet. Try refresh.'
           : following.length ? 'No friends in your cosmos have shared a sky yet.'
-            : 'Follow someone in your cosmos who shares their sky.';
+            : 'Orbit someone in your cosmos who shares their sky.';
     } catch (error) {
       if (sequence !== friendSkyLoadSequence) return;
       friendSkyStatus.textContent = 'Friends’ skies could not load yet. Try refresh.';
@@ -3122,8 +3122,8 @@
   // What a signed-in person hasn't set up yet, for reminders in notifications.
   // The demo portrait is Nicole's own face (from her portfolio), so her account never gets the portrait reminder.
   const DEMO_PORTRAIT_OWNERS = new Set(['huesofsaturn']);
-  // Tester accounts whose usernames Nicole set up for them: remind them to pick their own (gone once they change it).
-  const USERNAMES_TO_CHOOSE = new Set(['zachbell14', 'wiamhomir11']);
+  // Every tester account's username was set up by Nicole: remind them to pick their own (gone once they change it).
+  const USERNAMES_TO_CHOOSE = new Set(['zachbell14', 'wiamhomir11', 'madeneutral']);
   window.OrbitSetup = {
     ownSkySigns: () => ownSkySigns(),
     ownSkyPlacements: () => ownSkyPlacements(),

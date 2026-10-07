@@ -556,3 +556,7 @@ body.friend-entering .cosmos-heading { opacity: 0; }
 .resources-hands > p.resources-hands__note { color: var(--op-gray); font-size: 12px; }
 .orbit-notifications__item .orbit-setup-tip__learn { min-height: 36px; padding: 0 4px; background: none; color: var(--op-soft); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
 .orbit-notifications__item .orbit-setup-tip__learn:hover { background: none; color: #fff; }
+
+/* Search on the Friends page: the same search box as Wander, top-right under the page links. */
+.people-search--friends { pointer-events: auto; z-index: 15; top: calc(max(1.25rem, env(safe-area-inset-top)) + 62px); right: clamp(1rem, 3vw, 2.5rem); }
+@media (max-width: 767px) { .people-search--friends { top: calc(max(.85rem, env(safe-area-inset-top)) + 58px); right: 1rem; } }

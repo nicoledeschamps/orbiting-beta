@@ -390,7 +390,7 @@
         cache.delete(person.followed_user_id);
         closeCard(false);
         window.dispatchEvent(new CustomEvent('orbiting:following-changed', { detail: { following: lastFollowing.filter(entry => entry.followed_user_id !== person.followed_user_id) } }));
-      } catch (error) { cardStatus.textContent = error.message || 'Could not unfollow right now.'; }
+      } catch (error) { cardStatus.textContent = error.message || 'Could not stop orbiting right now.'; }
       finally { cardUnfollow.disabled = false; }
     });
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && !card.hidden && dialog.hidden) closeCard(); });
@@ -423,7 +423,7 @@
       }).catch(() => { if (job === sequence) status.textContent = 'A shared orbit could not load. Refresh to retry.'; });
     });
     loaded = true;
-    status.textContent = following.length ? '' : 'Your cosmos is waiting. Find someone through search in Wander.';
+    status.textContent = following.length ? '' : 'Your cosmos is waiting. Find someone with search.';
     const note = document.getElementById('cosmosHeadingNote');
     if (note) note.textContent = following.length ? `your close orbit ✦ ${following.length} ${following.length === 1 ? 'friend' : 'friends'} around you` : 'your close orbit';
     startSpin();
