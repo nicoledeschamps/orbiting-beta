@@ -4,40 +4,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
-  <title>Log in · Orbit</title>
+  <title>Orbit · pull your world into orbit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-feedback">
-  <link rel="stylesheet" href="css/login.css?v=20261004-plate-c">
+  <link rel="stylesheet" href="css/login-preview.css?v=20261009-preview">
 </head>
-<body class="op-sky">
-  <div class="login-frame op-frame">
-    <header class="login-header">
-      <p class="login-wordmark" aria-label="Orbit"><span>Orbit</span></p>
-      <span class="login-tagline">pull your world into orbit</span>
+<body class="op-sky login-preview">
+  <!-- Rings of images that unspool into the Wander planet; decoration only. -->
+  <div class="preview-stage" id="previewStage" aria-hidden="true"></div>
+  <p class="preview-caption" id="previewCaption" aria-hidden="true">what's in my orbit ✦</p>
+  <p class="preview-tip" id="previewTip" aria-hidden="true" hidden></p>
+
+  <main class="preview-panel" id="previewPanel" data-view="intro">
+    <p class="op-eyebrow" id="previewEyebrow">a preview</p>
+    <h1 class="preview-title">Orbit</h1>
+    <p class="preview-tagline">pull your world into orbit</p>
+
+    <section class="preview-view" id="introView" aria-label="Get started">
+      <button class="op-btn preview-primary" id="makeOrbit" type="button">Make your orbit</button>
+      <button class="op-link" id="showSignIn" type="button">already have an orbit? sign in</button>
+    </section>
+
+    <section class="preview-view" id="signInView" aria-labelledby="signInHeading" hidden>
+      <h2 class="preview-heading" id="signInHeading" tabindex="-1">Return to your orbit.</h2>
+      <form id="loginForm">
+        <label class="op-field" for="loginEmail">Email address</label>
+        <input class="op-input" id="loginEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" required>
+        <div class="password-label"><label for="loginPassword">Password</label><button class="op-link" id="togglePassword" type="button" aria-controls="loginPassword" aria-pressed="false">Show</button></div>
+        <input class="op-input" id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button class="op-link text-action" id="forgotPassword" type="button">Forgot your password?</button>
+        <p class="preview-status" id="loginStatus" role="status" aria-live="polite"></p>
+        <button class="op-btn preview-primary" id="loginSubmit" type="submit">Sign in</button>
+      </form>
+      <p class="op-hint invite-note" id="inviteNote">Invited to the beta? Use your personal setup link to choose a password first.</p>
       <p class="new-account" id="newAccount" hidden>New here? <a href="./?view=setup">Create your orbit</a></p>
-    </header>
-    <main class="login-shell">
-      <div class="orbit-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <section class="login-card" aria-labelledby="loginTitle">
-        <p class="op-eyebrow">Log in</p>
-        <h1 id="loginTitle" class="op-title">Return to your orbit.</h1>
-        <p class="intro">Your space. Your people. Everything that orbits you.</p>
-        <form id="loginForm">
-          <label class="op-field" for="loginEmail">Email address</label>
-          <input class="op-input" id="loginEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" required>
-          <div class="password-label"><label for="loginPassword">Password</label><button class="op-link" id="togglePassword" type="button" aria-controls="loginPassword" aria-pressed="false">Show</button></div>
-          <input class="op-input" id="loginPassword" name="password" type="password" autocomplete="current-password" required>
-          <button class="op-link text-action" id="forgotPassword" type="button">Forgot your password?</button>
-          <p id="loginStatus" role="status" aria-live="polite"></p>
-          <button class="op-btn primary" id="loginSubmit" type="submit">Log in</button>
-        </form>
-        <p class="op-hint invite-note" id="inviteNote">Invited to the beta? Use your personal setup link to choose a password first.</p>
-      </section>
-    </main>
-  </div>
-  <script src="js/orbiting-account.js?v=20261006-feedback"></script>
-  <script src="js/login.js?v=20261006-feedback"></script>
+      <button class="op-link" id="showInviteFromSignIn" type="button">not a beta tester yet? request an invite</button>
+    </section>
+
+    <section class="preview-view" id="inviteView" aria-labelledby="inviteHeading" hidden>
+      <h2 class="preview-heading" id="inviteHeading" tabindex="-1">Orbit is invite-only for now.</h2>
+      <p class="preview-intro">Leave your email and we'll send an invite when there's a spot.</p>
+      <form id="inviteForm">
+        <label class="op-field" for="inviteEmail">Email address</label>
+        <input class="op-input" id="inviteEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254">
+        <label class="op-field invite-note-label" for="inviteNoteText">Anything you'd like to share? <span>(optional)</span></label>
+        <textarea class="op-input invite-textarea" id="inviteNoteText" name="note" rows="2" maxlength="280" placeholder="what would you pull into orbit?"></textarea>
+        <p class="preview-status" id="inviteStatus" role="status" aria-live="polite"></p>
+        <button class="op-btn preview-primary" id="inviteSubmit" type="submit">Request an invite</button>
+      </form>
+      <button class="op-link" id="showSignInFromInvite" type="button">already have an orbit? sign in</button>
+    </section>
+  </main>
+
+  <button class="preview-pause" id="previewPause" type="button" aria-pressed="false">Pause</button>
+
+  <script src="js/orbiting-account.js?v=20261009-preview"></script>
+  <script src="js/orbit-preview-scene.js?v=20261009-preview"></script>
+  <script src="js/login.js?v=20261009-preview"></script>
 </body>
 </html>
