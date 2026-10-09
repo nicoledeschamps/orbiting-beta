@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261009-wanderring">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261007-lede">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-orbitword">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <script type="importmap">
   {
     "imports": {
@@ -54,18 +54,23 @@
         </nav>
 
         <section class="setup-panel" data-setup-panel="0">
-          <p class="setup-lede">Build a world that orbits you: an immersive digital experience where you’re the center, and you decide what circles you.</p>
+          <p class="setup-lede" data-business-text="Build a world that orbits your business: an immersive digital experience where your brand is the center, and you decide what circles it.">Build a world that orbits you: an immersive digital experience where you’re the center, and you decide what circles you.</p>
+          <div class="account-type" role="radiogroup" aria-label="Who this orbit is for">
+            <span class="account-type__label">this orbit is for</span>
+            <button class="portrait-toggle" type="button" role="radio" data-account-type="personal" aria-checked="true">me</button>
+            <button class="portrait-toggle" type="button" role="radio" data-account-type="business" aria-checked="false">my business</button>
+          </div>
           <p class="setup-eyebrow">center of your planet</p>
           <h1 id="setupTitle">every universe needs a center.</h1>
-          <p class="setup-intro">Your face is its gravitational center. Choose a photo, then shape the world around you.</p>
+          <p class="setup-intro" data-business-text="Your logo is its gravitational center. Upload it, then shape the world around your brand.">Your face is its gravitational center. Choose a photo, then shape the world around you.</p>
           <div class="portrait-actions">
-            <label class="setup-file-action setup-file-action--picker">choose from your library
+            <label class="setup-file-action setup-file-action--picker"><span data-business-text="choose your logo">choose from your library</span>
               <input class="setup-file-input" id="setupPortraitInput" type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif">
             </label>
             <button class="setup-text-action" id="useDemoPortrait" type="button">use the demo portrait</button>
             <button class="setup-text-action" id="editSavedPortrait" type="button" hidden>edit my saved portrait</button>
           </div>
-          <p class="portrait-tip">A close-up of your face and shoulders works best. We remove the background for you and zoom in if you’re far away.</p>
+          <p class="portrait-tip" data-business-text="A logo with a transparent background works best. Animated GIF, WebP and PNG logos keep moving in your orbit. Up to 10 MB.">A close-up of your face and shoulders works best. We remove the background for you and zoom in if you’re far away.</p>
           <p class="setup-status" id="portraitStatus" aria-live="polite">Demo portrait ready. Uploading another photo replaces it.</p>
           <div class="portrait-refine" id="portraitRefine" hidden>
             <div class="portrait-toggles" role="group" aria-label="Portrait options">
@@ -98,16 +103,16 @@
             <!-- Faces always sit in the centre of the orbit: position is fixed at 0 (kept so saved values clamp to it). -->
             <label hidden>Horizontal position<input id="portraitX" type="range" min="0" max="0" value="0"></label>
             <label hidden>Vertical position<input id="portraitY" type="range" min="0" max="0" value="0"></label>
-            <p class="portrait-guide-hint">Every face sits in the centre of its orbit at the same size, so yours is sized for you. The outline shows the face zone; the dashed lines show where your rings will pass.</p>
+            <p class="portrait-guide-hint" data-business-text="Your logo sits whole in the center of your orbit, sized to fit inside your rings.">Every face sits in the centre of its orbit at the same size, so yours is sized for you. The outline shows the face zone; the dashed lines show where your rings will pass.</p>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
             <p>Write your name, a phrase, or anything that feels like yours. It will appear in two lines across your sky.</p>
             <div class="sky-title-fields">
-              <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" autocomplete="off"></label>
+              <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" data-business-placeholder="Your business name" autocomplete="off"></label>
               <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="optional" autocomplete="off"></label>
             </div>
-            <label class="sky-bio-field">Short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
+            <label class="sky-bio-field">Short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" data-business-placeholder="ceramics studio · made in Brooklyn" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
             <label class="sky-title-color">Second-line color
               <span class="sky-title-color__control"><input id="skyTitleSecondColor" type="color" value="#ffffff" aria-label="Choose second-line title color"><output id="skyTitleSecondColorValue" for="skyTitleSecondColor">#FFFFFF</output></span>
             </label>
@@ -128,6 +133,7 @@
             <summary><strong>Your sources</strong><span id="sourceSummary">Choose what to share</span></summary>
           <button class="source-list-action" id="refreshSources" type="button">↻ Refresh sources</button><p class="setup-status" id="refreshSourcesStatus" role="status"></p>
           <div class="source-list" id="sourceList">
+            <button class="source-option" type="button" data-source="shopify" aria-expanded="false" aria-controls="sourceSharing" hidden><span><strong>Shopify</strong><small>your store’s products</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="cosmos" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Cosmos</strong><small>public profile or collection</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="arena" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Are.na</strong><small>public channels</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="behance" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Behance</strong><small>public projects</small></span><em>choose</em></button>
@@ -173,16 +179,16 @@
         <section class="setup-panel" data-setup-panel="2" hidden>
           <p class="setup-eyebrow">your sky</p>
           <h1>Light up your night sky.</h1>
-          <p class="setup-intro">Add any birth details you know. Then choose which stars reveal pieces of you, and which hold a message for someone curious enough to find it.</p>
+          <p class="setup-intro" data-business-text="If you like, add your business’s birthday: when and where it began. It’s optional, so skip it if you’d rather. Then choose which stars reveal pieces of it, and which hold a message for someone curious enough to find it.">Add any birth details you know. Then choose which stars reveal pieces of you, and which hold a message for someone curious enough to find it.</p>
           <label class="light-space-toggle"><input id="lightUpSpace" type="checkbox" checked> <span>Light up my space with this sky</span></label>
           <div class="birth-fields">
-            <label><span>Birth date <small>optional</small></span><input id="birthDate" type="date"></label>
-            <label><span>Birth time <small>if known</small></span><input id="birthTime" type="time"></label>
-            <label class="birth-place"><span>Birth place <small>optional</small></span><input id="birthPlace" type="text" placeholder="City, state or country"></label>
+            <label><span><span data-business-text="Founding date">Birth date</span> <small>optional</small></span><input id="birthDate" type="date"></label>
+            <label><span><span data-business-text="Founding time">Birth time</span> <small>if known</small></span><input id="birthTime" type="time"></label>
+            <label class="birth-place"><span><span data-business-text="Where it was founded">Birth place</span> <small>optional</small></span><input id="birthPlace" type="text" placeholder="City, state or country"></label>
           </div>
           <div class="constellation-picker" id="constellationPicker" aria-live="polite">
             <div class="constellation-picker__heading">
-              <span>Placements from your birth chart</span>
+              <span data-business-text="Placements from your founding chart">Placements from your birth chart</span>
               <small id="skyCalculationNote">Date reveals the planets. Time and place unlock Rising, Midheaven, and houses.</small>
             </div>
             <section class="featured-placement-section" aria-labelledby="featuredPlacementTitle">
@@ -265,7 +271,7 @@
           <img id="setupPortraitPreview" src="assets/saturn-face-transparent.webp" alt="">
         </div>
         <div class="editor-hotspots" id="editorHotspots" aria-label="Edit parts of your orbit" hidden>
-          <button class="editor-hotspot editor-hotspot--portrait" type="button" data-editor-target="0">portrait + title</button>
+          <button class="editor-hotspot editor-hotspot--portrait" type="button" data-editor-target="0" data-business-text="logo + title">portrait + title</button>
           <button class="editor-hotspot editor-hotspot--sources" type="button" data-editor-target="1">connections</button>
           <button class="editor-hotspot editor-hotspot--stars" type="button" data-editor-target="2">stars</button>
           <button class="editor-hotspot editor-hotspot--rings" type="button" data-editor-target="1">rings</button>
@@ -897,20 +903,20 @@
   <script src="js/arena-loader.js?v=20260405b"></script>
   <script src="js/gallery-data.js?v=20260407"></script>
   <script type="module" src="js/gallery-3d.js?v=20260410"></script>
-  <script src="js/main.js?v=20261009-wanderring"></script>
+  <script src="js/main.js?v=20261009-business-wander"></script>
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261006-handsguide"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261008-ownitems"></script>
-  <script src="js/orbiting-account.js?v=20261009-wanderring"></script>
+  <script src="js/orbiting-account.js?v=20261009-business-wander"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
   <script src="js/shared-sky.js?v=20261006-clear"></script>
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
-  <script src="js/following-cosmos.js?v=20261006-orbitword"></script>
+  <script src="js/following-cosmos.js?v=20261009-business"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261009-invites"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261009-wanderring"></script>
+  <script src="js/orbiting-prototype.js?v=20261009-business-wander"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
