@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261007-lede">
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
+  <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <script type="importmap">
   {
     "imports": {
@@ -41,7 +42,7 @@
       <span class="setup-tagline">pull your world into orbit</span>
       <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
       <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
-      <span class="setup-progress-label" id="setupProgressLabel">plate i of iv</span>
+      <span class="setup-progress"><span class="setup-progress-dots" id="setupProgressDots" aria-hidden="true"></span><span class="setup-progress-label" id="setupProgressLabel">1 of 3 · the center</span></span>
     </header>
 
     <div class="setup-layout">
@@ -55,22 +56,23 @@
 
         <section class="setup-panel" data-setup-panel="0">
           <p class="setup-lede" data-business-text="Build a world that orbits your business: an immersive digital experience where your brand is the center, and you decide what circles it.">Build a world that orbits you: an immersive digital experience where you’re the center, and you decide what circles you.</p>
+          <p class="setup-eyebrow">center of your planet</p>
+          <h1 id="setupTitle">every universe needs a center.</h1>
+          <p class="setup-tagline-line" data-business-text="Your brand is the center. Everything it makes and loves orbits it.">You’re the center. Everything you love orbits you.</p>
           <div class="account-type" role="radiogroup" aria-label="Who this orbit is for">
             <span class="account-type__label">this orbit is for</span>
             <button class="portrait-toggle" type="button" role="radio" data-account-type="personal" aria-checked="true">me</button>
             <button class="portrait-toggle" type="button" role="radio" data-account-type="business" aria-checked="false">my business</button>
           </div>
-          <p class="setup-eyebrow">center of your planet</p>
-          <h1 id="setupTitle">every universe needs a center.</h1>
-          <p class="setup-intro" data-business-text="Your logo is its gravitational center. Upload it, then shape the world around your brand.">Your face is its gravitational center. Choose a photo, then shape the world around you.</p>
+          <p class="setup-intro" data-business-text="Start with your logo. Upload it and we’ll place it at the heart of your orbit.">Start with your face. Pick a photo and we’ll place you at the heart of your orbit.</p>
           <div class="portrait-actions">
-            <label class="setup-file-action setup-file-action--picker"><span data-business-text="choose your logo">choose from your library</span>
+            <label class="setup-file-action setup-file-action--picker"><span data-business-text="choose your logo">choose a photo</span>
               <input class="setup-file-input" id="setupPortraitInput" type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif">
             </label>
             <button class="setup-text-action" id="useDemoPortrait" type="button">use the demo portrait</button>
             <button class="setup-text-action" id="editSavedPortrait" type="button" hidden>edit my saved portrait</button>
           </div>
-          <p class="portrait-tip" data-business-text="A logo with a transparent background works best. Animated GIF, WebP and PNG logos keep moving in your orbit. Up to 10 MB.">A close-up of your face and shoulders works best. We remove the background for you and zoom in if you’re far away.</p>
+          <p class="portrait-tip" data-business-text="A logo with a transparent background looks best. Animated GIF, WebP and PNG logos keep moving. Up to 10 MB.">A close-up of your face and shoulders works best. We’ll remove the background and frame you.</p>
           <p class="setup-status" id="portraitStatus" aria-live="polite">Demo portrait ready. Uploading another photo replaces it.</p>
           <div class="portrait-refine" id="portraitRefine" hidden>
             <div class="portrait-toggles" role="group" aria-label="Portrait options">
@@ -103,7 +105,7 @@
             <!-- Faces always sit in the centre of the orbit: position is fixed at 0 (kept so saved values clamp to it). -->
             <label hidden>Horizontal position<input id="portraitX" type="range" min="0" max="0" value="0"></label>
             <label hidden>Vertical position<input id="portraitY" type="range" min="0" max="0" value="0"></label>
-            <p class="portrait-guide-hint" data-business-text="Your logo sits whole in the center of your orbit, sized to fit inside your rings.">Every face sits in the centre of its orbit at the same size, so yours is sized for you. The outline shows the face zone; the dashed lines show where your rings will pass.</p>
+            <p class="portrait-guide-hint" data-business-text="Your logo sits whole in the center of your orbit, sized to fit inside your rings.">The outline shows where your face sits. The dashed lines show where your rings will pass.</p>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
@@ -122,12 +124,12 @@
         <section class="setup-panel" data-setup-panel="1" data-source-stage="pick" hidden>
           <p class="setup-eyebrow">build your orbit</p>
           <h1>What orbits you?</h1>
-          <p class="setup-intro">Everything you love has a pull. Bring it into your gravity, and each place it comes from becomes a ring around you.</p>
+          <p class="setup-intro">Pull in what you love. Each place becomes a ring around you.</p>
           <ol class="source-stages" aria-label="Steps in what’s in my orbit">
-              <li><button type="button" data-source-stage-go="pick" aria-current="step">a Pick a platform</button></li>
-              <li><button type="button" data-source-stage-go="link">b Point us to it</button></li>
-              <li><button type="button" data-source-stage-go="choose">c Choose what falls in</button></li>
-              <li><button type="button" data-source-stage-go="arrange">d Arrange your rings</button></li>
+              <li><button type="button" data-source-stage-go="pick" aria-current="step">Pick sources</button></li>
+              <li><button type="button" data-source-stage-go="link">Point us to it</button></li>
+              <li><button type="button" data-source-stage-go="choose">Choose what falls in</button></li>
+              <li><button type="button" data-source-stage-go="arrange">Define your orbit</button></li>
             </ol>
             <details class="source-accordion" id="sourceAccordion" open>
             <summary><strong>Your sources</strong><span id="sourceSummary">Choose what to share</span></summary>
@@ -142,8 +144,8 @@
             <button class="source-option" type="button" data-source="instagram" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Instagram</strong><small>public profile, post or Reel</small></span><em>choose</em></button>
             <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>My Photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
           </div>
-          <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Where should we look for signals first? Nothing enters your orbit unless you pull it in.</p>
-          <button class="setup-text-action source-launch-empty" id="launchEmptySky" type="button">Launch with an empty sky</button>
+          <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Paste a public link. We never sign in to your accounts or see anything private.</p>
+          <button class="setup-text-action source-launch-empty" id="launchEmptySky" type="button">skip for now, launch with an empty sky</button>
           <div class="source-sharing" id="sourceSharing"></div>
           <div class="source-sharing-card photo-sharing" id="photoSharing" hidden>
             <h2>Add your photos</h2>
@@ -160,8 +162,8 @@
             <button class="source-link-approve" id="finishSources" type="button">Continue →</button>
           </details>
           <section class="source-rings" aria-labelledby="sourceRingsTitle">
-            <h2 id="sourceRingsTitle" tabindex="-1"><span class="op-setup-only">Which ring sits closest to you? <em>Move it inward.</em></span><span class="op-edit-only">Define your orbit.</span></h2>
-            <p>Your In My Orbit chart shows what fills each ring. Select a label to highlight its photos. Name each ring below and choose whether to combine its sources.</p>
+            <h2 id="sourceRingsTitle" tabindex="-1">Define your orbit.</h2>
+            <p>Name your rings and choose who sees each one. Select a ring’s name in the chart to edit just that ring. Ring 1 sits closest to you.</p>
             <div class="setup-orbit-key" id="setupOrbitKey" hidden>
               <span class="orbit-key-trigger">in my orbit</span>
               <div class="orbit-key-chart" id="setupOrbitChart" aria-label="Preview your orbit rings"></div>
@@ -242,6 +244,7 @@
             <label for="accountEmail"><span>Email</span><input id="accountEmail" type="email" autocomplete="off" placeholder="you@example.com"><small>Preview only. This email is not submitted or saved.</small></label>
             <label for="accountPassword"><span>Password</span><input id="accountPassword" type="password" minlength="8" autocomplete="off" placeholder="at least 8 characters"><small>Preview only. Use a made-up password; it is not submitted or saved.</small></label>
           </div>
+          <p class="setup-sky-later">Your sky and stars wait in settings whenever you want them.</p>
           <p class="account-demo-notice" id="accountDemoNotice">Testing preview · Use made-up details if you try these fields. No account is created and no confirmation email is sent.</p>
           <p class="setup-status" id="accountStatus" role="status" aria-live="polite"></p>
         </section>
@@ -257,6 +260,15 @@
         <div class="setup-preview-stars" aria-hidden="true"></div>
         <div class="setup-preview-meta"><span>live preview</span><span id="previewState">portrait ready</span></div>
         <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span></span><span class="setup-sky-bio"></span></div>
+        <!-- During setup the sky title is typed right here, where it will appear; these mirror the title fields in step one. -->
+        <div class="preview-title-editor" id="previewTitleEditor">
+          <input id="previewTitleFirst" type="text" maxlength="32" placeholder="Your name" data-business-placeholder="Your business name" aria-label="First line of your sky title" autocomplete="off">
+          <div class="preview-title-editor__second">
+            <input id="previewTitleSecond" type="text" maxlength="32" placeholder="second line" aria-label="Second line of your sky title (optional)" autocomplete="off">
+            <input id="previewTitleColor" type="color" value="#ffffff" aria-label="Second line color" title="second line color">
+          </div>
+          <input id="previewBio" type="text" maxlength="80" placeholder="add a one-line bio" data-business-placeholder="add a one-line bio, like ceramics studio · made in Brooklyn" aria-label="One-line bio" autocomplete="off">
+        </div>
         <div class="setup-constellation" id="setupConstellation" aria-label="Interactive preview of your birth sky">
           <svg viewBox="0 0 120 90">
             <g class="constellation-lines"><line x1="15" y1="65" x2="42" y2="32"/><line x1="42" y1="32" x2="66" y2="50"/><line x1="66" y1="50" x2="96" y2="18"/><line x1="66" y1="50" x2="103" y2="72"/></g>
@@ -916,7 +928,7 @@
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261009-invites"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261009-business-wander"></script>
+  <script src="js/orbiting-prototype.js?v=20261009-setup3"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
