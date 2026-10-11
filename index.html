@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
+  <link rel="stylesheet" href="css/orbit-guide.css?v=20261011-guide">
   <script type="importmap">
   {
     "imports": {
@@ -305,6 +306,7 @@
     </aside>
     <nav class="orbit-page-nav" aria-label="Your orbit pages">
       <button id="openOrbitNotifications" type="button" aria-expanded="false" aria-controls="orbitNotifications" hidden>notifications<span class="orbit-notifications__badge" id="orbitNotificationsBadge" hidden></span></button>
+      <button id="openOrbitGuide" type="button">guide</button>
       <button id="openOrbitSettings" type="button">settings</button>
       <button id="openOrbitResources" type="button">resources</button>
       <button id="signOutOrbit" type="button" hidden>sign out</button>
@@ -590,6 +592,7 @@
       <p class="resources-page__eyebrow">a small constellation of places</p>
       <h2 id="resourcesTitle">Resources<span>.</span></h2>
       <p class="resources-page__intro">A few places for making, collecting, and getting lost in an idea.</p>
+      <button class="resources-tour" id="resourcesTour" type="button"><span class="resources-hands__title">Take the tour</span><span class="resources-hands__hint">what your orbit, Friends and Wander are for</span></button>
       <details class="resources-hands" id="resourcesHandControl">
         <summary><span class="resources-hands__title">Hand control</span><span class="resources-hands__hint">move through your orbit with your hands</span></summary>
         <p>Move through your orbit with your hands. On a computer with a camera, press the ✦ under your planet. Nothing is recorded and nothing leaves your browser.</p>
@@ -929,7 +932,8 @@
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261009-invites"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbiting-prototype.js?v=20261010-username"></script>
+  <script src="js/orbit-guide.js?v=20261011-guide"></script>
+  <script src="js/orbiting-prototype.js?v=20261011-guide"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
