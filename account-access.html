@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-feedback">
-  <link rel="stylesheet" href="css/login.css?v=20261004-plate-c">
+  <link rel="stylesheet" href="css/login.css?v=20261010-username">
 </head>
 <body class="op-sky">
   <div class="login-frame op-frame">
@@ -24,6 +24,11 @@
         <h1 id="accessTitle" class="op-title">Make this space yours.</h1>
         <p class="access-status" id="accessStatus" role="status">Checking your account link…</p>
         <form id="accessForm" hidden>
+          <div class="access-username" id="usernameField" hidden>
+            <label for="newUsername">Choose your username</label>
+            <input class="op-input" id="newUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname">
+            <small>3–20 letters, numbers, or underscores. Friends find you by this.</small>
+          </div>
           <label for="newPassword">Create your password</label>
           <input class="op-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
           <label for="repeatPassword" style="margin-top: 16px">Repeat your password</label>
@@ -34,7 +39,7 @@
       </section>
     </main>
   </div>
-  <script src="js/orbiting-account.js?v=20261006-feedback"></script>
-  <script src="js/account-access.js?v=20261004-pages"></script>
+  <script src="js/orbiting-account.js?v=20261010-username"></script>
+  <script src="js/account-access.js?v=20261010-username"></script>
 </body>
 </html>
