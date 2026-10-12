@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-feedback">
-  <link rel="stylesheet" href="css/login-preview.css?v=20261009-caption">
+  <link rel="stylesheet" href="css/login-preview.css?v=20261012-names">
 </head>
 <body class="op-sky login-preview">
   <!-- Rings of images that unspool into the Wander planet; decoration only. -->
@@ -45,8 +45,12 @@
 
     <section class="preview-view" id="inviteView" aria-labelledby="inviteHeading" hidden>
       <h2 class="preview-heading" id="inviteHeading" tabindex="-1">Orbit is invite-only for now.</h2>
-      <p class="preview-intro">Leave your email and we'll send an invite when there's a spot.</p>
+      <p class="preview-intro">Leave your name and email and we'll send an invite when there's a spot.</p>
       <form id="inviteForm">
+        <div class="invite-names">
+          <div><label class="op-field" for="inviteFirstName">First name</label><input class="op-input" id="inviteFirstName" name="firstName" type="text" autocomplete="given-name" required maxlength="60"></div>
+          <div><label class="op-field" for="inviteLastName">Last name</label><input class="op-input" id="inviteLastName" name="lastName" type="text" autocomplete="family-name" required maxlength="60"></div>
+        </div>
         <label class="op-field" for="inviteEmail">Email address</label>
         <input class="op-input" id="inviteEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254">
         <label class="op-field invite-note-label" for="inviteNoteText">Anything you'd like to share? <span>(optional)</span></label>
@@ -60,8 +64,8 @@
 
   <button class="preview-pause" id="previewPause" type="button" aria-pressed="false">Pause</button>
 
-  <script src="js/orbiting-account.js?v=20261010-username"></script>
+  <script src="js/orbiting-account.js?v=20261012-feedback"></script>
   <script src="js/orbit-preview-scene.js?v=20261009-preview"></script>
-  <script src="js/login.js?v=20261009-preview"></script>
+  <script src="js/login.js?v=20261012-names"></script>
 </body>
 </html>

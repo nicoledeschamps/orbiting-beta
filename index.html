@@ -16,7 +16,9 @@
   <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
-  <link rel="stylesheet" href="css/orbit-guide.css?v=20261011-guide">
+  <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
+  <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
+  <link rel="stylesheet" href="css/orbit-feedback.css?v=20261012-feedback">
   <script type="importmap">
   {
     "imports": {
@@ -304,18 +306,38 @@
       <p id="verificationStatus" role="status" aria-live="polite"></p>
       <div><button id="completeVerification" type="button">I’ve verified my email</button><button id="resendVerification" type="button">Send another link</button></div>
     </aside>
-    <nav class="orbit-page-nav" aria-label="Your orbit pages">
-      <button id="openOrbitNotifications" type="button" aria-expanded="false" aria-controls="orbitNotifications" hidden>notifications<span class="orbit-notifications__badge" id="orbitNotificationsBadge" hidden></span></button>
-      <button id="openOrbitGuide" type="button">guide</button>
-      <button id="openOrbitSettings" type="button">settings</button>
-      <button id="openOrbitResources" type="button">resources</button>
-      <button id="signOutOrbit" type="button" hidden>sign out</button>
+    <!-- A row on wider screens; on phones the bright star opens the same items as a list. -->
+    <nav class="orbit-page-nav" id="orbitPageNav" aria-label="Your orbit pages">
+      <button class="orbit-menu-toggle" id="orbitMenuToggle" type="button" aria-expanded="false" aria-controls="orbitMenuItems" aria-label="Menu"><svg class="orbit-menu-toggle__star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.9 6.6 17.4 11.1 24 12C17.4 12.9 12.9 17.4 12 24C11.1 17.4 6.6 12.9 0 12C6.6 11.1 11.1 6.6 12 0Z"/></svg><span class="orbit-notifications__badge orbit-menu-toggle__badge" id="orbitMenuBadge" hidden></span></button>
+      <div class="orbit-page-nav__items" id="orbitMenuItems">
+        <button id="openOrbitNotifications" type="button" aria-expanded="false" aria-controls="orbitNotifications" hidden>notifications<span class="orbit-notifications__badge" id="orbitNotificationsBadge" hidden></span></button>
+        <button id="openOrbitGuide" type="button">guide</button>
+        <button id="openOrbitSettings" type="button">settings</button>
+        <button id="openOrbitResources" type="button">resources</button>
+        <button id="openOrbitFeedback" type="button" aria-expanded="false" aria-controls="orbitFeedback" hidden>feedback</button>
+        <button id="signOutOrbit" type="button" hidden>sign out</button>
+      </div>
     </nav>
+    <section class="orbit-notifications orbit-feedback" id="orbitFeedback" aria-labelledby="orbitFeedbackTitle" hidden>
+      <div class="orbit-notifications__top"><strong id="orbitFeedbackTitle">Feedback</strong><button id="orbitFeedbackClose" type="button" aria-label="Close feedback">×</button></div>
+      <p class="orbit-feedback__intro">Orbit is in beta, so some things will break. Tell Nicole what went wrong, what confused you, or what you’d love to see.</p>
+      <form id="orbitFeedbackForm">
+        <label class="orbit-feedback__label" for="orbitFeedbackMessage">Your note</label>
+        <textarea id="orbitFeedbackMessage" rows="5" maxlength="2000" required placeholder="what happened?"></textarea>
+        <small class="orbit-feedback__hint">Your note includes which part of Orbit you’re on and your screen size, to help find the bug.</small>
+        <p class="orbit-feedback__status" id="orbitFeedbackStatus" role="status" aria-live="polite"></p>
+        <button class="orbit-feedback__send" id="orbitFeedbackSend" type="submit">send</button>
+      </form>
+    </section>
     <section class="orbit-notifications" id="orbitNotifications" aria-label="Notifications" hidden>
       <div class="orbit-notifications__top"><strong>Notifications</strong><button id="orbitNotificationsClose" type="button" aria-label="Close notifications">×</button></div>
       <section class="orbit-setup-tips" id="orbitInviteRequests" aria-label="Invite requests" hidden>
         <p class="orbit-setup-tips__heading">Invite requests</p>
         <ul class="orbit-notifications__list" id="orbitInviteRequestsList"></ul>
+      </section>
+      <section class="orbit-setup-tips" id="orbitFeedbackNotes" aria-label="Beta feedback" hidden>
+        <p class="orbit-setup-tips__heading">Beta feedback</p>
+        <ul class="orbit-notifications__list" id="orbitFeedbackNotesList"></ul>
       </section>
       <section class="orbit-setup-tips" id="orbitSetupTips" aria-label="Finish your orbit" hidden>
         <p class="orbit-setup-tips__heading">Finish your orbit</p>
@@ -924,16 +946,18 @@
   <script type="module" src="js/immersive-orbit.js?v=20261006-handsguide"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261008-ownitems"></script>
-  <script src="js/orbiting-account.js?v=20261010-username"></script>
+  <script src="js/orbiting-account.js?v=20261012-feedback"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
   <script src="js/shared-sky.js?v=20261006-clear"></script>
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
   <script src="js/following-cosmos.js?v=20261009-business"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
-  <script src="js/orbit-notifications.js?v=20261009-invites"></script>
+  <script src="js/orbit-notifications.js?v=20261012-feedback"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbit-guide.js?v=20261011-guide"></script>
-  <script src="js/orbiting-prototype.js?v=20261011-guide"></script>
+  <script src="js/orbit-menu.js?v=20261012-star"></script>
+  <script src="js/orbit-feedback.js?v=20261012-feedback"></script>
+  <script src="js/orbit-guide.js?v=20261012-welcome"></script>
+  <script src="js/orbiting-prototype.js?v=20261011-signout"></script>
 <dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
     <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
     <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
