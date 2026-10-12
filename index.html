@@ -12,8 +12,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20261009-wanderring">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261007-lede">
-  <link rel="stylesheet" href="css/account-settings.css?v=20261004-plate-d">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261012-sky-places">
+  <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
@@ -44,13 +44,13 @@
       <span class="setup-wordmark" id="setupWordmark">Orbit</span>
       <span class="setup-tagline">pull your world into orbit</span>
       <button class="setup-text-action" id="setupSignIn" type="button" hidden>already have an orbit? sign in</button>
-      <button class="setup-text-action account-settings-trigger" id="openAccountSettings" type="button">account</button>
       <span class="setup-progress"><span class="setup-progress-dots" id="setupProgressDots" aria-hidden="true"></span><span class="setup-progress-label" id="setupProgressLabel">1 of 3 · the center</span></span>
     </header>
 
     <div class="setup-layout">
       <main class="setup-workspace">
         <nav class="setup-steps" aria-label="Setup progress">
+          <button class="setup-step setup-step--account" id="accountSettingsTab" type="button" aria-controls="accountSettingsPanel"><span></span><small><span class="op-step-edit">account</span></small></button>
           <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small><span class="op-step-setup">the center</span><span class="op-step-edit">portrait + title</span></small></button>
           <button class="setup-step" type="button" data-setup-step="1"><span>2</span><small><span class="op-step-setup">what’s in my orbit</span><span class="op-step-edit">sources + rings</span></small></button>
           <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small><span class="op-step-setup">waking up the sky</span><span class="op-step-edit">stars</span></small></button>
@@ -187,6 +187,11 @@
           <h1>Light up your night sky.</h1>
           <p class="setup-intro" data-business-text="If you like, add your business’s birthday: when and where it began. It’s optional, so skip it if you’d rather. Then choose which stars reveal pieces of it, and which hold a message for someone curious enough to find it.">Add any birth details you know. Then choose which stars reveal pieces of you, and which hold a message for someone curious enough to find it.</p>
           <label class="light-space-toggle"><input id="lightUpSpace" type="checkbox" checked> <span>Light up my space with this sky</span></label>
+          <fieldset class="sky-behind" id="skyBehind">
+            <legend>Also show my sky behind</legend>
+            <label><input id="skyBehindFriends" type="checkbox" checked> <span>Friends</span></label>
+            <label><input id="skyBehindWander" type="checkbox" checked> <span>Wander</span></label>
+          </fieldset>
           <div class="birth-fields">
             <label><span><span data-business-text="Founding date">Birth date</span> <small>optional</small></span><input id="birthDate" type="date"></label>
             <label><span><span data-business-text="Founding time">Birth time</span> <small>if known</small></span><input id="birthTime" type="time"></label>
@@ -251,6 +256,19 @@
           <p class="setup-sky-later">Your sky and stars wait in settings whenever you want them.</p>
           <p class="account-demo-notice" id="accountDemoNotice">Testing preview · Use made-up details if you try these fields. No account is created and no confirmation email is sent.</p>
           <p class="setup-status" id="accountStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- Settings only: login details, who this orbit is for, and sign out. -->
+        <section class="setup-panel account-settings" id="accountSettingsPanel" aria-labelledby="accountSettingsTitle" hidden>
+          <h1 id="accountSettingsTitle">Account</h1>
+          <p class="setup-intro">Your login details, and who this orbit is for.</p>
+          <p class="account-settings__message" id="accountSettingsMessage" role="status" aria-live="polite"></p>
+          <div class="account-settings__type" id="accountTypeSlot"></div>
+          <small class="account-settings__type-note">Switching saves when you press save changes.</small>
+          <section class="account-settings__group"><h2>Username</h2><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">Your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">Save username</button></fieldset></form></section>
+          <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
+          <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
+          <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
         </section>
 
         <div class="settings-save-actions"><button class="settings-exit" id="settingsExit" type="button">exit without saving</button><button class="setup-skip" id="setupSkip" type="button" hidden>save changes</button></div>
@@ -948,23 +966,16 @@
   <script src="js/explore-planet.js?v=20261008-ownitems"></script>
   <script src="js/orbiting-account.js?v=20261012-feedback"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
-  <script src="js/shared-sky.js?v=20261006-clear"></script>
+  <script src="js/shared-sky.js?v=20261011-calm-sky"></script>
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
   <script src="js/following-cosmos.js?v=20261009-business"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
-  <script src="js/orbit-notifications.js?v=20261012-feedback"></script>
+  <script src="js/orbit-notifications.js?v=20261012-account"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbit-menu.js?v=20261012-star"></script>
   <script src="js/orbit-feedback.js?v=20261012-feedback"></script>
   <script src="js/orbit-guide.js?v=20261012-welcome"></script>
-  <script src="js/orbiting-prototype.js?v=20261011-signout"></script>
-<dialog id="accountSettingsDialog" aria-labelledby="accountSettingsTitle">
-    <header><h2 id="accountSettingsTitle">Your account</h2><button id="closeAccountSettings" type="button">Close</button></header>
-    <p id="accountSettingsMessage" role="status" aria-live="polite"></p>
-    <section><h3>Username</h3><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">Your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">Save username</button></fieldset></form></section>
-    <section><h3>Email</h3><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
-    <section><h3>Password</h3><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
-  </dialog>
-  <script src="js/account-settings.js?v=20261006-username"></script>
+  <script src="js/orbiting-prototype.js?v=20261012-account"></script>
+  <script src="js/account-settings.js?v=20261012-account"></script>
 </body>
 </html>
