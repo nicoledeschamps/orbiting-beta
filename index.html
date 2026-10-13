@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
+  <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261012-feedback">
@@ -51,9 +52,9 @@
       <main class="setup-workspace">
         <nav class="setup-steps" aria-label="Setup progress">
           <button class="setup-step setup-step--account" id="accountSettingsTab" type="button" aria-controls="accountSettingsPanel"><span></span><small><span class="op-step-edit">account</span></small></button>
-          <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small><span class="op-step-setup">the center</span><span class="op-step-edit">portrait + title</span></small></button>
+          <button class="setup-step is-active" type="button" data-setup-step="0" aria-current="step"><span>1</span><small><span class="op-step-setup">the center</span><span class="op-step-edit">portrait &amp; title</span></small></button>
           <button class="setup-step" type="button" data-setup-step="1"><span>2</span><small><span class="op-step-setup">what’s in my orbit</span><span class="op-step-edit">sources + rings</span></small></button>
-          <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small><span class="op-step-setup">waking up the sky</span><span class="op-step-edit">stars</span></small></button>
+          <button class="setup-step" type="button" data-setup-step="2"><span>3</span><small><span class="op-step-setup">waking up the sky</span><span class="op-step-edit">sky &amp; stars</span></small></button>
           <button class="setup-step" type="button" data-setup-step="3"><span>4</span><small><span class="op-step-setup">enter my orbit</span><span class="op-step-edit">sign up</span></small></button>
         </nav>
 
@@ -271,7 +272,7 @@
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
         </section>
 
-        <div class="settings-save-actions"><button class="settings-exit" id="settingsExit" type="button">exit without saving</button><button class="setup-skip" id="setupSkip" type="button" hidden>save changes</button></div>
+        <div class="settings-save-actions"><span class="settings-unsaved" id="settingsUnsaved" role="status" aria-live="polite"></span><button class="settings-exit" id="settingsExit" type="button">exit without saving</button><button class="setup-skip" id="setupSkip" type="button" hidden>save changes</button></div>
         <div class="setup-actions">
           <button class="setup-back" id="setupBack" type="button" disabled>back</button>
           <button class="setup-next" id="setupNext" type="button">continue</button>
@@ -975,7 +976,7 @@
   <script src="js/orbit-menu.js?v=20261012-star"></script>
   <script src="js/orbit-feedback.js?v=20261012-feedback"></script>
   <script src="js/orbit-guide.js?v=20261012-welcome"></script>
-  <script src="js/orbiting-prototype.js?v=20261012-account"></script>
+  <script src="js/orbiting-prototype.js?v=20261013-folds"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
 </body>
 </html>
