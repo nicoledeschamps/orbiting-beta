@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261012-feedback">
+  <link rel="stylesheet" href="css/beta-testers.css?v=20261013-testers">
   <script type="importmap">
   {
     "imports": {
@@ -272,6 +273,18 @@
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
         </section>
 
+        <!-- Settings only, admins only: the beta testers list (beta-testers.js). The database refuses it to everyone else. -->
+        <button class="setup-step admin-fold" id="adminSettingsTab" type="button" aria-controls="adminSettingsPanel" aria-expanded="false" hidden><span></span><small><span class="op-step-edit">admin</span></small><em class="fold-summary">beta testers · only you see this</em></button>
+        <section class="setup-panel admin-settings" id="adminSettingsPanel" aria-label="Beta testers" hidden>
+          <div class="admin-top"><h2>Beta testers</h2><button class="admin-button admin-button--quiet" id="adminDownload" type="button">download for Excel</button></div>
+          <p class="admin-muted">Only admin accounts can see this. “Last active” counts people who stay signed in.</p>
+          <p class="admin-status" id="adminStatus" role="status" aria-live="polite"></p>
+          <div class="admin-counts" id="adminCounts"></div>
+          <p class="admin-nudge" id="adminNudge" hidden></p>
+          <div class="admin-filters" id="adminFilters" role="group" aria-label="Show"></div>
+          <ul class="admin-list" id="adminTesterList"></ul>
+        </section>
+
         <div class="settings-save-actions"><span class="settings-unsaved" id="settingsUnsaved" role="status" aria-live="polite"></span><button class="settings-exit" id="settingsExit" type="button">exit without saving</button><button class="setup-skip" id="setupSkip" type="button" hidden>save changes</button></div>
         <div class="setup-actions">
           <button class="setup-back" id="setupBack" type="button" disabled>back</button>
@@ -350,13 +363,10 @@
     </section>
     <section class="orbit-notifications" id="orbitNotifications" aria-label="Notifications" hidden>
       <div class="orbit-notifications__top"><strong>Notifications</strong><button id="orbitNotificationsClose" type="button" aria-label="Close notifications">×</button></div>
-      <section class="orbit-setup-tips" id="orbitInviteRequests" aria-label="Invite requests" hidden>
-        <p class="orbit-setup-tips__heading">Invite requests</p>
-        <ul class="orbit-notifications__list" id="orbitInviteRequestsList"></ul>
-      </section>
-      <section class="orbit-setup-tips" id="orbitFeedbackNotes" aria-label="Beta feedback" hidden>
-        <p class="orbit-setup-tips__heading">Beta feedback</p>
-        <ul class="orbit-notifications__list" id="orbitFeedbackNotesList"></ul>
+      <!-- Admins only: a heads-up that new invite requests or feedback wait in Settings > Admin. -->
+      <section class="orbit-setup-tips" id="orbitAdminAlert" aria-label="Beta testers" hidden>
+        <p class="orbit-setup-tips__heading">Beta testers</p>
+        <ul class="orbit-notifications__list" id="orbitAdminAlertList"></ul>
       </section>
       <section class="orbit-setup-tips" id="orbitSetupTips" aria-label="Finish your orbit" hidden>
         <p class="orbit-setup-tips__heading">Finish your orbit</p>
@@ -965,18 +975,19 @@
   <script type="module" src="js/immersive-orbit.js?v=20261006-handsguide"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261008-ownitems"></script>
-  <script src="js/orbiting-account.js?v=20261012-feedback"></script>
+  <script src="js/orbiting-account.js?v=20261013-testers"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
   <script src="js/shared-sky.js?v=20261011-calm-sky"></script>
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
   <script src="js/following-cosmos.js?v=20261009-business"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
-  <script src="js/orbit-notifications.js?v=20261012-account"></script>
+  <script src="js/orbit-notifications.js?v=20261013-testers"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbit-menu.js?v=20261012-star"></script>
   <script src="js/orbit-feedback.js?v=20261012-feedback"></script>
   <script src="js/orbit-guide.js?v=20261012-welcome"></script>
-  <script src="js/orbiting-prototype.js?v=20261013-folds"></script>
+  <script src="js/orbiting-prototype.js?v=20261013-testers"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
+  <script src="js/beta-testers.js?v=20261013-testers"></script>
 </body>
 </html>
