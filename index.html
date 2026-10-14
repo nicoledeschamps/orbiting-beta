@@ -12,14 +12,14 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20261009-wanderring">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261012-sky-places">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261009-business">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
-  <link rel="stylesheet" href="css/orbit-feedback.css?v=20261012-feedback">
+  <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261013-testers">
   <script type="importmap">
   {
@@ -193,6 +193,7 @@
             <legend>Also show my sky behind</legend>
             <label><input id="skyBehindFriends" type="checkbox" checked> <span>Friends</span></label>
             <label><input id="skyBehindWander" type="checkbox" checked> <span>Wander</span></label>
+            <label class="sky-behind__shows"><span>as</span> <select id="skyBehindShows" aria-label="What shows behind Friends and Wander"><option value="planets">just my planets</option><option value="all">my whole sky</option></select></label>
           </fieldset>
           <div class="birth-fields">
             <label><span><span data-business-text="Founding date">Birth date</span> <small>optional</small></span><input id="birthDate" type="date"></label>
@@ -352,7 +353,24 @@
     </nav>
     <section class="orbit-notifications orbit-feedback" id="orbitFeedback" aria-labelledby="orbitFeedbackTitle" hidden>
       <div class="orbit-notifications__top"><strong id="orbitFeedbackTitle">Feedback</strong><button id="orbitFeedbackClose" type="button" aria-label="Close feedback">×</button></div>
-      <p class="orbit-feedback__intro">Orbit is in beta, so some things will break. Tell Nicole what went wrong, what confused you, or what you’d love to see.</p>
+      <p class="orbit-feedback__intro" id="orbitFeedbackIntro">Orbit is in beta, so some things will break. Tell Nicole what went wrong, what confused you, or what you’d love to see.</p>
+      <!-- So testers don't spend notes on what's already planned or known. -->
+      <details class="orbit-feedback__known" id="orbitFeedbackKnown">
+        <summary>Already on our list</summary>
+        <ul>
+          <li>Improving Friends, Wander and your profile</li>
+          <li>Smoother hand control</li>
+          <li>Smoother scrolling between your orbit, Friends and Wander</li>
+          <li>Switching between personal and business orbits</li>
+          <li>Editing your saved portrait without uploading it again</li>
+        </ul>
+        <p class="orbit-feedback__known-heading">Known issues</p>
+        <ul>
+          <li>Connecting Instagram doesn’t work right now.</li>
+          <li>Spotify playlists can’t be shown (Spotify closed access to them).</li>
+          <li>Some Pinterest and Instagram links won’t load.</li>
+        </ul>
+      </details>
       <form id="orbitFeedbackForm">
         <label class="orbit-feedback__label" for="orbitFeedbackMessage">Your note</label>
         <textarea id="orbitFeedbackMessage" rows="5" maxlength="2000" required placeholder="what happened?"></textarea>
@@ -371,6 +389,10 @@
       <section class="orbit-setup-tips" id="orbitSetupTips" aria-label="Finish your orbit" hidden>
         <p class="orbit-setup-tips__heading">Finish your orbit</p>
         <ul class="orbit-notifications__list" id="orbitSetupTipsList"></ul>
+      </section>
+      <section class="orbit-setup-tips" id="orbitFeatureAsks" aria-label="What do you think?" hidden>
+        <p class="orbit-setup-tips__heading">What do you think?</p>
+        <ul class="orbit-notifications__list" id="orbitFeatureAsksList"></ul>
       </section>
       <ul class="orbit-notifications__list" id="orbitNotificationsList"></ul>
       <p class="orbit-notifications__status" id="orbitNotificationsStatus" role="status"></p>
@@ -977,16 +999,17 @@
   <script src="js/explore-planet.js?v=20261008-ownitems"></script>
   <script src="js/orbiting-account.js?v=20261013-testers"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
-  <script src="js/shared-sky.js?v=20261011-calm-sky"></script>
+  <script src="js/real-sky.js?v=20261013-real-sky"></script>
+  <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261006-fit"></script>
   <script src="js/following-cosmos.js?v=20261013-hues-paths"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
-  <script src="js/orbit-notifications.js?v=20261013-testers"></script>
+  <script src="js/orbit-notifications.js?v=20261013-feature-feedback"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbit-menu.js?v=20261012-star"></script>
-  <script src="js/orbit-feedback.js?v=20261012-feedback"></script>
+  <script src="js/orbit-feedback.js?v=20261013-feature-feedback"></script>
   <script src="js/orbit-guide.js?v=20261012-welcome"></script>
-  <script src="js/orbiting-prototype.js?v=20261013-testers-rings"></script>
+  <script src="js/orbiting-prototype.js?v=20261013-real-sky-rings"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/beta-testers.js?v=20261013-testers"></script>
 </body>
