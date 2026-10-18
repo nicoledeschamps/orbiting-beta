@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261018-no-double-tap-zoom">
+  <link rel="stylesheet" href="css/style.css?v=20261018-spotify">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261018-wander-room">
@@ -367,7 +367,6 @@
         <p class="orbit-feedback__known-heading">Known issues</p>
         <ul>
           <li>Connecting Instagram doesn’t work right now.</li>
-          <li>Spotify playlists can’t be shown (Spotify closed access to them).</li>
           <li>Some Pinterest and Instagram links won’t load.</li>
         </ul>
       </details>
@@ -601,6 +600,7 @@
           <div class="explore-detail__caption">
             <strong id="exploreDetailTitle"></strong>
             <span id="exploreDetailSource"></span>
+            <div class="song-preview" id="exploreSongPreview" hidden></div>
             <div class="explore-detail__actions">
               <button id="exploreAddToOrbit" type="button">Add to my Orbit</button>
               <button id="exploreEnterFriend" type="button">enter their orbit ↗</button>
@@ -992,11 +992,12 @@
   <script src="js/arena-loader.js?v=20260405b"></script>
   <script src="js/gallery-data.js?v=20260407"></script>
   <script type="module" src="js/gallery-3d.js?v=20260410"></script>
-  <script src="js/main.js?v=20261013-hues-paths"></script>
+  <script src="js/song-preview.js?v=20261018-spotify"></script>
+  <script src="js/main.js?v=20261018-spotify"></script>
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261006-handsguide"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261018-finger-spin"></script>
+  <script src="js/explore-planet.js?v=20261018-spotify"></script>
   <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
   <script src="js/friend-search.js?v=20261006-orbitword"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -1011,7 +1012,7 @@
   <script src="js/orbit-guide.js?v=20261012-welcome"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261017-refresh"></script>
-  <script src="js/orbiting-prototype.js?v=20261018-panel-scroll"></script>
+  <script src="js/orbiting-prototype.js?v=20261018-spotify"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/beta-testers.js?v=20261013-testers"></script>
 </body>
