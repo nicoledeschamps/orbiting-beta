@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261019-apple-music">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261018-friend-refresh3">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261018-person-hint2">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
@@ -576,6 +576,8 @@
         </div>
         <div class="wander-filters" id="wanderFilters" hidden>
           <label class="wander-filters__search"><span class="sr-only">Search Wander</span><input id="wanderSearch" type="search" placeholder="search what orbits: fashion, chrome…" autocomplete="off" spellcheck="false" maxlength="40"></label>
+          <!-- Typing a username here (this box searches images) offers the people search instead. -->
+          <p class="wander-filters__person" id="wanderPersonHint" hidden></p>
           <div class="wander-filters__pills">
             <div class="wander-filters__row" id="wanderPeople" role="group" aria-label="Whose orbit"></div>
             <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
@@ -1005,7 +1007,7 @@
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261019-apple-music"></script>
   <script src="js/orbiting-account.js?v=20261019-apple-music"></script>
-  <script src="js/friend-search.js?v=20261006-orbitword"></script>
+  <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
