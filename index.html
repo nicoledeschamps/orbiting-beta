@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261018-spotify">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261018-notif-names">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261018-friend-refresh3">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
@@ -691,7 +691,6 @@
 
   <section id="followedOrbit" class="followed-orbit" role="dialog" aria-modal="true" aria-labelledby="followedOrbitTitle" hidden>
     <button id="closeFollowedOrbit" type="button">← back to your cosmos</button>
-    <button id="refreshFollowedOrbit" type="button">↻ refresh their orbit</button>
     <header class="followed-orbit__head">
       <p class="followed-orbit__name" id="followedOrbitName" hidden><span></span><span></span></p>
       <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
@@ -704,6 +703,11 @@
       <div class="orbit-key-chart orbit-key-chart--personal" id="followedOrbitKeyChart"></div>
     </div>
     <p id="followedOrbitStatus" role="status"></p>
+    <!-- Same place and look as "refresh my orbit" on your own page. -->
+    <div class="followed-orbit__refresh">
+      <button class="orbit-refresh__button" id="refreshFollowedOrbit" type="button"><span aria-hidden="true">↻</span> refresh their orbit</button>
+      <p class="orbit-refresh__status" id="refreshFollowedOrbitStatus" role="status" aria-live="polite"></p>
+    </div>
   </section>
   <div class="friend-portal" id="friendPortal" role="dialog" aria-modal="true" aria-label="Brandon Jerman's orbit" hidden>
     <div class="friend-portal__nav">
@@ -1004,7 +1008,7 @@
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
-  <script src="js/following-cosmos.js?v=20261018-no-poles"></script>
+  <script src="js/following-cosmos.js?v=20261018-friend-refresh3"></script>
   <script src="js/wander-sky.js?v=20261006-clear2"></script>
   <script src="js/orbit-notifications.js?v=20261018-notif-names"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
