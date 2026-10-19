@@ -1,0 +1,1 @@
+(()=>{const r=/^(https:\/\/i\.pinimg\.com\/)(?:originals|\d+x(?:\d+)?(?:_RS)?)\//;window.OrbitThumb=function(t){if(typeof t!="string"||!t.startsWith("https://"))return t;if(r.test(t))return t.replace(r,"$1236x/");try{const n=new URL(t);if(n.hostname==="cdn.cosmos.so"&&!n.searchParams.has("w"))return n.searchParams.set("w",String(240)),n.href}catch{}return t}})();
