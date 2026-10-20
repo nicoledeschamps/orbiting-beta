@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
+  <link rel="stylesheet" href="css/wander-dock.css?v=20261020-dock">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261020-crate">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
   <script type="importmap">
@@ -577,27 +578,29 @@
         <div class="explore-planet" id="explorePlanet" aria-label="Rotating planet of clippings from your orbit">
           <div class="explore-planet__items" id="explorePlanetItems"></div>
         </div>
-        <div class="wander-filters" id="wanderFilters" hidden>
+        <!-- Wander's tools: one dock at the bottom; Filter and Planet open one panel above it (wander-dock.css). -->
+        <div class="wander-panel wander-filters" id="wanderFilters" hidden>
           <label class="wander-filters__search"><span class="sr-only">Search Wander</span><input id="wanderSearch" type="search" placeholder="search what orbits: fashion, chrome…" autocomplete="off" spellcheck="false" maxlength="40"></label>
           <!-- Typing a username here (this box searches images) offers the people search instead. -->
           <p class="wander-filters__person" id="wanderPersonHint" hidden></p>
           <div class="wander-filters__pills">
+            <p class="wander-panel__label">whose orbit</p>
             <div class="wander-filters__row" id="wanderPeople" role="group" aria-label="Whose orbit"></div>
+            <p class="wander-panel__label">rings</p>
             <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
           </div>
         </div>
-        <div class="wander-tools">
-        <button class="wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden>Filter</button>
-        <div class="wander-adjust">
-        <button id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls">Adjust planet</button>
-        <div class="wander-controls" id="wanderControls" hidden>
-        <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="50" max="1200" value="100" step="10"></label>
-        <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="140" value="100" step="5"></label>
+        <div class="wander-panel wander-controls" id="wanderControls" hidden>
+          <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="50" max="400" value="100" step="10"><small aria-hidden="true">slower</small><small aria-hidden="true">faster</small></label>
+          <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="150" value="100" step="5"><small aria-hidden="true">smaller</small><small aria-hidden="true">bigger</small></label>
         </div>
-        </div>
-        <button class="wander-hand" id="wanderHandBtn" type="button">Wander with your hand</button>
-        </div>
-        <div class="wander-refresh"><button class="wander-refresh__button" id="refreshWander" type="button"><span aria-hidden="true">↻</span> refresh wander</button><p class="wander-refresh__status" id="refreshWanderStatus" role="status" aria-live="polite"></p></div>
+        <p class="wander-refresh__status" id="refreshWanderStatus" role="status" aria-live="polite"></p>
+        <nav class="wander-dock" aria-label="Wander tools">
+          <button class="wander-dock__button wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="wander-dock__label">Filter</span></button>
+          <button class="wander-dock__button" id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-20 12 12)"/></svg><span class="wander-dock__label">Planet</span></button>
+          <button class="wander-dock__button wander-hand" id="wanderHandBtn" type="button" aria-label="Wander with your hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1V4.5a1.5 1.5 0 0 1 3 0V12m0-6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.3 14a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg><span class="wander-dock__label">Hand</span></button>
+          <button class="wander-dock__button" id="refreshWander" type="button" aria-label="Refresh Wander"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span class="wander-dock__label">Refresh</span></button>
+        </nav>
       </div>
       <p class="explore-layer__empty" id="wanderEmpty" hidden>Your Wander begins with your own things. Add photos or public links in your orbit to fill this planet.</p>
       <aside class="explore-detail" id="exploreDetail" role="dialog" aria-modal="true" aria-label="Clipping" hidden>
@@ -1011,22 +1014,22 @@
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261019-thumbs"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261019-thumbs"></script>
+  <script src="js/explore-planet.js?v=20261020-dock"></script>
   <script src="js/orbiting-account.js?v=20261019-saved-notes"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
   <script src="js/following-cosmos.js?v=20261020-wander-refresh"></script>
-  <script src="js/wander-sky.js?v=20261006-clear2"></script>
+  <script src="js/wander-sky.js?v=20261020-dock"></script>
   <script src="js/orbit-notifications.js?v=20261019-saved-notes"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbit-menu.js?v=20261012-star"></script>
   <script src="js/orbit-feedback.js?v=20261013-feature-feedback"></script>
-  <script src="js/orbit-guide.js?v=20261012-welcome"></script>
+  <script src="js/orbit-guide.js?v=20261020-dock"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261017-refresh"></script>
-  <script src="js/orbiting-prototype.js?v=20261020-crate"></script>
+  <script src="js/orbiting-prototype.js?v=20261020-dock"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/beta-testers.js?v=20261020-inbox"></script>
 </body>
