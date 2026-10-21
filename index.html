@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261021-tour">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
-  <link rel="stylesheet" href="css/wander-dock.css?v=20261021-tune">
+  <link rel="stylesheet" href="css/wander-dock.css?v=20261021-layers2">
   <link rel="stylesheet" href="css/ether.css?v=20261021-no-tint">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261020-crate">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
@@ -592,6 +592,8 @@
             <div class="wander-filters__row" id="wanderPeople" role="group" aria-label="Whose orbit"></div>
             <p class="wander-panel__label">rings</p>
             <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
+            <p class="wander-panel__label">swipe through</p>
+            <div class="wander-filters__row" id="wanderSwipeMode" role="group" aria-label="Swipe through"><button class="wander-pill" type="button" data-mode="source" aria-pressed="true">one source at a time</button><button class="wander-pill" type="button" data-mode="mixed" aria-pressed="false">everything mixed</button></div>
           </div>
         </div>
         <!-- In the Ether the Filter button becomes Tune: one word, a subject, a time or a source refills the whole planet (ether.js). -->
@@ -620,10 +622,10 @@
       </div>
       <p class="explore-layer__empty" id="wanderEmpty" hidden>Your Wander begins with your own things. Add photos or public links in your orbit to fill this planet.</p>
       <aside class="explore-detail" id="exploreDetail" role="dialog" aria-modal="true" aria-label="Clipping" hidden>
-        <button class="explore-detail__close" id="exploreDetailClose" type="button" aria-label="Close enlarged image">× Close</button>
         <div class="explore-detail__card">
-          <div class="explore-detail__frame"><img class="explore-detail__image" id="exploreDetailImage" alt=""></div>
+          <div class="explore-detail__frame"><img class="explore-detail__image" id="exploreDetailImage" alt="" draggable="false"><button class="explore-detail__close" id="exploreDetailClose" type="button" aria-label="Close enlarged image">×</button></div>
           <div class="explore-detail__caption">
+            <p class="explore-detail__layer" id="exploreDetailLayer"></p>
             <strong id="exploreDetailTitle"></strong>
             <span id="exploreDetailSource"></span>
             <div class="song-preview" id="exploreSongPreview" hidden></div>
@@ -1036,7 +1038,7 @@
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261021-zoom"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261021-tune"></script>
+  <script src="js/explore-planet.js?v=20261021-layers2"></script>
   <script src="js/orbiting-account.js?v=20261019-saved-notes"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -1051,7 +1053,7 @@
   <script src="js/orbit-guide.js?v=20261021-tour"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261021-tune"></script>
+  <script src="js/orbiting-prototype.js?v=20261021-layers2"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/ether-sources.js?v=20261021-unseen"></script>
   <script src="js/ether.js?v=20261021-tune"></script>
