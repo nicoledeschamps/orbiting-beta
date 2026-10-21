@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261012-menu">
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
-  <link rel="stylesheet" href="css/wander-dock.css?v=20261021-layers">
+  <link rel="stylesheet" href="css/wander-dock.css?v=20261021-zoom">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261020-crate">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
   <script type="importmap">
@@ -606,12 +606,12 @@
       <aside class="explore-detail" id="exploreDetail" role="dialog" aria-modal="true" aria-label="Clipping" hidden>
         <button class="explore-detail__close" id="exploreDetailClose" type="button" aria-label="Close enlarged image">× Close</button>
         <div class="explore-detail__card">
-          <img class="explore-detail__image" id="exploreDetailImage" alt="">
+          <div class="explore-detail__frame"><img class="explore-detail__image" id="exploreDetailImage" alt=""></div>
           <div class="explore-detail__caption">
             <strong id="exploreDetailTitle"></strong>
             <span id="exploreDetailSource"></span>
             <div class="song-preview" id="exploreSongPreview" hidden></div>
-            <div class="explore-detail__nav"><button id="exploreDetailPrev" type="button" aria-label="Previous image">←</button><span>swipe along this layer</span><button id="exploreDetailNext" type="button" aria-label="Next image">→</button></div>
+            <div class="explore-detail__nav"><button id="exploreDetailPrev" type="button" aria-label="Previous image">←</button><span>swipe along this layer · double-tap to zoom</span><button class="explore-detail__zoom" id="exploreDetailZoom" type="button" aria-pressed="false">⊕ zoom</button><button id="exploreDetailNext" type="button" aria-label="Next image">→</button></div>
             <div class="explore-detail__actions">
               <button id="exploreAddToOrbit" type="button">Add to my Orbit</button>
               <button id="exploreEnterFriend" type="button">enter their orbit ↗</button>
@@ -687,7 +687,7 @@
           <li><span class="resources-hands__icon" data-gesture-icon="frame" aria-hidden="true"></span><span><strong>Frame</strong>: make an L with both hands and hold to zoom into your orbit’s photos.</span></li>
           <li><span class="resources-hands__icon" data-gesture-icon="fist" aria-hidden="true"></span><span><strong>Fist</strong>: close a photo, or zoom back out.</span></li>
         </ul>
-        <p class="resources-hands__note">It works in Wander too. Inside hand control, press ? to see the moves again.</p>
+        <p class="resources-hands__note">It works in Wander too: with a photo open, swipe to move along its layer, pinch to zoom into it, and make a fist to zoom out or close. Inside hand control, press ? to see the moves again.</p>
       </details>
       <div class="resources-page__list">
         <a href="https://nicoledeschamps.github.io/cut-it-out/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">01</span><span><strong>Cut It Out</strong><small>a hand-cut digital collage tool</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
@@ -1013,9 +1013,9 @@
   <script src="js/photo-crate.js?v=20261021-cosmos"></script>
   <script src="js/main.js?v=20261020-crate"></script>
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20261019-thumbs"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261021-zoom"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261021-layers"></script>
+  <script src="js/explore-planet.js?v=20261021-zoom"></script>
   <script src="js/orbiting-account.js?v=20261019-saved-notes"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
