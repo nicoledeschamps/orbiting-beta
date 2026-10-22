@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
   <link rel="stylesheet" href="css/wander-dock.css?v=20261021-layers2">
-  <link rel="stylesheet" href="css/ether.css?v=20261021-no-tint">
+  <link rel="stylesheet" href="css/ether.css?v=20261021-shapes">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261020-crate">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
   <script type="importmap">
@@ -578,6 +578,24 @@
         </section>
       </div>
       <div class="orbiting-shared-sky wander-shared-sky" id="wanderSharedSky" aria-label="Zodiac signs of you and the people you orbit" hidden></div>
+      <!-- The Ether's depth shapes (drift, horizon, well): its images at different depths, which you move through (ether-drift.js). -->
+      <div class="ether-drift" id="etherDrift" role="region" aria-label="The Ether: images drifting at different depths" hidden>
+        <div class="ether-drift__scenery" id="etherDriftScenery" aria-hidden="true"></div>
+        <div class="ether-drift__items" id="etherDriftItems"></div>
+        <aside class="ether-drift__card" id="etherDriftCard" aria-label="Image from the Ether" hidden>
+          <img class="ether-drift__thumb" id="etherDriftImage" alt="">
+          <div class="ether-drift__text">
+            <strong id="etherDriftTitle"></strong>
+            <span id="etherDriftSource"></span>
+            <div class="ether-drift__actions">
+              <button class="ether-drift__add" id="etherDriftAdd" type="button">Add to my Orbit</button>
+              <button class="ether-drift__orbit" id="etherDriftOrbit" type="button" hidden></button>
+              <a class="ether-drift__link" id="etherDriftLink" href="#" target="_blank" rel="noopener noreferrer" hidden>open source ↗</a>
+            </div>
+          </div>
+          <button class="ether-drift__close" id="etherDriftClose" type="button" aria-label="Close">×</button>
+        </aside>
+      </div>
       <div class="explore-stage">
         <div class="explore-planet" id="explorePlanet" aria-label="Rotating planet of clippings from your orbit">
           <div class="explore-planet__items" id="explorePlanetItems"></div>
@@ -609,6 +627,8 @@
           </div>
         </div>
         <div class="wander-panel wander-controls" id="wanderControls" hidden>
+          <!-- The Ether only: drift through its images, walk to a horizon, sink down a well, or gather them into a planet (ether-drift.js). -->
+          <div class="ether-shape" id="etherShape" role="group" aria-label="Shape of the Ether"><p class="wander-panel__label">shape</p><div class="wander-filters__row"><button class="wander-pill" type="button" data-shape="drift" aria-pressed="true">drift</button><button class="wander-pill" type="button" data-shape="horizon" aria-pressed="false">horizon</button><button class="wander-pill" type="button" data-shape="well" aria-pressed="false">well</button><button class="wander-pill" type="button" data-shape="planet" aria-pressed="false">planet</button></div></div>
           <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="0" max="100" value="40" step="1"><small aria-hidden="true">slower</small><small aria-hidden="true">faster</small></label>
           <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="150" value="100" step="5"><small aria-hidden="true">smaller</small><small aria-hidden="true">bigger</small></label>
         </div>
@@ -616,6 +636,7 @@
         <nav class="wander-dock" aria-label="Wander tools">
           <button class="wander-dock__button wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="wander-dock__label">Filter</span></button>
           <button class="wander-dock__button" id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-20 12 12)"/></svg><span class="wander-dock__label">Planet</span></button>
+          <button class="wander-dock__button ether-deeper" id="etherDeeper" type="button" aria-label="Drift deeper into the Ether"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6M6 4l6 6 6-6"/></svg><span class="wander-dock__label">Deeper</span></button>
           <button class="wander-dock__button wander-hand" id="wanderHandBtn" type="button" aria-label="Wander with your hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1V4.5a1.5 1.5 0 0 1 3 0V12m0-6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.3 14a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg><span class="wander-dock__label">Hand</span></button>
           <button class="wander-dock__button" id="refreshWander" type="button" aria-label="Refresh Wander"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span class="wander-dock__label">Refresh</span></button>
         </nav>
@@ -1038,7 +1059,7 @@
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261021-zoom"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261021-layers2"></script>
+  <script src="js/explore-planet.js?v=20261021-drift"></script>
   <script src="js/orbiting-account.js?v=20261019-saved-notes"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -1053,10 +1074,11 @@
   <script src="js/orbit-guide.js?v=20261021-tour"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261021-layers2"></script>
+  <script src="js/orbiting-prototype.js?v=20261021-drift"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/ether-sources.js?v=20261021-unseen"></script>
   <script src="js/ether.js?v=20261021-tune"></script>
+  <script src="js/ether-drift.js?v=20261021-shapes"></script>
   <script src="js/beta-testers.js?v=20261020-inbox"></script>
 </body>
 </html>
