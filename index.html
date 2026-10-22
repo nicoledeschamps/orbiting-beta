@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
   <link rel="stylesheet" href="css/wander-dock.css?v=20261021-video">
+  <link rel="stylesheet" href="css/tune-row.css?v=20261022-color">
   <link rel="stylesheet" href="css/ether.css?v=20261021-tune-phone">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261020-crate">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
@@ -619,26 +620,15 @@
           <label class="wander-filters__search"><span class="sr-only">Search Wander</span><input id="wanderSearch" type="search" placeholder="search what orbits: fashion, chrome…" autocomplete="off" spellcheck="false" maxlength="40"></label>
           <!-- Typing a username here (this box searches images) offers the people search instead. -->
           <p class="wander-filters__person" id="wanderPersonHint" hidden></p>
-          <div class="wander-filters__pills">
-            <p class="wander-panel__label">whose orbit</p>
-            <div class="wander-filters__row" id="wanderPeople" role="group" aria-label="Whose orbit"></div>
-            <p class="wander-panel__label">rings</p>
-            <div class="wander-filters__row" id="wanderRings" role="group" aria-label="Rings"></div>
-            <p class="wander-panel__label">swipe through</p>
-            <div class="wander-filters__row" id="wanderSwipeMode" role="group" aria-label="Swipe through"><button class="wander-pill" type="button" data-mode="source" aria-pressed="true">one source at a time</button><button class="wander-pill" type="button" data-mode="mixed" aria-pressed="false">everything mixed</button></div>
-          </div>
+          <!-- A quiet row: whose orbit, ring, how swiping goes, and color (closed until chosen); tune-row.js fills it. -->
+          <div class="tune-row" id="wanderTuneRow" aria-label="Filter options"></div>
+          <div class="tune-row__detail" id="wanderTuneDetail" hidden></div>
         </div>
-        <!-- In the Ether the Filter button becomes Tune: one word, a subject, a time or a source refills the whole planet (ether.js). -->
+        <!-- In the Ether the Filter button becomes Tune: a word, a time, a source or a color refills the whole Ether (ether.js). -->
         <div class="wander-panel wander-filters ether-tune" id="etherTune" role="region" aria-label="Tune the Ether" hidden>
-          <form class="ether-tune__form" id="etherTuneForm"><label class="wander-filters__search"><span class="sr-only">Tune the Ether</span><input id="etherTuneSearch" type="search" placeholder="tune the Ether: a subject, an artist, a year…" autocomplete="off" spellcheck="false" maxlength="60" enterkeyhint="search"></label></form>
-          <div class="wander-filters__pills">
-            <p class="wander-panel__label">subject</p>
-            <div class="wander-filters__row" id="etherSubjects" role="group" aria-label="Subject"></div>
-            <p class="wander-panel__label">era</p>
-            <div class="wander-filters__row" id="etherEras" role="group" aria-label="Era"></div>
-            <p class="wander-panel__label">from</p>
-            <div class="wander-filters__row" id="etherFrom" role="group" aria-label="From"></div>
-          </div>
+          <form class="ether-tune__form" id="etherTuneForm"><label class="wander-filters__search"><span class="sr-only">Tune the Ether</span><input id="etherTuneSearch" type="search" placeholder="tune the Ether: a word, an artist, a year…" autocomplete="off" spellcheck="false" maxlength="60" enterkeyhint="search"></label></form>
+          <div class="tune-row" id="etherTuneRow" aria-label="Tune options"></div>
+          <div class="tune-row__detail" id="etherTuneDetail" hidden></div>
         </div>
         <div class="wander-panel wander-controls" id="wanderControls" hidden>
           <!-- The Ether only: drift through its images, walk to a horizon, sink down a well, or gather them into a planet (ether-drift.js). -->
@@ -1078,7 +1068,9 @@
   <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261021-hands"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
-  <script src="js/explore-planet.js?v=20261022-endless"></script>
+  <script src="js/image-color.js?v=20261022-color"></script>
+  <script src="js/tune-row.js?v=20261022-color"></script>
+  <script src="js/explore-planet.js?v=20261022-color"></script>
   <script src="js/orbiting-account.js?v=20261022-delete"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -1090,14 +1082,14 @@
   <script src="js/loading-lines.js?v=20261005-lines"></script>
   <script src="js/orbit-menu.js?v=20261012-star"></script>
   <script src="js/orbit-feedback.js?v=20261021-ether"></script>
-  <script src="js/orbit-guide.js?v=20261022-ether-offer"></script>
+  <script src="js/orbit-guide.js?v=20261022-color-offer"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
   <script src="js/orbiting-prototype.js?v=20261022-ether-offer"></script>
   <script src="js/account-settings.js?v=20261022-delete"></script>
-  <script src="js/ether-sources.js?v=20261022-endless"></script>
-  <script src="js/ether.js?v=20261022-endless"></script>
-  <script src="js/ether-drift.js?v=20261022-endless"></script>
+  <script src="js/ether-sources.js?v=20261022-color"></script>
+  <script src="js/ether.js?v=20261022-color"></script>
+  <script src="js/ether-drift.js?v=20261022-color"></script>
   <script src="js/beta-testers.js?v=20261020-inbox"></script>
 </body>
 </html>
