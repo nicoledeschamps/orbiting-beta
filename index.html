@@ -13,7 +13,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20261021-video">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
-  <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
+  <link rel="stylesheet" href="css/account-settings.css?v=20261022-legal">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261022-ether-offer">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
@@ -280,6 +280,7 @@
           <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> Let my images drift into the Ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">How Orbit uses your data</a></p><p><a href="terms.html">Terms of use</a></p><small>To delete your account, see "Changing or deleting your data" on the privacy page.</small></section>
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
         </section>
 
