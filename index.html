@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=20261021-hands">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
   <link rel="stylesheet" href="css/account-settings.css?v=20261012-account">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261020-wander-refresh">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261021-skip-wander">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261021-tour">
@@ -539,6 +539,14 @@
       <div class="following-cosmos__planets" id="followingPlanets"></div>
       <p id="followingCosmosStatus" role="status" aria-live="polite"></p>
       <button id="refreshFollowingCosmos" type="button">refresh your cosmos</button>
+      <!-- Everyone you orbit: friends who were on lately circle you, the rest wait here (following-cosmos.js). -->
+      <button class="friends-list__toggle" id="friendsListToggle" type="button" aria-expanded="false" aria-controls="friendsList" hidden>all friends</button>
+      <section class="friends-list" id="friendsList" aria-labelledby="friendsListTitle" hidden>
+        <div class="friends-list__top"><strong id="friendsListTitle">All friends</strong><button id="friendsListClose" type="button" aria-label="Close friends list">×</button></div>
+        <label class="friends-list__find" id="friendsListFindLabel" for="friendsListFind" hidden>Find a friend</label>
+        <input class="friends-list__find-input" id="friendsListFind" type="search" placeholder="find a friend" autocomplete="off" spellcheck="false" maxlength="20" hidden>
+        <div class="friends-list__groups" id="friendsListGroups"></div>
+      </section>
     </section>
     <div class="cosmos-depth-label" id="cosmosDepthLabel" aria-hidden="true">your close orbit <span>✦</span> two worlds in view</div>
     <div class="cosmos-heading" id="cosmosHeading" aria-hidden="true">
@@ -678,6 +686,11 @@
     <button class="cosmos-depth-control ether-depth-control" id="etherDepthControl" type="button" aria-label="Drift into the Ether" hidden>
       <span class="cosmos-depth-control__symbol" aria-hidden="true">⌁</span>
       <span>drift into the ether</span>
+    </button>
+    <!-- On your own orbit only: straight to Wander, passing Friends without stopping (orbiting-prototype.js). -->
+    <button class="cosmos-depth-control wander-skip-control" id="wanderSkipControl" type="button" aria-label="Skip past friends to Wander">
+      <span class="cosmos-depth-control__symbol" aria-hidden="true">⌁</span>
+      <span>skip to wander</span>
     </button>
     <button class="cosmos-depth-control" id="cosmosDepthControl" type="button" aria-label="Pull back to see people in your orbit">
       <span class="cosmos-depth-control__symbol" aria-hidden="true">⌁</span>
@@ -1065,7 +1078,7 @@
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
-  <script src="js/following-cosmos.js?v=20261020-wander-refresh"></script>
+  <script src="js/following-cosmos.js?v=20261020-friends-list"></script>
   <script src="js/wander-sky.js?v=20261020-dock"></script>
   <script src="js/orbit-notifications.js?v=20261021-clear-admin"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
@@ -1074,7 +1087,7 @@
   <script src="js/orbit-guide.js?v=20261022-drift"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261021-drift"></script>
+  <script src="js/orbiting-prototype.js?v=20261021-skip-wander"></script>
   <script src="js/account-settings.js?v=20261012-account"></script>
   <script src="js/ether-sources.js?v=20261021-vam-nasa"></script>
   <script src="js/ether.js?v=20261021-tune"></script>
