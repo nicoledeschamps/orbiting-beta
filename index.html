@@ -13,7 +13,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
   <link rel="stylesheet" href="css/style.css?v=20261021-video">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
-  <link rel="stylesheet" href="css/account-settings.css?v=20261022-legal">
+  <link rel="stylesheet" href="css/account-settings.css?v=20261022-delete">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261022-ether-offer">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
@@ -280,8 +280,9 @@
           <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> Let my images drift into the Ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
-          <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">How Orbit uses your data</a></p><p><a href="terms.html">Terms of use</a></p><small>To delete your account, see "Changing or deleting your data" on the privacy page.</small></section>
+          <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">How Orbit uses your data</a></p><p><a href="terms.html">Terms of use</a></p><small>You can delete your account at the bottom of this page.</small></section>
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
+          <section class="account-settings__group account-settings__delete" id="deleteAccountGroup" hidden><h2>Delete account</h2><p>This removes your orbit, your photos and portrait, who you follow and who follows you, your saved images and your feedback. It can't be undone.</p><button class="account-settings__delete-open" id="deleteAccountOpen" type="button" aria-expanded="false" aria-controls="deleteAccountForm">delete my account…</button><form id="deleteAccountForm" hidden><fieldset id="deleteAccountFields"><label for="deleteAccountUsername">Type your username to confirm</label><input id="deleteAccountUsername" autocomplete="off" autocapitalize="none" spellcheck="false" required><label for="deleteAccountPassword">Your password</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required><div class="account-settings__delete-actions"><button class="account-settings__delete-confirm" id="deleteAccountConfirm" type="submit">Delete my account forever</button><button class="account-settings__delete-cancel" id="deleteAccountCancel" type="button">cancel</button></div></fieldset></form><p class="account-settings__delete-status" id="deleteAccountStatus" role="status" aria-live="polite"></p></section>
         </section>
 
         <!-- Settings only, admins only: the beta testers list (beta-testers.js). The database refuses it to everyone else. -->
@@ -1078,7 +1079,7 @@
   <script type="module" src="js/immersive-orbit.js?v=20261021-hands"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/explore-planet.js?v=20261022-endless"></script>
-  <script src="js/orbiting-account.js?v=20261019-saved-notes"></script>
+  <script src="js/orbiting-account.js?v=20261022-delete"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
@@ -1093,7 +1094,7 @@
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
   <script src="js/orbiting-prototype.js?v=20261022-ether-offer"></script>
-  <script src="js/account-settings.js?v=20261012-account"></script>
+  <script src="js/account-settings.js?v=20261022-delete"></script>
   <script src="js/ether-sources.js?v=20261022-endless"></script>
   <script src="js/ether.js?v=20261022-endless"></script>
   <script src="js/ether-drift.js?v=20261022-endless"></script>
