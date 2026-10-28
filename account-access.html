@@ -2,50 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Your Orbit account</title>
+  <title>Orbit · your account</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261006-feedback">
-  <link rel="stylesheet" href="css/login.css?v=20261022-legal">
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/welcome.css?v=20261028-one-style">
 </head>
-<body class="op-sky">
-  <div class="login-frame op-frame">
-    <header class="login-header">
-      <p class="login-wordmark" aria-label="Orbit"><span>Orbit</span></p>
-      <span class="login-tagline">pull your world into orbit</span>
-    </header>
-    <main class="login-shell">
-      <div class="orbit-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <section class="login-card" aria-labelledby="accessTitle">
-        <p class="op-eyebrow">Your invitation</p>
-        <h1 id="accessTitle" class="op-title">Make this space yours.</h1>
-        <p class="access-status" id="accessStatus" role="status">Checking your account link…</p>
-        <form id="accessForm" hidden>
-          <div class="access-username" id="usernameField" hidden>
-            <label for="newUsername">Choose your username</label>
-            <input class="op-input" id="newUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname">
-            <small>3–20 letters, numbers, or underscores. Friends find you by this, and you can change it later.</small>
-          </div>
-          <label for="newPassword">Create your password</label>
-          <input class="op-input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
-          <label for="repeatPassword" style="margin-top: 16px">Repeat your password</label>
-          <input class="op-input" id="repeatPassword" type="password" minlength="8" autocomplete="new-password" required>
-          <button class="op-btn primary" id="savePassword">Save password and continue</button>
-          <p class="access-legal">By continuing you agree to Orbit's <a href="terms.html">terms</a> and <a href="privacy.html">privacy page</a>.</p>
-        </form>
-        <form id="newLinkForm" hidden>
-          <label for="newLinkEmail">Your email</label>
-          <input class="op-input" id="newLinkEmail" type="email" autocomplete="email" required>
-          <button class="op-btn primary" id="sendNewLink">Email me a new link</button>
-        </form>
-        <a class="op-link" href="login.html">Back to sign in</a>
-      </section>
-    </main>
+<body>
+  <!-- Setting or resetting a password: the film page's sheet, on the night sky. -->
+  <header class="top">
+    <a class="wordmark" href="welcome.html" aria-label="Orbit">Orbit</a>
+  </header>
+
+  <div class="sheet is-page" role="main">
+    <section class="sheet-inner" aria-labelledby="accessTitle">
+      <p class="eyebrow">your invitation</p>
+      <h1 class="heading" id="accessTitle">make this space yours.</h1>
+      <p class="body" id="accessStatus" role="status" aria-live="polite">checking your account link…</p>
+      <form class="form" id="accessForm" novalidate hidden>
+        <label class="field" id="usernameField" hidden>choose your username
+          <input class="input" id="newUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname">
+          <span class="small-print">3–20 letters, numbers, or underscores. friends find you by this, and you can change it later.</span>
+        </label>
+        <label class="field">create your password<input class="input" id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+        <label class="field">repeat your password<input class="input" id="repeatPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+        <div class="row">
+          <button class="cta" id="savePassword" type="submit">save and step inside</button>
+        </div>
+        <p class="legal">by continuing you agree to orbit’s <a href="terms.html">terms</a> and <a href="privacy.html">privacy page</a>.</p>
+      </form>
+      <form class="form" id="newLinkForm" novalidate hidden>
+        <label class="field">your email<input class="input" id="newLinkEmail" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254"></label>
+        <div class="row">
+          <button class="cta" id="sendNewLink" type="submit">email me a new link</button>
+        </div>
+      </form>
+      <a class="quiet" href="login.html?signin">back to sign in</a>
+    </section>
   </div>
+
   <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
-  <script src="js/account-access.js?v=20261014-tester-setup"></script>
+  <script src="js/account-access.js?v=20261028-one-style"></script>
 </body>
 </html>
