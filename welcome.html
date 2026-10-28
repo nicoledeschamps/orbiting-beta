@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/welcome.css?v=20261027-film">
+  <link rel="stylesheet" href="css/welcome.css?v=20261028-signin">
 </head>
 <body>
   <!-- The film: your orbit, Wander, the Ether, back to you. Decoration only. -->
@@ -19,7 +19,7 @@
   <header class="top">
     <span class="wordmark">Orbit</span>
     <nav>
-      <a class="quiet signin-top" href="login.html?signin">sign in</a>
+      <a class="quiet signin-top" href="login.html?signin" data-signin>sign in</a>
       <button class="request" type="button" data-request>request an invite</button>
     </nav>
   </header>
@@ -47,9 +47,32 @@
   <footer class="bottom">
     <button class="quiet sound" id="sound" type="button" aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="soundLabel">sound on</span></button>
     <p class="credit">art drifting in from the ether · public-domain paintings from SMK, National Gallery of Denmark</p>
-    <a class="quiet signin-bottom" href="login.html?signin">sign in</a>
+    <a class="quiet signin-bottom" href="login.html?signin" data-signin>sign in</a>
   </footer>
   <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+  <!-- Sign in: the same sheet as the invite, signing in as the sign-in page does. -->
+  <div class="sheet" id="signinSheet" role="dialog" aria-modal="true" aria-labelledby="signinHeading" hidden>
+    <div class="sheet-inner">
+      <p class="eyebrow">welcome back</p>
+      <h2 class="heading" id="signinHeading">return to your orbit.</h2>
+      <form class="form" id="signinForm" novalidate>
+        <label class="field">email<input class="input" id="signinEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254"></label>
+        <div class="field">
+          <span class="field-row"><label for="signinPassword">password</label><button class="quiet small" id="showPassword" type="button" aria-controls="signinPassword" aria-pressed="false">show</button></span>
+          <input class="input" id="signinPassword" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="quiet small text-left" id="forgotPassword" type="button">forgot your password, or never made one?</button>
+        <p class="status" id="signinStatus" role="status" aria-live="polite"></p>
+        <div class="row">
+          <button class="cta" id="signinSend" type="submit">sign in</button>
+          <button class="quiet" type="button" data-close>back to the night sky</button>
+        </div>
+      </form>
+      <p class="hint">invited to the beta? use your personal setup link to choose a password first.</p>
+      <p class="legal"><button class="link" type="button" data-request>not on orbit yet? request an invite</button></p>
+    </div>
+  </div>
 
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetHeading" hidden>
     <div class="sheet-inner">
@@ -66,17 +89,17 @@
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <div class="row">
           <button class="cta" id="send" type="submit">request an invite</button>
-          <button class="quiet" type="button" data-close>back to the sky</button>
+          <button class="quiet" type="button" data-close>back to the night sky</button>
         </div>
       </form>
       <p class="thanks" id="thanks" hidden></p>
-      <button class="quiet" type="button" data-close id="thanksClose" hidden>back to the sky</button>
+      <button class="quiet" type="button" data-close id="thanksClose" hidden>back to the night sky</button>
       <p class="legal"><a href="privacy.html">privacy</a> · <a href="terms.html">terms</a></p>
     </div>
   </div>
 
   <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
   <script src="js/orbit-preview-scene.js?v=20261027-film-spin"></script>
-  <script src="js/welcome-film.js?v=20261027-film"></script>
+  <script src="js/welcome-film.js?v=20261028-signin"></script>
 </body>
 </html>
