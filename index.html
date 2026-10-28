@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
   <link rel="stylesheet" href="css/wander-dock.css?v=20261022-youtube">
   <link rel="stylesheet" href="css/tune-row.css?v=20261022-color">
-  <link rel="stylesheet" href="css/ether.css?v=20261027-back">
+  <link rel="stylesheet" href="css/ether.css?v=20261027-back-try-words">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261022-youtube">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
   <script type="importmap">
@@ -627,6 +627,8 @@
         <!-- In the Ether the Filter button becomes Tune: a word, a time, a source or a color refills the whole Ether (ether.js). -->
         <div class="wander-panel wander-filters ether-tune" id="etherTune" role="region" aria-label="Tune the Ether" hidden>
           <form class="ether-tune__form" id="etherTuneForm"><label class="wander-filters__search"><span class="sr-only">Tune the Ether</span><input id="etherTuneSearch" type="search" placeholder="tune the Ether: a word, an artist, a year…" autocomplete="off" spellcheck="false" maxlength="60" enterkeyhint="search"></label></form>
+          <!-- A quiet line of words to try, so the search has a direction (ether.js). -->
+          <div class="tune-try" id="etherTuneTry" role="group" aria-label="Words to try"><span class="tune-try__label">try</span><button type="button" data-word="fashion">fashion</button><button type="button" data-word="light">light</button><button type="button" data-word="interiors">interiors</button><button type="button" data-word="shrines">shrines</button><button type="button" data-word="flowers">flowers</button><button type="button" data-word="portraits">portraits</button></div>
           <div class="tune-row" id="etherTuneRow" aria-label="Tune options"></div>
           <div class="tune-row__detail" id="etherTuneDetail" hidden></div>
         </div>
@@ -1087,7 +1089,7 @@
   <script src="js/orbiting-prototype.js?v=20261022-youtube"></script>
   <script src="js/account-settings.js?v=20261022-delete"></script>
   <script src="js/ether-sources.js?v=20261027-others"></script>
-  <script src="js/ether.js?v=20261027-others"></script>
+  <script src="js/ether.js?v=20261027-try-words"></script>
   <script src="js/ether-drift.js?v=20261027-back"></script>
   <script src="js/beta-testers.js?v=20261020-inbox"></script>
 </body>

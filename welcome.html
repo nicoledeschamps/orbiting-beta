@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Orbit · what orbits you?</title>
+  <meta name="description" content="get lost in orbit. orbit is invite-only for now: request an invite.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/welcome.css?v=20261027-film">
+</head>
+<body>
+  <!-- The film: your orbit, Wander, the Ether, back to you. Decoration only. -->
+  <div class="stage" id="stage" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="top">
+    <span class="wordmark">Orbit</span>
+    <nav>
+      <a class="quiet signin-top" href="login.html?signin">sign in</a>
+      <button class="request" type="button" data-request>request an invite</button>
+    </nav>
+  </header>
+
+  <main class="subs">
+    <h1 class="visually-hidden">Orbit</h1>
+    <div class="tune is-out" id="tune">
+      <div class="search" aria-live="polite"><b>tune the ether</b><span id="query"></span></div>
+      <div class="chips" id="chips" role="group" aria-label="Words to tune the drift">
+        <span>try</span>
+        <button type="button" data-tag="flowers" aria-pressed="false">flowers</button>
+        <button type="button" data-tag="portraits" aria-pressed="false">portraits</button>
+        <button type="button" data-tag="sea" aria-pressed="false">sea</button>
+        <button type="button" data-tag="landscapes" aria-pressed="false">landscapes</button>
+        <button type="button" data-tag="birds" aria-pressed="false">birds</button>
+        <button type="button" data-tag="fruit" aria-pressed="false">fruit</button>
+      </div>
+      <!-- The quiet row under the real Tune search: shown as it looks in the app, not clickable here. -->
+      <p class="tune-row" aria-hidden="true">any time ▾ <i>·</i> everywhere ▾ <i>·</i> color ▾</p>
+    </div>
+    <p class="line is-out" id="line" aria-live="polite"></p>
+    <button class="cta is-out" id="cta" type="button" data-request tabindex="-1">request an invite</button>
+  </main>
+
+  <footer class="bottom">
+    <button class="quiet sound" id="sound" type="button" aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="soundLabel">sound on</span></button>
+    <p class="credit">art drifting in from the ether · public-domain paintings from SMK, National Gallery of Denmark</p>
+    <a class="quiet signin-bottom" href="login.html?signin">sign in</a>
+  </footer>
+  <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetHeading" hidden>
+    <div class="sheet-inner">
+      <p class="eyebrow">orbit is invite-only for now</p>
+      <h2 class="heading" id="sheetHeading">build your orbit.</h2>
+      <p class="body" id="sheetBody">leave your name and email and we’ll send an invite when there’s a spot in the sky.</p>
+      <form class="form" id="form" novalidate>
+        <div class="names">
+          <label class="field">first name<input class="input" id="first" name="first" type="text" autocomplete="given-name" required maxlength="60"></label>
+          <label class="field">last name<input class="input" id="last" name="last" type="text" autocomplete="family-name" required maxlength="60"></label>
+        </div>
+        <label class="field">email<input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254"></label>
+        <label class="field">what would you pull into orbit? <span class="optional">(optional)</span><input class="input" id="note" name="note" type="text" maxlength="280"></label>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <div class="row">
+          <button class="cta" id="send" type="submit">request an invite</button>
+          <button class="quiet" type="button" data-close>back to the sky</button>
+        </div>
+      </form>
+      <p class="thanks" id="thanks" hidden></p>
+      <button class="quiet" type="button" data-close id="thanksClose" hidden>back to the sky</button>
+      <p class="legal"><a href="privacy.html">privacy</a> · <a href="terms.html">terms</a></p>
+    </div>
+  </div>
+
+  <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
+  <script src="js/orbit-preview-scene.js?v=20261027-film-spin"></script>
+  <script src="js/welcome-film.js?v=20261027-film"></script>
+</body>
+</html>
