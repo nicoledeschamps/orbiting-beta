@@ -11,8 +11,8 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261022-youtube">
-  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261013-real-sky">
+  <link rel="stylesheet" href="css/style.css?v=20261028-brand">
+  <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261028-brand">
   <link rel="stylesheet" href="css/account-settings.css?v=20261022-delete">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261022-ether-offer">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
@@ -26,25 +26,17 @@
   <link rel="stylesheet" href="css/ether.css?v=20261027-back-try-words">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261022-youtube">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261020-inbox">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
-    }
-  }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-  <a href="#elevator-section" class="sr-only">Skip to main content</a>
+  <a href="#hero" class="sr-only">Skip to main content</a>
 
   <section id="profileLoading" class="profile-loading" role="status" aria-live="polite" hidden>
     <p id="profileLoadingMessage">Opening your orbit…</p>
-    <button id="retryProfileLoad" type="button" hidden>Try again</button>
-    <a id="profileLoadSignIn" href="login.html" hidden>Back to sign in</a>
+    <button id="retryProfileLoad" type="button" hidden>try again</button>
+    <a id="profileLoadSignIn" href="login.html" hidden>back to sign in</a>
   </section>
   <div class="orbit-setup is-leaving" id="orbitSetup" role="dialog" aria-modal="true" aria-label="Set up your orbit" aria-hidden="true" inert>
     <header class="setup-header">
@@ -91,7 +83,7 @@
               <button class="portrait-toggle" id="portraitFrame" type="button" aria-pressed="true" hidden>zoomed to your face</button>
               <button class="portrait-toggle" id="portraitTouchUpOpen" type="button" aria-expanded="false">touch up</button>
             </div>
-            <label class="portrait-edge" id="portraitEdgeField" hidden>Cutout edge <span id="portraitEdgeValue">balanced</span>
+            <label class="portrait-edge" id="portraitEdgeField" hidden>cutout edge <span id="portraitEdgeValue">balanced</span>
               <input id="portraitEdge" type="range" min="15" max="75" value="45" step="5">
             </label>
             <div class="portrait-lasso" id="portraitLasso" hidden>
@@ -112,21 +104,21 @@
           <div class="portrait-position">
             <!-- Faces are the same size for everyone (fitted by portrait-centre.js): size is fixed at 100, kept so saved values clamp to it. -->
             <button class="setup-text-action" id="portraitPositionReset" type="button" hidden>reset size</button>
-            <label hidden>Face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="100" max="100" value="100"></label>
+            <label hidden>face size <output id="portraitSizeValue">100%</output><input id="portraitSize" type="range" min="100" max="100" value="100"></label>
             <!-- Faces always sit in the centre of the orbit: position is fixed at 0 (kept so saved values clamp to it). -->
-            <label hidden>Horizontal position<input id="portraitX" type="range" min="0" max="0" value="0"></label>
-            <label hidden>Vertical position<input id="portraitY" type="range" min="0" max="0" value="0"></label>
+            <label hidden>horizontal position<input id="portraitX" type="range" min="0" max="0" value="0"></label>
+            <label hidden>vertical position<input id="portraitY" type="range" min="0" max="0" value="0"></label>
             <p class="portrait-guide-hint" data-business-text="Your logo sits whole in the center of your orbit, sized to fit inside your rings.">The outline shows where your face sits. The dashed lines show where your rings will pass.</p>
           </div>
           <div class="sky-title-builder">
             <strong>Title for your sky</strong>
             <p>Write your name, a phrase, or anything that feels like yours. It will appear in two lines across your sky.</p>
             <div class="sky-title-fields">
-              <label>First line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" data-business-placeholder="Your business name" autocomplete="off"></label>
-              <label>Second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="optional" autocomplete="off"></label>
+              <label>first line<input id="skyTitleFirst" type="text" maxlength="32" placeholder="Orbit" data-business-placeholder="Your business name" autocomplete="off"></label>
+              <label>second line<input id="skyTitleSecond" type="text" maxlength="32" placeholder="optional" autocomplete="off"></label>
             </div>
-            <label class="sky-bio-field">Short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" data-business-placeholder="ceramics studio · made in Brooklyn" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
-            <label class="sky-title-color">Second-line color
+            <label class="sky-bio-field">short bio<input id="skyBio" type="text" maxlength="80" placeholder="artist · creative producer · founder" data-business-placeholder="ceramics studio · made in Brooklyn" autocomplete="off"><small>One line, up to 80 characters. It sits under your title, in white.</small></label>
+            <label class="sky-title-color">second-line color
               <span class="sky-title-color__control"><input id="skyTitleSecondColor" type="color" value="#ffffff" aria-label="Choose second-line title color"><output id="skyTitleSecondColorValue" for="skyTitleSecondColor">#FFFFFF</output></span>
             </label>
           </div>
@@ -137,13 +129,13 @@
           <h1>What orbits you?</h1>
           <p class="setup-intro">Pull in what you love. Each place becomes a ring around you.</p>
           <ol class="source-stages" aria-label="Steps in what’s in my orbit">
-              <li><button type="button" data-source-stage-go="pick" aria-current="step">Pick sources</button></li>
-              <li><button type="button" data-source-stage-go="link">Point us to it</button></li>
-              <li><button type="button" data-source-stage-go="choose">Choose what falls in</button></li>
-              <li><button type="button" data-source-stage-go="arrange">Define your orbit</button></li>
+              <li><button type="button" data-source-stage-go="pick" aria-current="step">pick sources</button></li>
+              <li><button type="button" data-source-stage-go="link">point us to it</button></li>
+              <li><button type="button" data-source-stage-go="choose">choose what falls in</button></li>
+              <li><button type="button" data-source-stage-go="arrange">define your orbit</button></li>
             </ol>
             <details class="source-accordion" id="sourceAccordion" open>
-            <summary><strong>Your sources</strong><span id="sourceSummary">Choose what to share</span></summary>
+            <summary><strong>your sources</strong><span id="sourceSummary">choose what to share</span></summary>
           <button class="source-list-action" id="refreshSources" type="button">↻ Refresh sources</button><p class="setup-status" id="refreshSourcesStatus" role="status"></p>
           <div class="source-list" id="sourceList">
             <button class="source-option" type="button" data-source="shopify" aria-expanded="false" aria-controls="sourceSharing" hidden><span><strong>Shopify</strong><small>your store’s products</small></span><em>choose</em></button>
@@ -155,7 +147,7 @@
             <button class="source-option" type="button" data-source="applemusic" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Apple Music</strong><small>public playlist covers</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="youtube" aria-expanded="false" aria-controls="sourceSharing"><span><strong>YouTube</strong><small>public playlist, channel or video</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="instagram" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Instagram</strong><small>public profile, post or Reel</small></span><em>choose</em></button>
-            <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>My Photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
+            <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>my photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
           </div>
           <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Paste a public link. We never sign in to your accounts or see anything private.</p>
           <button class="setup-text-action source-launch-empty" id="launchEmptySky" type="button">skip for now, launch with an empty sky</button>
@@ -164,15 +156,15 @@
             <h2>Add your photos</h2>
             <p class="source-input-hint">Choose individual images or a folder. Photos you add are saved with your orbit and shared, as this ring, with people who orbit you. Choose again to refresh after adding files to a folder.</p>
             <div class="photo-sharing-actions">
-              <button class="source-link-approve" id="choosePhotoFiles" type="button">Choose files</button>
-              <button class="source-link-approve source-link-approve--secondary" id="choosePhotoFolder" type="button">Choose a folder</button>
+              <button class="source-link-approve" id="choosePhotoFiles" type="button">choose files</button>
+              <button class="source-link-approve source-link-approve--secondary" id="choosePhotoFolder" type="button">choose a folder</button>
             </div>
             <input class="setup-file-input" id="setupAlbumInput" type="file" accept="image/*" multiple>
             <input class="setup-file-input" id="setupFolderInput" type="file" accept="image/*" webkitdirectory directory multiple>
             <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
-            <button class="source-list-action" id="clearPhotos" type="button" hidden>Remove all photos</button>
+            <button class="source-list-action" id="clearPhotos" type="button" hidden>remove all photos</button>
           </div>
-            <button class="source-link-approve" id="finishSources" type="button">Continue →</button>
+            <button class="source-link-approve" id="finishSources" type="button">continue →</button>
           </details>
           <section class="source-rings" aria-labelledby="sourceRingsTitle">
             <h2 id="sourceRingsTitle" tabindex="-1">Define your orbit.</h2>
@@ -199,17 +191,17 @@
           <p class="setup-eyebrow">your sky</p>
           <h1>Light up your night sky.</h1>
           <p class="setup-intro" data-business-text="If you like, add your business’s birthday: when and where it began. It’s optional, so skip it if you’d rather. Then choose which stars reveal pieces of it, and which hold a message for someone curious enough to find it.">Add any birth details you know. Then choose which stars reveal pieces of you, and which hold a message for someone curious enough to find it.</p>
-          <label class="light-space-toggle"><input id="lightUpSpace" type="checkbox" checked> <span>Light up my space with this sky</span></label>
+          <label class="light-space-toggle"><input id="lightUpSpace" type="checkbox" checked> <span>light up my space with this sky</span></label>
           <fieldset class="sky-behind" id="skyBehind">
             <legend>Also show my sky behind</legend>
-            <label><input id="skyBehindFriends" type="checkbox" checked> <span>Friends</span></label>
-            <label><input id="skyBehindWander" type="checkbox" checked> <span>Wander</span></label>
+            <label><input id="skyBehindFriends" type="checkbox" checked> <span>friends</span></label>
+            <label><input id="skyBehindWander" type="checkbox" checked> <span>wander</span></label>
             <label class="sky-behind__shows"><span>as</span> <select id="skyBehindShows" aria-label="What shows behind Friends and Wander"><option value="planets">just my planets</option><option value="all">my whole sky</option></select></label>
           </fieldset>
           <div class="birth-fields">
-            <label><span><span data-business-text="Founding date">Birth date</span> <small>optional</small></span><input id="birthDate" type="date"></label>
-            <label><span><span data-business-text="Founding time">Birth time</span> <small>if known</small></span><input id="birthTime" type="time"></label>
-            <label class="birth-place"><span><span data-business-text="Where it was founded">Birth place</span> <small>optional</small></span><input id="birthPlace" type="text" placeholder="City, state or country"></label>
+            <label><span><span data-business-text="Founding date">birth date</span> <small>optional</small></span><input id="birthDate" type="date"></label>
+            <label><span><span data-business-text="Founding time">birth time</span> <small>if known</small></span><input id="birthTime" type="time"></label>
+            <label class="birth-place"><span><span data-business-text="Where it was founded">birth place</span> <small>optional</small></span><input id="birthPlace" type="text" placeholder="city, state or country"></label>
           </div>
           <div class="constellation-picker" id="constellationPicker" aria-live="polite">
             <div class="constellation-picker__heading">
@@ -225,14 +217,14 @@
               <div id="featuredPlacements"></div>
             </section>
             <details class="placement-accordion" id="placementAccordion">
-              <summary><span>All other placements</span><small id="otherPlacementCount">0 placements</small></summary>
+              <summary><span>all other placements</span><small id="otherPlacementCount">0 placements</small></summary>
               <div id="otherPlacementGroups"></div>
             </details>
           </div>
           <p class="setup-status">Calculated with <a href="https://www.astro.com/swisseph/swephinfo_e.htm" target="_blank" rel="noreferrer">Swiss Ephemeris</a>. A complete date, time, and place unlocks exact houses and angles; date-only charts are shown at noon UTC.</p>
           <div class="hidden-star-builder">
-            <label class="hidden-star-toggle"><input id="hiddenStarEnabled" type="checkbox"> <span><strong>Hide messages in your stars</strong><small>Each message can live in a different star. Choose as many as you want.</small></span></label>
-            <details class="sign-themes"><summary>Explore sign themes for inspiration</summary><div id="signThemesList"></div></details>
+            <label class="hidden-star-toggle"><input id="hiddenStarEnabled" type="checkbox"> <span><strong>hide messages in your stars</strong><small>Each message can live in a different star. Choose as many as you want.</small></span></label>
+            <details class="sign-themes"><summary>explore sign themes for inspiration</summary><div id="signThemesList"></div></details>
             <div class="hidden-star-placement" id="hiddenStarPlacement" hidden>
               <span>Choose a message, then pick its placement in the live sky</span>
               <strong id="hiddenStarSelectionStatus" role="status">No stars chosen yet</strong>
@@ -242,9 +234,9 @@
           </div>
           <section class="friend-sky-settings" aria-labelledby="friendSkyTitle">
             <h2 id="friendSkyTitle">Shared constellations</h2>
-            <label><input id="shareSkyWithFriends" type="checkbox" disabled> <span>Show my zodiac signs to people who orbit me<small class="friend-sky-where">They appear on your page when friends visit it, and in their Wander, never in someone else’s own sky. Friends see which sign each planet sits in (like Moon in Scorpio), never your birth date, time, or place.</small><small id="sharedSkyHelp">Sign in to share your zodiac signs. Birth details and hidden messages stay private.</small></span></label>
+            <label><input id="shareSkyWithFriends" type="checkbox" disabled> <span>show my zodiac signs to people who orbit me<small class="friend-sky-where">They appear on your page when friends visit it, and in their Wander, never in someone else’s own sky. Friends see which sign each planet sits in (like Moon in Scorpio), never your birth date, time, or place.</small><small id="sharedSkyHelp">Sign in to share your zodiac signs. Birth details and hidden messages stay private.</small></span></label>
             <!-- Friends' signs no longer merge into your own sky; they show on their page and in Wander. -->
-            <label hidden><input id="combineSkyWithFriends" type="checkbox" disabled> <span>Combine my sky with friends</span></label>
+            <label hidden><input id="combineSkyWithFriends" type="checkbox" disabled> <span>combine my sky with friends</span></label>
             <div class="friend-sky-picker" id="friendSkyPicker" hidden>
               <div id="friendSkyChoices" role="group" aria-label="Choose friends for your shared sky"></div>
               <p id="friendSkyStatus" role="status">Sign in, then choose friends who share their skies.</p>
@@ -263,9 +255,9 @@
             <button type="button" data-account-mode="signin" aria-pressed="false">sign in</button>
           </div>
           <div class="account-fields">
-            <label for="accountUsername" id="accountUsernameField"><span>Username</span><input id="accountUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname" required><small>3–20 letters, numbers, or underscores.</small></label>
-            <label for="accountEmail"><span>Email</span><input id="accountEmail" type="email" autocomplete="off" placeholder="you@example.com"><small>Preview only. This email is not submitted or saved.</small></label>
-            <label for="accountPassword"><span>Password</span><input id="accountPassword" type="password" minlength="8" autocomplete="off" placeholder="at least 8 characters"><small>Preview only. Use a made-up password; it is not submitted or saved.</small></label>
+            <label for="accountUsername" id="accountUsernameField"><span>username</span><input id="accountUsername" type="text" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" inputmode="text" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="yourname" required><small>3–20 letters, numbers, or underscores.</small></label>
+            <label for="accountEmail"><span>email</span><input id="accountEmail" type="email" autocomplete="off" placeholder="you@example.com"><small>Preview only. This email is not submitted or saved.</small></label>
+            <label for="accountPassword"><span>password</span><input id="accountPassword" type="password" minlength="8" autocomplete="off" placeholder="at least 8 characters"><small>Preview only. Use a made-up password; it is not submitted or saved.</small></label>
           </div>
           <p class="setup-sky-later">Your sky and stars wait in settings whenever you want them.</p>
           <p class="account-demo-notice" id="accountDemoNotice">Testing preview · Use made-up details if you try these fields. No account is created and no confirmation email is sent.</p>
@@ -279,13 +271,13 @@
           <p class="account-settings__message" id="accountSettingsMessage" role="status" aria-live="polite"></p>
           <div class="account-settings__type" id="accountTypeSlot"></div>
           <small class="account-settings__type-note">Switching saves when you press save changes.</small>
-          <section class="account-settings__group"><h2>Username</h2><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">Your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">Save username</button></fieldset></form></section>
-          <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>Resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
-          <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">New password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">Confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">Update password</button></fieldset></form></section>
-          <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> Let my images drift into the Ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
-          <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">How Orbit uses your data</a></p><p><a href="terms.html">Terms of use</a></p><small>You can delete your account at the bottom of this page.</small></section>
+          <section class="account-settings__group"><h2>Username</h2><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">save username</button></fieldset></form></section>
+          <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
+          <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">new password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">update password</button></fieldset></form></section>
+          <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> let my images drift into the ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">how orbit uses your data</a></p><p><a href="terms.html">terms of use</a></p><small>You can delete your account at the bottom of this page.</small></section>
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
-          <section class="account-settings__group account-settings__delete" id="deleteAccountGroup" hidden><h2>Delete account</h2><p>This removes your orbit, your photos and portrait, who you follow and who follows you, your saved images and your feedback. It can't be undone.</p><button class="account-settings__delete-open" id="deleteAccountOpen" type="button" aria-expanded="false" aria-controls="deleteAccountForm">delete my account…</button><form id="deleteAccountForm" hidden><fieldset id="deleteAccountFields"><label for="deleteAccountUsername">Type your username to confirm</label><input id="deleteAccountUsername" autocomplete="off" autocapitalize="none" spellcheck="false" required><label for="deleteAccountPassword">Your password</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required><div class="account-settings__delete-actions"><button class="account-settings__delete-confirm" id="deleteAccountConfirm" type="submit">Delete my account forever</button><button class="account-settings__delete-cancel" id="deleteAccountCancel" type="button">cancel</button></div></fieldset></form><p class="account-settings__delete-status" id="deleteAccountStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group account-settings__delete" id="deleteAccountGroup" hidden><h2>Delete account</h2><p>This removes your orbit, your photos and portrait, who you follow and who follows you, your saved images and your feedback. It can't be undone.</p><button class="account-settings__delete-open" id="deleteAccountOpen" type="button" aria-expanded="false" aria-controls="deleteAccountForm">delete my account…</button><form id="deleteAccountForm" hidden><fieldset id="deleteAccountFields"><label for="deleteAccountUsername">type your username to confirm</label><input id="deleteAccountUsername" autocomplete="off" autocapitalize="none" spellcheck="false" required><label for="deleteAccountPassword">your password</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required><div class="account-settings__delete-actions"><button class="account-settings__delete-confirm" id="deleteAccountConfirm" type="submit">delete my account forever</button><button class="account-settings__delete-cancel" id="deleteAccountCancel" type="button">cancel</button></div></fieldset></form><p class="account-settings__delete-status" id="deleteAccountStatus" role="status" aria-live="polite"></p></section>
         </section>
 
         <!-- Settings only, admins only: the beta testers list (beta-testers.js). The database refuses it to everyone else. -->
@@ -314,7 +306,7 @@
         <div class="setup-sky-title" id="setupSkyTitle" aria-hidden="true"><span>Orbit</span><span></span><span class="setup-sky-bio"></span></div>
         <!-- During setup the sky title is typed right here, where it will appear; these mirror the title fields in step one. -->
         <div class="preview-title-editor" id="previewTitleEditor">
-          <input id="previewTitleFirst" type="text" maxlength="32" placeholder="Your name" data-business-placeholder="Your business name" aria-label="First line of your sky title" autocomplete="off">
+          <input id="previewTitleFirst" type="text" maxlength="32" placeholder="your name" data-business-placeholder="Your business name" aria-label="First line of your sky title" autocomplete="off">
           <div class="preview-title-editor__second">
             <input id="previewTitleSecond" type="text" maxlength="32" placeholder="second line" aria-label="Second line of your sky title (optional)" autocomplete="off">
             <input id="previewTitleColor" type="color" value="#ffffff" aria-label="Second line color" title="second line color">
@@ -352,7 +344,7 @@
     <aside class="verification-reminder" id="verificationReminder" hidden aria-label="Email verification">
       <strong>Your orbit is yours. Make it official.</strong>
       <p id="verificationStatus" role="status" aria-live="polite"></p>
-      <div><button id="completeVerification" type="button">I’ve verified my email</button><button id="resendVerification" type="button">Send another link</button></div>
+      <div><button id="completeVerification" type="button">i’ve verified my email</button><button id="resendVerification" type="button">send another link</button></div>
     </aside>
     <!-- A row on wider screens; on phones the bright star opens the same items as a list. -->
     <nav class="orbit-page-nav" id="orbitPageNav" aria-label="Your orbit pages">
@@ -371,7 +363,7 @@
       <p class="orbit-feedback__intro" id="orbitFeedbackIntro">Orbit is in beta, so some things will break. Tell Nicole what went wrong, what confused you, or what you’d love to see.</p>
       <!-- So testers don't spend notes on what's already planned or known. -->
       <details class="orbit-feedback__known" id="orbitFeedbackKnown">
-        <summary>Already on our list</summary>
+        <summary>already on our list</summary>
         <ul>
           <li>Smoother Wander motion on phones</li>
           <li>Notifications about new features you can try</li>
@@ -387,7 +379,7 @@
         </ul>
       </details>
       <form id="orbitFeedbackForm">
-        <label class="orbit-feedback__label" for="orbitFeedbackMessage">Your note</label>
+        <label class="orbit-feedback__label" for="orbitFeedbackMessage">your note</label>
         <textarea id="orbitFeedbackMessage" rows="5" maxlength="2000" required placeholder="what happened?"></textarea>
         <small class="orbit-feedback__hint">Your note includes which part of Orbit you’re on and your screen size, to help find the bug.</small>
         <p class="orbit-feedback__status" id="orbitFeedbackStatus" role="status" aria-live="polite"></p>
@@ -552,7 +544,7 @@
       <button class="friends-list__toggle" id="friendsListToggle" type="button" aria-expanded="false" aria-controls="friendsList" hidden>all friends</button>
       <section class="friends-list" id="friendsList" aria-labelledby="friendsListTitle" hidden>
         <div class="friends-list__top"><strong id="friendsListTitle">All friends</strong><button id="friendsListClose" type="button" aria-label="Close friends list">×</button></div>
-        <label class="friends-list__find" id="friendsListFindLabel" for="friendsListFind" hidden>Find a friend</label>
+        <label class="friends-list__find" id="friendsListFindLabel" for="friendsListFind" hidden>find a friend</label>
         <input class="friends-list__find-input" id="friendsListFind" type="search" placeholder="find a friend" autocomplete="off" spellcheck="false" maxlength="20" hidden>
         <div class="friends-list__groups" id="friendsListGroups"></div>
       </section>
@@ -570,7 +562,7 @@
       <p class="friend-card__bio" id="friendCardBio"></p>
       <span class="friend-card__handle" id="friendCardHandle"></span>
       <p class="friend-card__rings" id="friendCardRings"></p>
-      <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">Enter orbit</button><button class="op-link" id="friendCardUnfollow" type="button">Stop orbiting</button></div>
+      <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">enter orbit</button><button class="op-link" id="friendCardUnfollow" type="button">stop orbiting</button></div>
       <p class="friend-card__status" id="friendCardStatus" role="status" aria-live="polite"></p>
     </aside>
 
@@ -586,7 +578,7 @@
         <button class="people-search__toggle" id="peopleSearchToggle" type="button" aria-expanded="false" aria-controls="peopleSearchPanel">search ✦</button>
         <section class="people-search__panel" id="peopleSearchPanel" aria-label="Find people in Orbit" hidden>
           <div class="people-search__top"><strong>Find someone</strong><button id="peopleSearchClose" type="button" aria-label="Close people search">×</button></div>
-          <label for="peopleSearchInput">Search by username</label>
+          <label for="peopleSearchInput">search by username</label>
           <input id="peopleSearchInput" type="search" placeholder="start typing a name" autocomplete="off" spellcheck="false" maxlength="20">
           <div id="peopleSearchResults" class="people-search__results" aria-live="polite"></div>
           <button id="peopleSearchFriends" type="button">view friends in the cosmos</button>
@@ -604,7 +596,7 @@
             <strong id="etherDriftTitle"></strong>
             <span id="etherDriftSource"></span>
             <div class="ether-drift__actions">
-              <button class="ether-drift__add" id="etherDriftAdd" type="button">Add to my Orbit</button>
+              <button class="ether-drift__add" id="etherDriftAdd" type="button">add to my orbit</button>
               <button class="ether-drift__orbit" id="etherDriftOrbit" type="button" hidden></button>
               <a class="ether-drift__link" id="etherDriftLink" href="#" target="_blank" rel="noopener noreferrer" hidden>open source ↗</a>
             </div>
@@ -636,17 +628,17 @@
         <div class="wander-panel wander-controls" id="wanderControls" hidden>
           <!-- The Ether only: drift through its images, walk to a horizon, sink down a well, or gather them into a planet (ether-drift.js). -->
           <div class="ether-shape" id="etherShape" role="group" aria-label="Shape of the Ether"><p class="wander-panel__label">shape</p><div class="wander-filters__row"><button class="wander-pill" type="button" data-shape="drift" aria-pressed="true">drift</button><button class="wander-pill" type="button" data-shape="horizon" aria-pressed="false">horizon</button><button class="wander-pill" type="button" data-shape="well" aria-pressed="false">well</button><button class="wander-pill" type="button" data-shape="planet" aria-pressed="false">planet</button></div></div>
-          <label class="wander-speed" for="wanderSpeed">Planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="0" max="100" value="40" step="1"><small aria-hidden="true">slower</small><small aria-hidden="true">faster</small></label>
-          <label class="wander-speed" for="wanderSize">Planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="150" value="100" step="5"><small aria-hidden="true">smaller</small><small aria-hidden="true">bigger</small></label>
+          <label class="wander-speed" for="wanderSpeed">planet speed <span id="wanderSpeedValue">normal</span><input id="wanderSpeed" type="range" min="0" max="100" value="40" step="1"><small aria-hidden="true">slower</small><small aria-hidden="true">faster</small></label>
+          <label class="wander-speed" for="wanderSize">planet size <span id="wanderSizeValue">100%</span><input id="wanderSize" type="range" min="60" max="150" value="100" step="5"><small aria-hidden="true">smaller</small><small aria-hidden="true">bigger</small></label>
         </div>
         <p class="wander-refresh__status" id="refreshWanderStatus" role="status" aria-live="polite"></p>
         <nav class="wander-dock" aria-label="Wander tools">
-          <button class="wander-dock__button wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="wander-dock__label">Filter</span></button>
-          <button class="wander-dock__button" id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-20 12 12)"/></svg><span class="wander-dock__label">Planet</span></button>
-          <button class="wander-dock__button ether-back" id="etherBack" type="button" aria-label="Drift back to images you passed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6M6 20l6-6 6 6"/></svg><span class="wander-dock__label">Back</span></button>
-          <button class="wander-dock__button ether-deeper" id="etherDeeper" type="button" aria-label="Drift deeper into the Ether"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6M6 4l6 6 6-6"/></svg><span class="wander-dock__label">Deeper</span></button>
-          <button class="wander-dock__button wander-hand" id="wanderHandBtn" type="button" aria-label="Play with your hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1V4.5a1.5 1.5 0 0 1 3 0V12m0-6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.3 14a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg><span class="wander-dock__label">Play</span></button>
-          <button class="wander-dock__button" id="refreshWander" type="button" aria-label="Refresh Wander"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span class="wander-dock__label">Refresh</span></button>
+          <button class="wander-dock__button wander-filter-toggle" id="wanderFilterToggle" type="button" aria-expanded="false" aria-controls="wanderFilters" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="wander-dock__label">filter</span></button>
+          <button class="wander-dock__button" id="adjustPlanet" type="button" aria-expanded="false" aria-controls="wanderControls"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.5" transform="rotate(-20 12 12)"/></svg><span class="wander-dock__label">planet</span></button>
+          <button class="wander-dock__button ether-back" id="etherBack" type="button" aria-label="Drift back to images you passed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6M6 20l6-6 6 6"/></svg><span class="wander-dock__label">back</span></button>
+          <button class="wander-dock__button ether-deeper" id="etherDeeper" type="button" aria-label="Drift deeper into the Ether"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6M6 4l6 6 6-6"/></svg><span class="wander-dock__label">deeper</span></button>
+          <button class="wander-dock__button wander-hand" id="wanderHandBtn" type="button" aria-label="Play with your hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1V4.5a1.5 1.5 0 0 1 3 0V12m0-6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.3 14a1.5 1.5 0 0 1 2.4-1.8L8 15"/></svg><span class="wander-dock__label">play</span></button>
+          <button class="wander-dock__button" id="refreshWander" type="button" aria-label="Refresh Wander"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg><span class="wander-dock__label">refresh</span></button>
         </nav>
       </div>
       <p class="explore-layer__empty" id="wanderEmpty" hidden>Your Wander begins with your own things. Add photos or public links in your orbit to fill this planet.</p>
@@ -660,7 +652,7 @@
             <div class="song-preview" id="exploreSongPreview" hidden></div>
             <div class="explore-detail__nav"><button id="exploreDetailPrev" type="button" aria-label="Previous image">←</button><span>swipe along this layer · double-tap to zoom</span><button class="explore-detail__zoom" id="exploreDetailZoomOut" type="button" aria-label="Zoom out" hidden>⊖</button><button class="explore-detail__zoom" id="exploreDetailZoom" type="button" aria-label="Zoom in">⊕</button><button id="exploreDetailNext" type="button" aria-label="Next image">→</button></div>
             <div class="explore-detail__actions">
-              <button id="exploreAddToOrbit" type="button">Add to my Orbit</button>
+              <button id="exploreAddToOrbit" type="button">add to my orbit</button>
               <button id="exploreEnterFriend" type="button">enter their orbit ↗</button>
               <a id="exploreSourceLink" href="#" target="_blank" rel="noopener noreferrer">open source ↗</a>
             </div>
@@ -733,9 +725,9 @@
       <p class="resources-page__eyebrow">a small constellation of places</p>
       <h2 id="resourcesTitle">Resources<span>.</span></h2>
       <p class="resources-page__intro">A few places for making, collecting, and getting lost in an idea.</p>
-      <button class="resources-tour" id="resourcesTour" type="button"><span class="resources-hands__title">Take the tour</span><span class="resources-hands__hint">what your orbit, Friends, Wander and the Ether are for, and how to swipe through them</span></button>
+      <button class="resources-tour" id="resourcesTour" type="button"><span class="resources-hands__title">take the tour</span><span class="resources-hands__hint">what your orbit, Friends, Wander and the Ether are for, and how to swipe through them</span></button>
       <details class="resources-hands" id="resourcesHandControl">
-        <summary><span class="resources-hands__title">Hand control</span><span class="resources-hands__hint">play with your hand: push, lean, pinch</span></summary>
+        <summary><span class="resources-hands__title">hand control</span><span class="resources-hands__hint">play with your hand: push, lean, pinch</span></summary>
         <p>Play with your hand. On a computer with a camera, press the ✦ under your planet, or Play in Wander’s dock. Nothing is recorded and nothing leaves your browser.</p>
         <ul class="resources-hands__moves">
           <li><span class="resources-hands__icon" data-gesture-icon="push" aria-hidden="true"></span><span><strong>Push and pull</strong>: move your hand toward the screen to go deeper (your orbit, Friends, Wander, the Ether), and back to come home. In the Ether, pushing flies you on.</span></li>
@@ -798,196 +790,6 @@
       <p class="friend-portal__caption">Brandon’s orbit in motion. <a href="https://brandon-jerman-world.brandonjerman.chatgpt.site/" target="_blank" rel="noopener noreferrer">Explore his full interactive world ↗</a></p>
     </div>
   </div>
-
-  <!-- ============================================ -->
-  <!-- SECTION 2: THE ELEVATOR — PORTAL DOORS       -->
-  <!-- ============================================ -->
-  <section id="elevator-section" class="elevator-section">
-    <div class="elevator-container">
-      <!-- Elevator interior walls -->
-      <div class="elevator-wall elevator-wall-left">
-        <div class="wall-handrail"></div>
-      </div>
-      <div class="elevator-wall elevator-wall-right">
-        <div class="wall-handrail"></div>
-      </div>
-      <div class="elevator-ceiling"></div>
-      <div class="elevator-floor-surface"></div>
-      <!-- Ambient lighting overlay -->
-      <div class="elevator-ambient-light"></div>
-
-      <!-- Frame around the doors -->
-      <div class="elevator-frame">
-        <div class="frame-top"></div>
-        <div class="frame-left"></div>
-        <div class="frame-right"></div>
-      </div>
-
-      <!-- Floor indicator display -->
-      <div class="floor-indicator" id="floorIndicator" aria-live="polite" aria-atomic="true">
-        <span class="indicator-arrow" id="indicatorArrow"></span>
-        <span class="indicator-floor">★</span>
-      </div>
-
-      <!-- Behind the doors — text floors -->
-      <div class="elevator-behind" id="elevatorBehind">
-        <div class="behind-content" id="behindText">
-          <h2 class="behind-title">HUES OF DISPOSITIONS</h2>
-          <p class="behind-subtitle">thoughts pending...</p>
-        </div>
-
-        <!-- H.O.D. floor — portal preview -->
-        <div class="behind-hod" id="behindHod">
-          <div class="hod-void"></div>
-          <div class="hod-grain"></div>
-          <div class="hod-portal-inner">
-            <h2 class="hod-title">HUES OF DISPOSITIONS</h2>
-            <p class="hod-tagline">a tool i built to play with the world around me.</p>
-            <p class="hod-description">68 real time effects. audio reactive visuals that move to sound. motion tracking that follows what you follow. layers, blend modes, a timeline to shape it all. everything runs live, right in your browser.</p>
-            <p class="hod-tagline">this is how i see... now you can too. just upload or open your camera and let curiosity drive you.</p>
-            <a class="hod-enter" href="https://nicoledeschamps.github.io/hues-of-dispositions/" target="_blank" rel="noopener">
-              enter <span class="hod-enter-arrow">→</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- About floor -->
-        <div class="behind-about" id="behindAbout">
-          <div class="about-lightcast" id="aboutLightcast"></div>
-          <div class="about-grain"></div>
-          <div class="orb orb-sun" data-orb="sun">
-            <div class="orb-core"></div>
-            <div class="orb-bloom"></div>
-            <div class="orb-haze"></div>
-            <div class="orb-corona"></div>
-          </div>
-          <div class="orb orb-moon" data-orb="moon"></div>
-          <div class="about-inner">
-            <div class="about-text" id="aboutText"></div>
-          </div>
-          <div class="about-hint">drag the orbs</div>
-        </div>
-
-        <!-- Connect floor -->
-        <div class="behind-about behind-connect" id="behindConnect">
-          <div class="about-inner">
-            <div class="connect-text" id="connectText"></div>
-            <div class="connect-links">
-              <a href="https://instagram.com/huesofsaturn" target="_blank" rel="noopener">@huesofsaturn <span class="connect-platform">ig</span></a>
-
-              <a href="https://instagram.com/planetarydispositions" target="_blank" rel="noopener">@planetarydispositions <span class="connect-platform">ig</span></a>
-              <a href="mailto:nicole.deschamps1@gmail.com">nicole.deschamps1@gmail.com</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gallery floor -->
-        <div class="behind-gallery" id="behindGallery">
-          <div class="gallery-hallway" id="galleryHallway">
-            <!-- Three.js WebGL canvas mount -->
-            <div id="galleryViewport"></div>
-            <!-- Loading overlay -->
-            <div class="gallery-loading" id="galleryLoading">
-              <div class="gallery-loading-ring"></div>
-              <p class="gallery-loading-text" id="galleryLoadingText">loading gallery...</p>
-            </div>
-            <!-- Controls HUD (desktop) -->
-            <div class="gallery-controls-hud" id="galleryControlsHud">
-              <span class="hud-item"><kbd>&uarr;</kbd><kbd>&darr;</kbd> or scroll &mdash; walk</span>
-              <span class="hud-divider"></span>
-              <span class="hud-item">click artwork &mdash; view</span>
-            </div>
-            <!-- Mobile D-Pad -->
-            <div class="gallery-dpad" id="galleryDpad">
-              <button class="gallery-dpad-btn" data-dir="up" aria-label="Walk forward">&#9650;</button>
-              <div class="gallery-dpad-row">
-                <button class="gallery-dpad-btn" data-dir="left" aria-label="Look left">&#9664;</button>
-                <button class="gallery-dpad-btn" data-dir="right" aria-label="Look right">&#9654;</button>
-              </div>
-              <button class="gallery-dpad-btn" data-dir="down" aria-label="Walk back">&#9660;</button>
-            </div>
-            <!-- Gallery position indicator -->
-            <div class="gallery-position" id="galleryPosition">
-              <div class="gallery-position-fill"></div>
-              <span class="gallery-position-label">1 / <span class="gallery-position-total"></span></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Left door -->
-      <div class="elevator-door door-left" id="doorLeft">
-        <div class="door-surface">
-          <div class="door-scratches"></div>
-          <div class="door-scratches door-scratches-2"></div>
-          <div class="door-gouges"></div>
-          <div class="door-seam door-seam-edge"></div>
-        </div>
-      </div>
-
-      <!-- Button panel — on right side wall -->
-      <div class="button-panel">
-        <div class="panel-surface">
-          <!-- Floor buttons: 4 at top → ★1 at bottom -->
-          <button class="floor-btn" data-floor="contact"><span class="btn-num">4</span><span class="btn-label">CONNECT</span></button>
-          <button class="floor-btn" data-floor="about"><span class="btn-num">3</span><span class="btn-label">ABOUT</span></button>
-          <button class="floor-btn" data-floor="hod"><span class="btn-num">2</span><span class="btn-label">H.O.D</span></button>
-          <button class="floor-btn" data-floor="gallery"><span class="btn-num">*1</span><span class="btn-label">GALLERY</span></button>
-          <div class="panel-divider"></div>
-          <!-- Door controls -->
-          <div class="panel-door-row">
-            <button class="door-btn" data-floor="open" aria-label="Open doors">&#9664;&#9654;</button>
-            <button class="door-btn" data-floor="close" aria-label="Close doors">&#9654;&#9664;</button>
-          </div>
-          <div class="panel-divider"></div>
-          <!-- Alarm -->
-          <button class="alarm-btn" data-floor="help"><span class="bell-icon"></span></button>
-        </div>
-      </div>
-
-      <!-- Right door -->
-      <div class="elevator-door door-right" id="doorRight">
-        <div class="door-surface">
-          <div class="door-scratches door-scratches-3"></div>
-          <div class="door-scratches door-scratches-4"></div>
-          <div class="door-gouges door-gouges-right"></div>
-          <div class="door-seam door-seam-edge"></div>
-        </div>
-      </div>
-
-      <!-- Center seam line -->
-      <div class="door-center-seam"></div>
-
-      <!-- Button panel (inside left door — moves with it) -->
-    </div>
-  </section>
-
-  <!-- Art viewer overlay (global) -->
-  <div class="art-viewer" id="artViewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
-    <div class="art-viewer-backdrop"></div>
-    <div class="art-viewer-content">
-      <div class="art-viewer-frame">
-        <div class="art-viewer-media" id="artViewerMedia"></div>
-      </div>
-      <div class="art-viewer-info" id="artViewerInfo">
-        <h3 class="viewer-title" id="viewerTitle"></h3>
-        <p class="viewer-medium"></p>
-        <p class="viewer-description"></p>
-      </div>
-    </div>
-    <button class="art-viewer-prev" id="artViewerPrev" aria-label="Previous artwork">&#8592;</button>
-    <button class="art-viewer-next" id="artViewerNext" aria-label="Next artwork">&#8594;</button>
-    <button class="art-viewer-close" id="artViewerClose" aria-label="Close artwork viewer">&times;</button>
-  </div>
-
-
-  <nav class="mobile-floor-nav" id="mobileFloorNav">
-    <button data-floor="lobby">Lobby</button>
-    <button data-floor="1">Gallery</button>
-    <button data-floor="2">H.O.D.</button>
-    <button data-floor="3">About</button>
-    <button data-floor="4">Connect</button>
-  </nav>
 
   <!-- ============================================ -->
   <!-- IMMERSIVE ORBIT — hand-tracked entry portal -->
@@ -1062,17 +864,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
   <script src="js/arena-loader.js?v=20260405b"></script>
   <script src="js/gallery-data.js?v=20260407"></script>
-  <script type="module" src="js/gallery-3d.js?v=20260410"></script>
   <script src="js/song-preview.js?v=20261022-youtube"></script>
   <script src="js/image-thumbs.js?v=20261022-youtube"></script>
   <script src="js/photo-crate.js?v=20261027-full-fallback"></script>
-  <script src="js/main.js?v=20261022-youtube"></script>
-  <script src="js/add-to-orbit.js?v=20261009-wanderring"></script>
+  <script src="js/main.js?v=20261028-no-gallery"></script>
+  <script src="js/add-to-orbit.js?v=20261028-brand"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261022-play2"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/image-color.js?v=20261026-words"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
-  <script src="js/explore-planet.js?v=20261026-words"></script>
+  <script src="js/explore-planet.js?v=20261028-brand"></script>
   <script src="js/orbiting-account.js?v=20261022-youtube"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -1087,12 +888,12 @@
   <script src="js/orbit-guide.js?v=20261028-line"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261022-youtube"></script>
+  <script src="js/orbiting-prototype.js?v=20261028-brand"></script>
   <script src="js/depth-line.js?v=20261028-line"></script>
   <script src="js/account-settings.js?v=20261022-delete"></script>
   <script src="js/ether-sources.js?v=20261028-picks"></script>
   <script src="js/ether.js?v=20261027-try-words"></script>
-  <script src="js/ether-drift.js?v=20261028-guest"></script>
-  <script src="js/beta-testers.js?v=20261020-inbox"></script>
+  <script src="js/ether-drift.js?v=20261028-brand"></script>
+  <script src="js/beta-testers.js?v=20261028-brand"></script>
 </body>
 </html>
