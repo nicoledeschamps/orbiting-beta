@@ -11,11 +11,11 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261028-brand">
+  <link rel="stylesheet" href="css/style.css?v=20261030-handmoves">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261028-brand">
   <link rel="stylesheet" href="css/account-settings.css?v=20261030-eye">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261029-name-wrap">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261030-handmoves">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261024-hands-on">
@@ -732,14 +732,10 @@
       <p class="resources-page__intro">A few places for making, collecting, and getting lost in an idea.</p>
       <button class="resources-tour" id="resourcesTour" type="button"><span class="resources-hands__title">take the tour</span><span class="resources-hands__hint">what your orbit, Friends, Wander and the Ether are for, and how to swipe through them</span></button>
       <details class="resources-hands" id="resourcesHandControl">
-        <summary><span class="resources-hands__title">hand control</span><span class="resources-hands__hint">play with your hand: push, lean, pinch</span></summary>
+        <summary><span class="resources-hands__title">hand control</span><span class="resources-hands__hint">play with your hand: pinch, hold a ball, fist</span></summary>
         <p>Play with your hand. On a computer with a camera, press the ✦ under your planet, or Play in Wander’s dock. Nothing is recorded and nothing leaves your browser.</p>
-        <ul class="resources-hands__moves">
-          <li><span class="resources-hands__icon" data-gesture-icon="push" aria-hidden="true"></span><span><strong>Push and pull</strong>: move your hand toward the screen to go deeper (your orbit, Friends, Wander, the Ether), and back to come home. In the Ether, pushing flies you on.</span></li>
-          <li><span class="resources-hands__icon" data-gesture-icon="hold" aria-hidden="true"></span><span><strong>Lean</strong> your open hand left or right of the middle to turn your rings or Wander’s planet. In the Ether it steers.</span></li>
-          <li><span class="resources-hands__icon" data-gesture-icon="pinch" aria-hidden="true"></span><span><strong>Pinch</strong> your thumb and index finger near a photo to pull it close. Keep pinching to look, drag sideways for the next one, and let go to put it back.</span></li>
-        </ul>
-        <p class="resources-hands__note">After each push or pull, rest your hand a moment before the next one. Inside, press ? to see the moves again.</p>
+        <div class="resources-hands__moves" data-hand-moves></div>
+        <p class="resources-hands__note">Each space shows its own moves in the corner while you play. Inside, press ? to see them again.</p>
       </details>
       <div class="resources-page__list">
         <a href="https://nicoledeschamps.github.io/cut-it-out/" target="_blank" rel="noopener noreferrer"><span class="resources-page__number">01</span><span><strong>Cut It Out</strong><small>a hand-cut digital collage tool</small></span><span class="resources-page__arrow" aria-hidden="true">↗</span></a>
@@ -819,7 +815,7 @@
   <!-- "You're seen" — one-shot flash on first hand detection in immersive mode -->
   <div class="orbit-seen-flash" id="orbitSeenFlash" aria-hidden="true"></div>
 
-  <!-- Onboarding: 3 progressive cards (push → lean → pinch). The guide rail lists every move and lights up what the camera reads. -->
+  <!-- Onboarding: the moves of the space on screen as looping videos. The guide rail lists them too and lights up what the camera reads. -->
   <div class="orbit-onboarding" id="orbitOnboarding" aria-hidden="true"></div>
 
   <!-- Fingertip cursor — follows user's index finger while immersive.
@@ -874,11 +870,11 @@
   <script src="js/photo-crate.js?v=20261027-full-fallback"></script>
   <script src="js/main.js?v=20261028-no-gallery"></script>
   <script src="js/add-to-orbit.js?v=20261028-brand"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20261022-play2"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261030-handmoves"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/image-color.js?v=20261026-words"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
-  <script src="js/explore-planet.js?v=20261028-brand"></script>
+  <script src="js/explore-planet.js?v=20261030-handmoves"></script>
   <script src="js/orbiting-account.js?v=20261029-approve"></script>
   <script src="js/friend-search.js?v=20261018-person-hint"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -893,13 +889,13 @@
   <script src="js/orbit-guide.js?v=20261028-line"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261028-brand"></script>
+  <script src="js/orbiting-prototype.js?v=20261030-handmoves"></script>
   <script src="js/depth-line.js?v=20261028-line"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
   <script src="js/account-settings.js?v=20261030-eye"></script>
   <script src="js/ether-sources.js?v=20261029-every-image"></script>
   <script src="js/ether.js?v=20261027-try-words"></script>
-  <script src="js/ether-drift.js?v=20261028-brand"></script>
+  <script src="js/ether-drift.js?v=20261030-handmoves"></script>
   <script src="js/beta-testers.js?v=20261029-approve"></script>
 </body>
 </html>
