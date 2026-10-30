@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/welcome.css?v=20261030-quick-open">
+  <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
 </head>
 <body>
   <!-- The film: your orbit, Wander, the Ether, back to you. Decoration only. -->
@@ -58,7 +59,7 @@
       <form class="form" id="signinForm" novalidate>
         <label class="field">email<input class="input" id="signinEmail" name="email" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254"></label>
         <div class="field">
-          <span class="field-row"><label for="signinPassword">password</label><button class="quiet small" id="showPassword" type="button" aria-controls="signinPassword" aria-pressed="false">show</button></span>
+          <label for="signinPassword">password</label>
           <input class="input" id="signinPassword" name="password" type="password" autocomplete="current-password" required>
         </div>
         <button class="quiet small text-left" id="forgotPassword" type="button">forgot your password, or never made one?</button>
@@ -99,6 +100,7 @@
 
   <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
   <script src="js/orbit-preview-scene.js?v=20261027-film-spin"></script>
+  <script src="js/password-eye.js?v=20261030-eye"></script>
   <script src="js/welcome-film.js?v=20261030-quick-open"></script>
 </body>
 </html>
