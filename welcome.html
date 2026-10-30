@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/welcome.css?v=20261030-quick-open">
+  <link rel="stylesheet" href="css/welcome.css?v=20261030-tune-color">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
 </head>
 <body>
@@ -39,7 +39,9 @@
         <button type="button" data-tag="portraits" aria-pressed="false">portraits</button>
       </div>
       <!-- The quiet row under the real Tune search: shown as it looks in the app, not clickable here. -->
-      <p class="tune-row" aria-hidden="true">any time ▾ <i>·</i> everywhere ▾ <i>·</i> color ▾</p>
+      <p class="tune-row" aria-hidden="true">any time ▾ <i>·</i> everywhere ▾ <i>·</i> <span class="tune-color" id="tuneColor"><b></b><span class="color-word">color</span><span class="red-word">red</span> ▾</span></p>
+      <!-- The spectrum the app's color option opens (tune-row.js), shown as it looks there, not clickable here. -->
+      <div class="spectrum" id="spectrum" aria-hidden="true"><i data-color="red" id="pickedHue" style="background:hsl(356, 68%, 48%)"></i><i data-color="vermilion" style="background:hsl(10, 78%, 52%)"></i><i data-color="orange" style="background:hsl(27, 85%, 55%)"></i><i data-color="amber" style="background:hsl(40, 88%, 52%)"></i><i data-color="yellow" style="background:hsl(52, 90%, 56%)"></i><i data-color="olive" style="background:hsl(60, 40%, 36%)"></i><i data-color="green" style="background:hsl(125, 45%, 40%)"></i><i data-color="mint" style="background:hsl(150, 45%, 62%)"></i><i data-color="teal" style="background:hsl(178, 60%, 36%)"></i><i data-color="aqua" style="background:hsl(188, 65%, 55%)"></i><i data-color="sky" style="background:hsl(205, 70%, 65%)"></i><i data-color="blue" style="background:hsl(218, 70%, 48%)"></i><i data-color="navy" style="background:hsl(225, 60%, 24%)"></i><i data-color="indigo" style="background:hsl(245, 50%, 45%)"></i><i data-color="violet" style="background:hsl(268, 52%, 56%)"></i><i data-color="plum" style="background:hsl(295, 35%, 35%)"></i><i data-color="magenta" style="background:hsl(318, 65%, 50%)"></i><i data-color="pink" style="background:hsl(335, 70%, 72%)"></i><i data-color="brown" style="background:hsl(24, 45%, 30%)"></i><i data-color="black" style="background:hsl(0, 0%, 8%)"></i><i data-color="grey" style="background:hsl(0, 0%, 52%)"></i><i data-color="white" style="background:hsl(40, 25%, 93%)"></i></div>
     </div>
     <p class="line is-out" id="line" aria-live="polite"></p>
     <button class="cta" type="button" data-request>request an invite</button>
@@ -101,6 +103,6 @@
   <script src="js/orbiting-account.js?v=20261017-shared-photos"></script>
   <script src="js/orbit-preview-scene.js?v=20261027-film-spin"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
-  <script src="js/welcome-film.js?v=20261030-quick-open"></script>
+  <script src="js/welcome-film.js?v=20261030-tune-color"></script>
 </body>
 </html>
