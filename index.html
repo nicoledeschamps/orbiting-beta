@@ -165,7 +165,10 @@
             <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
             <button class="source-list-action" id="clearPhotos" type="button" hidden>remove all photos</button>
           </div>
-            <button class="source-link-approve" id="finishSources" type="button">continue →</button>
+            <div class="source-finish-actions">
+              <button class="source-link-approve" id="finishSources" type="button">continue →</button>
+              <button class="setup-text-action source-add-platform source-add-another" type="button" data-source-stage-go="pick">+ add another source</button>
+            </div>
           </details>
           <section class="source-rings" aria-labelledby="sourceRingsTitle">
             <h2 id="sourceRingsTitle" tabindex="-1">Define your orbit.</h2>
