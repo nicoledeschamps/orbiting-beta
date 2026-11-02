@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261030-handmoves">
+  <link rel="stylesheet" href="css/style.css?v=20261102-split-release">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261028-brand">
   <link rel="stylesheet" href="css/account-settings.css?v=20261030-eye">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/tune-row.css?v=20261022-color">
   <link rel="stylesheet" href="css/depth-line.css?v=20261028-line">
   <link rel="stylesheet" href="css/ether.css?v=20261027-back-try-words">
+  <link rel="stylesheet" href="css/hand-view.css?v=20261102-split-release">
   <link rel="stylesheet" href="css/photo-crate.css?v=20261022-youtube">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261029-approve">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -837,6 +838,8 @@
     <div class="orbit-hud-thumb">
       <video class="orbit-hud-video" id="orbitHudVideo" playsinline muted autoplay></video>
       <canvas class="orbit-hud-skeleton" id="orbitHudSkeleton" aria-hidden="true"></canvas>
+      <button class="orbit-hand-view" id="orbitHandView" type="button" aria-pressed="false">split view</button>
+      <p class="orbit-hand-feedback" id="orbitHandFeedback" role="status" aria-live="polite">bring your hand into view</p>
       <button class="orbit-hud-help" id="orbitHudHelpBtn" type="button" aria-label="Show gesture help">
         <span aria-hidden="true">?</span>
       </button>
@@ -845,6 +848,8 @@
       </button>
     </div>
   </div>
+
+  <div class="orbit-hand-divider" id="orbitHandDivider" role="separator" tabindex="0" aria-label="Resize orbit and camera" aria-orientation="horizontal" aria-valuemin="52" aria-valuemax="75" aria-valuenow="62" aria-controls="hero orbitHudVideo" hidden></div>
 
   <!-- Hidden camera stream target (feeds MediaPipe) -->
   <video class="orbit-cam" id="orbitCam" playsinline muted autoplay aria-hidden="true"></video>
@@ -867,14 +872,14 @@
   <script src="js/gallery-data.js?v=20260407"></script>
   <script src="js/song-preview.js?v=20261022-youtube"></script>
   <script src="js/image-thumbs.js?v=20261022-youtube"></script>
-  <script src="js/photo-crate.js?v=20261027-full-fallback"></script>
+  <script src="js/photo-crate.js?v=20261102-split-release"></script>
   <script src="js/main.js?v=20261028-no-gallery"></script>
   <script src="js/add-to-orbit.js?v=20261028-brand"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20261030-handmoves"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20261102-split-release"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
   <script src="js/image-color.js?v=20261026-words"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
-  <script src="js/explore-planet.js?v=20261030-handmoves"></script>
+  <script src="js/explore-planet.js?v=20261102-split-release"></script>
   <script src="js/orbiting-account.js?v=20261029-approve"></script>
   <script src="js/friend-search.js?v=20261030-friends-list"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
@@ -895,7 +900,7 @@
   <script src="js/account-settings.js?v=20261030-eye"></script>
   <script src="js/ether-sources.js?v=20261029-every-image"></script>
   <script src="js/ether.js?v=20261027-try-words"></script>
-  <script src="js/ether-drift.js?v=20261030-handmoves"></script>
+  <script src="js/ether-drift.js?v=20261102-split-release"></script>
   <script src="js/beta-testers.js?v=20261029-approve"></script>
 </body>
 </html>
