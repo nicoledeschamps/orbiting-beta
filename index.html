@@ -17,7 +17,8 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261028-brand">
   <link rel="stylesheet" href="css/account-settings.css?v=20261030-eye">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261030-friends-list">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261104-report-block">
+  <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261024-hands-on">
@@ -282,6 +283,7 @@
           <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">new password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> let my images drift into the ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group" id="blockedSettingsGroup"><h2>Blocked</h2><ul class="blocked-list" id="blockedList"></ul><p class="blocked-list__empty" id="blockedEmpty">no one. block someone from their card in friends.</p><small>Blocked people can’t find you, orbit you or see your images, and you won’t see theirs. They aren’t told.</small><p class="account-settings__ether-status" id="blockedStatus" role="status" aria-live="polite"></p></section>
           <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">how orbit uses your data</a></p><p><a href="terms.html">terms of use</a></p><small>You can delete your account at the bottom of this page.</small></section>
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
           <section class="account-settings__group account-settings__delete" id="deleteAccountGroup" hidden><h2>Delete account</h2><p>This removes your orbit, your photos and portrait, who you follow and who follows you, your saved images and your feedback. It can't be undone.</p><button class="account-settings__delete-open" id="deleteAccountOpen" type="button" aria-expanded="false" aria-controls="deleteAccountForm">delete my account…</button><form id="deleteAccountForm" hidden><fieldset id="deleteAccountFields"><label for="deleteAccountUsername">type your username to confirm</label><input id="deleteAccountUsername" autocomplete="off" autocapitalize="none" spellcheck="false" required><label for="deleteAccountPassword">your password</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required><div class="account-settings__delete-actions"><button class="account-settings__delete-confirm" id="deleteAccountConfirm" type="submit">delete my account forever</button><button class="account-settings__delete-cancel" id="deleteAccountCancel" type="button">cancel</button></div></fieldset></form><p class="account-settings__delete-status" id="deleteAccountStatus" role="status" aria-live="polite"></p></section>
@@ -297,6 +299,7 @@
           <div class="admin-counts" id="adminCounts"></div>
           <p class="admin-nudge" id="adminNudge" hidden></p>
           <div class="admin-inbox" id="adminInbox" hidden></div>
+          <div class="admin-reports" id="adminReports" hidden></div>
           <div class="admin-filters" id="adminFilters" role="group" aria-label="Show"></div>
           <ul class="admin-list" id="adminTesterList"></ul>
         </section>
@@ -572,6 +575,29 @@
       <p class="friend-card__rings" id="friendCardRings"></p>
       <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">enter orbit</button><button class="op-link" id="friendCardUnfollow" type="button">stop orbiting</button></div>
       <p class="friend-card__status" id="friendCardStatus" role="status" aria-live="polite"></p>
+      <button class="friend-card__safety-toggle" id="friendCardSafetyToggle" type="button" aria-expanded="false" aria-controls="friendCardSafety">report or block</button>
+      <!-- Report goes to the admins; block takes both people out of each other’s sky (following-cosmos.js). -->
+      <form class="friend-safety" id="friendCardSafety" hidden>
+        <p class="friend-safety__title">something off?</p>
+        <p class="friend-safety__note">only the orbit team sees a report. they won’t know it was you.</p>
+        <fieldset class="friend-safety__reasons">
+          <legend class="friend-safety__legend">what’s wrong</legend>
+          <label><input type="radio" name="reportReason" value="harassment"> bullying or harassment</label>
+          <label><input type="radio" name="reportReason" value="hateful"> hate</label>
+          <label><input type="radio" name="reportReason" value="explicit"> nudity or sexual</label>
+          <label><input type="radio" name="reportReason" value="violent"> violence</label>
+          <label><input type="radio" name="reportReason" value="spam"> spam</label>
+          <label><input type="radio" name="reportReason" value="stolen"> stolen work</label>
+          <label><input type="radio" name="reportReason" value="other"> something else</label>
+        </fieldset>
+        <label class="friend-safety__more"><span>add a note (optional)</span><textarea id="friendCardReportNote" rows="2" maxlength="500"></textarea></label>
+        <div class="friend-safety__actions">
+          <button class="op-solid" id="friendCardReport" type="submit">send report</button>
+          <button class="op-link" id="friendCardBlock" type="button">block</button>
+        </div>
+        <p class="friend-safety__block-note" id="friendCardBlockNote">blocking takes you out of each other’s sky: no orbits, no search, no ether. they won’t be told.</p>
+        <p class="friend-safety__status" id="friendCardSafetyStatus" role="status" aria-live="polite"></p>
+      </form>
     </aside>
 
     <section class="explore-layer" id="exploreLayer" aria-labelledby="exploreTitle" aria-hidden="true" inert>
@@ -882,12 +908,12 @@
   <script src="js/image-color.js?v=20261026-words"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
   <script src="js/explore-planet.js?v=20261102-split-release"></script>
-  <script src="js/orbiting-account.js?v=20261029-approve"></script>
+  <script src="js/orbiting-account.js?v=20261104-report-block"></script>
   <script src="js/friend-search.js?v=20261030-friends-list"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
-  <script src="js/following-cosmos.js?v=20261030-friends-list"></script>
+  <script src="js/following-cosmos.js?v=20261104-report-block"></script>
   <script src="js/wander-sky.js?v=20261020-dock"></script>
   <script src="js/orbit-notifications.js?v=20261022-ether-offer"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
@@ -904,5 +930,6 @@
   <script src="js/ether.js?v=20261027-try-words"></script>
   <script src="js/ether-drift.js?v=20261102-split-release"></script>
   <script src="js/beta-testers.js?v=20261029-approve"></script>
+  <script src="js/report-block.js?v=20261104-report-block"></script>
 </body>
 </html>
