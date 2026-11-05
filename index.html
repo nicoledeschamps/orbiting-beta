@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261028-brand">
   <link rel="stylesheet" href="css/account-settings.css?v=20261030-eye">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261104-preview">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261105-names">
   <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
@@ -281,6 +281,7 @@
           <div class="account-settings__type" id="accountTypeSlot"></div>
           <small class="account-settings__type-note">Switching saves when you press save changes.</small>
           <section class="account-settings__group"><h2>Username</h2><form id="usernameSettingsForm"><fieldset id="usernameSettingsFields" disabled><label for="settingsUsername">your username</label><input id="settingsUsername" autocomplete="username" pattern="[a-zA-Z0-9_]{3,20}" minlength="3" maxlength="20" required><small>3–20 letters, numbers, or underscores. This is how people find you.</small><button type="submit">save username</button></fieldset></form></section>
+          <section class="account-settings__group"><h2>Name</h2><form id="nameSettingsForm"><fieldset id="nameSettingsFields" disabled><label for="settingsName">your name</label><input id="settingsName" autocomplete="name" maxlength="60" placeholder="optional"><small>People can find you by your name too. It shows small under your username in search. Leave it empty to be found by username only.</small><button type="submit">save name</button></fieldset></form></section>
           <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">new password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> let my images drift into the ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
@@ -613,8 +614,8 @@
         <button class="people-search__toggle" id="peopleSearchToggle" type="button" aria-expanded="false" aria-controls="peopleSearchPanel">search ✦</button>
         <section class="people-search__panel" id="peopleSearchPanel" aria-label="Find people in Orbit" hidden>
           <div class="people-search__top"><strong>Find someone</strong><button id="peopleSearchClose" type="button" aria-label="Close people search">×</button></div>
-          <label for="peopleSearchInput">search by username</label>
-          <input id="peopleSearchInput" type="search" placeholder="start typing a name" autocomplete="off" spellcheck="false" maxlength="20">
+          <label for="peopleSearchInput">search by name or username</label>
+          <input id="peopleSearchInput" type="search" placeholder="start typing a name" autocomplete="off" spellcheck="false" maxlength="60">
           <div id="peopleSearchResults" class="people-search__results" aria-live="polite"></div>
           <button id="peopleSearchFriends" type="button">view friends in the cosmos</button>
           <p id="peopleSearchStatus" role="status" aria-live="polite"></p>
@@ -910,8 +911,8 @@
   <script src="js/mood-orbits.js?v=20261104-cultivate-tap"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
   <script src="js/explore-planet.js?v=20261102-split-release"></script>
-  <script src="js/orbiting-account.js?v=20261104-mood"></script>
-  <script src="js/friend-search.js?v=20261030-friends-list"></script>
+  <script src="js/orbiting-account.js?v=20261105-names"></script>
+  <script src="js/friend-search.js?v=20261105-names"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
@@ -928,7 +929,7 @@
   <script src="js/depth-line.js?v=20261028-line"></script>
   <script src="js/preview-toggle.js?v=20261104-folded"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
-  <script src="js/account-settings.js?v=20261030-eye"></script>
+  <script src="js/account-settings.js?v=20261105-names"></script>
   <script src="js/ether-sources.js?v=20261029-every-image"></script>
   <script src="js/ether.js?v=20261027-try-words"></script>
   <script src="js/ether-drift.js?v=20261102-split-release"></script>
