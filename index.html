@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
   <link rel="stylesheet" href="css/orbit-guide.css?v=20261024-hands-on">
-  <link rel="stylesheet" href="css/orbit-menu.css?v=20261012-star">
+  <link rel="stylesheet" href="css/orbit-menu.css?v=20261107-two-menus">
   <link rel="stylesheet" href="css/orbit-feedback.css?v=20261013-feature-feedback">
   <link rel="stylesheet" href="css/wander-dock.css?v=20261022-youtube">
   <link rel="stylesheet" href="css/tune-row.css?v=20261022-color">
@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="css/photo-crate.css?v=20261107-photo-notes">
   <link rel="stylesheet" href="css/beta-testers.css?v=20261029-approve">
   <link rel="stylesheet" href="css/mood-orbits.css?v=20261104-cultivate-tap">
+  <link rel="stylesheet" href="css/friend-back.css?v=20261107-two-menus">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -362,13 +363,16 @@
     <!-- A row on wider screens; on phones the bright star opens the same items as a list. -->
     <nav class="orbit-page-nav" id="orbitPageNav" aria-label="Your orbit pages">
       <button class="orbit-menu-toggle" id="orbitMenuToggle" type="button" aria-expanded="false" aria-controls="orbitMenuItems" aria-label="Menu"><svg class="orbit-menu-toggle__star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.9 6.6 17.4 11.1 24 12C17.4 12.9 12.9 17.4 12 24C11.1 17.4 6.6 12.9 0 12C6.6 11.1 11.1 6.6 12 0Z"/></svg><span class="orbit-notifications__badge orbit-menu-toggle__badge" id="orbitMenuBadge" hidden></span></button>
+      <button class="orbit-cultivate-toggle" id="orbitCultivateToggle" type="button" aria-expanded="false" aria-label="Cultivate your orbit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
       <div class="orbit-page-nav__items" id="orbitMenuItems">
         <button id="openOrbitNotifications" type="button" aria-expanded="false" aria-controls="orbitNotifications" hidden>notifications<span class="orbit-notifications__badge" id="orbitNotificationsBadge" hidden></span></button>
-        <button id="openOrbitGuide" type="button">guide</button>
-        <button id="openOrbitSettings" type="button">settings</button>
-        <button id="openOrbitResources" type="button">resources</button>
-        <button id="openOrbitFeedback" type="button" aria-expanded="false" aria-controls="orbitFeedback" hidden>feedback</button>
-        <button id="signOutOrbit" type="button" hidden>sign out</button>
+        <button id="openOrbitCultivate" type="button" aria-expanded="false">cultivate</button>
+        <button id="openOrbitSettings" type="button" aria-expanded="false">settings</button>
+        <!-- Reached from the settings menu (orbit-menu.js); kept here so their own scripts still find them. -->
+        <button class="is-tucked" id="openOrbitGuide" type="button" tabindex="-1">guide</button>
+        <button class="is-tucked" id="openOrbitResources" type="button" tabindex="-1">resources</button>
+        <button class="is-tucked" id="openOrbitFeedback" type="button" tabindex="-1" aria-expanded="false" aria-controls="orbitFeedback" hidden>feedback</button>
+        <button class="is-tucked" id="signOutOrbit" type="button" tabindex="-1" hidden>sign out</button>
       </div>
     </nav>
     <section class="orbit-notifications orbit-feedback" id="orbitFeedback" aria-labelledby="orbitFeedbackTitle" hidden>
@@ -780,7 +784,7 @@
   </section>
 
   <section id="followedOrbit" class="followed-orbit" role="dialog" aria-modal="true" aria-labelledby="followedOrbitTitle" hidden>
-    <button id="closeFollowedOrbit" type="button">← back to your cosmos</button>
+    <button id="closeFollowedOrbit" type="button" aria-keyshortcuts="Escape"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span class="friend-back__to">friends</span></button>
     <header class="followed-orbit__head">
       <p class="followed-orbit__name" id="followedOrbitName" hidden><span></span><span></span></p>
       <p class="followed-orbit__bio" id="followedOrbitBio" hidden></p>
@@ -916,16 +920,17 @@
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
-  <script src="js/following-cosmos.js?v=20261105-security"></script>
+  <script src="js/following-cosmos.js?v=20261107-two-menus"></script>
+  <script src="js/friend-back.js?v=20261107-two-menus"></script>
   <script src="js/wander-sky.js?v=20261020-dock"></script>
   <script src="js/orbit-notifications.js?v=20261022-ether-offer"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbit-menu.js?v=20261012-star"></script>
-  <script src="js/orbit-feedback.js?v=20261021-ether"></script>
+  <script src="js/orbit-menu.js?v=20261107-two-menus"></script>
+  <script src="js/orbit-feedback.js?v=20261107-two-menus"></script>
   <script src="js/orbit-guide.js?v=20261028-line"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
-  <script src="js/page-memory.js?v=20261021-ether"></script>
-  <script src="js/orbiting-prototype.js?v=20261107-photo-notes"></script>
+  <script src="js/page-memory.js?v=20261107-two-menus"></script>
+  <script src="js/orbiting-prototype.js?v=20261107-photo-notes-menus"></script>
   <script src="js/depth-line.js?v=20261028-line"></script>
   <script src="js/preview-toggle.js?v=20261104-folded"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
