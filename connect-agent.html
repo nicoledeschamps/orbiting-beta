@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Orbit · connect your agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/welcome.css?v=20261108-app-type">
+  <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
+  <link rel="stylesheet" href="css/connect-agent.css?v=20261109-help">
+</head>
+<body class="account-access">
+  <!-- An agent asking to read someone's orbit (Supabase OAuth server → functions/orbit-mcp). The film page's sheet. -->
+  <header class="top">
+    <a class="wordmark" href="welcome.html" aria-label="Orbit">Orbit</a>
+  </header>
+
+  <div class="sheet is-page" role="main">
+    <section class="sheet-inner" aria-labelledby="agentTitle">
+      <p class="eyebrow">connect your agent</p>
+      <h1 class="heading" id="agentTitle">let an agent see your orbit?</h1>
+      <p class="body" id="agentStatus" role="status" aria-live="polite">checking the request…</p>
+
+      <form class="form" id="agentSignin" novalidate hidden>
+        <label class="field">email<input class="input" id="agentEmail" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254"></label>
+        <label class="field">password<input class="input" id="agentPassword" type="password" autocomplete="current-password" required></label>
+        <p class="status" id="agentSigninStatus" role="status" aria-live="polite"></p>
+        <div class="row"><button class="cta" id="agentSigninSend" type="submit">sign in</button></div>
+      </form>
+
+      <div class="agent-ask" id="agentAsk" hidden>
+        <ul class="agent-list" aria-label="what it can see">
+          <li>your title, bio, sources and rings</li>
+          <li>the images in your orbit, with their links and credit</li>
+          <li>your own photos with the names and notes you wrote</li>
+          <li>photo breakdowns already made in orbit</li>
+        </ul>
+        <ul class="agent-list agent-list--never" aria-label="what it never sees">
+          <li>never your birth details, sky or hidden messages</li>
+          <li>never your friends’ private rings</li>
+          <li>it never deletes, posts, or touches your account or friends</li>
+        </ul>
+        <fieldset class="agent-mode">
+          <legend>what can it do?</legend>
+          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="look" checked><span><strong>only look</strong><small>it reads your orbit and nothing else.</small></span></label>
+          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="help"><span><strong>help me set up</strong><small>it can save images to your orbit and suggest sources, a title, photo names and mood orbits. suggestions wait in notifications until you tap add.</small></span></label>
+        </fieldset>
+        <p class="status" id="agentAskStatus" role="status" aria-live="polite"></p>
+        <div class="row">
+          <button class="cta" id="agentAllow" type="button">yes, let it see</button>
+          <button class="quiet" id="agentDeny" type="button">not now</button>
+        </div>
+        <p class="legal">you can change this or disconnect it any time in settings › your agents.</p>
+      </div>
+
+      <a class="quiet" href="index.html">back to my orbit</a>
+    </section>
+  </div>
+
+  <script src="js/orbiting-account.js?v=20261109-help"></script>
+  <script src="js/password-eye.js?v=20261030-eye"></script>
+  <script src="js/connect-agent.js?v=20261109-help"></script>
+</body>
+</html>

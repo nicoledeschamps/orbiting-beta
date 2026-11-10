@@ -24,7 +24,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/style.css?v=20261108-moves">
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261108-sky-words">
-  <link rel="stylesheet" href="css/account-settings.css?v=20261030-eye">
+  <link rel="stylesheet" href="css/account-settings.css?v=20261109-help">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
   <link rel="stylesheet" href="css/orbit-plate.css?v=20261108-quick-wins">
   <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
@@ -299,6 +299,8 @@
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">new password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> let my images drift into the ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p></section>
           <section class="account-settings__group" id="blockedSettingsGroup"><h2>Blocked</h2><ul class="blocked-list" id="blockedList"></ul><p class="blocked-list__empty" id="blockedEmpty">no one. block someone from their card in friends.</p><small>Blocked people can’t find you, orbit you or see your images, and you won’t see theirs. They aren’t told.</small><p class="account-settings__ether-status" id="blockedStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group" id="exportSettingsGroup"><h2>Take your orbit with you</h2><p>One file with your sources, rings and images, their links and credit, and any photo breakdowns. Keep it, or hand it to any agent so it knows your taste.</p><button class="account-settings__quiet" id="exportOrbit" type="button">download my orbit</button><p class="account-settings__ether-status" id="exportStatus" role="status" aria-live="polite"></p></section>
+          <section class="account-settings__group" id="agentSettingsGroup"><h2>Your agents</h2><p>Let your own agent, like Claude or ChatGPT, see your orbit. It never sees your birth details, sky or hidden messages. Turn on “helps set up” and it can save images and suggest sources, a title, photo names and mood orbits. Suggestions wait in notifications until you tap add.</p><label for="agentConnectorUrl">orbit connector link</label><div class="agent-connector"><input id="agentConnectorUrl" readonly spellcheck="false"><button class="account-settings__quiet" id="agentCopyUrl" type="button">copy</button></div><small>In Claude: settings › connectors › add custom connector, paste this link, then say yes on orbit's page. In ChatGPT: settings › apps › add, the same way.</small><ul class="agent-connected" id="agentList"></ul><p class="blocked-list__empty" id="agentEmpty">no agents connected.</p><p class="account-settings__ether-status" id="agentStatus" role="status" aria-live="polite"></p></section>
           <section class="account-settings__group account-settings__legal" id="legalSettingsGroup"><h2>Privacy and terms</h2><p><a href="privacy.html">how orbit uses your data</a></p><p><a href="terms.html">terms of use</a></p><small>You can delete your account at the bottom of this page.</small></section>
           <section class="account-settings__group" id="accountSignOutGroup"><h2>Sign out</h2><button class="account-settings__sign-out" id="accountSignOut" type="button">sign out</button></section>
           <section class="account-settings__group account-settings__delete" id="deleteAccountGroup" hidden><h2>Delete account</h2><p>This removes your orbit, your photos and portrait, who you follow and who follows you, your saved images and your feedback. It can't be undone.</p><button class="account-settings__delete-open" id="deleteAccountOpen" type="button" aria-expanded="false" aria-controls="deleteAccountForm">delete my account…</button><form id="deleteAccountForm" hidden><fieldset id="deleteAccountFields"><label for="deleteAccountUsername">type your username to confirm</label><input id="deleteAccountUsername" autocomplete="off" autocapitalize="none" spellcheck="false" required><label for="deleteAccountPassword">your password</label><input id="deleteAccountPassword" type="password" autocomplete="current-password" required><div class="account-settings__delete-actions"><button class="account-settings__delete-confirm" id="deleteAccountConfirm" type="submit">delete my account forever</button><button class="account-settings__delete-cancel" id="deleteAccountCancel" type="button">cancel</button></div></fieldset></form><p class="account-settings__delete-status" id="deleteAccountStatus" role="status" aria-live="polite"></p></section>
@@ -421,6 +423,10 @@
       <section class="orbit-setup-tips" id="orbitAdminAlert" aria-label="Beta testers" hidden>
         <p class="orbit-setup-tips__heading">Beta testers</p>
         <ul class="orbit-notifications__list" id="orbitAdminAlertList"></ul>
+      </section>
+      <section class="orbit-setup-tips" id="orbitAgentChanges" aria-label="From your agents" hidden>
+        <p class="orbit-setup-tips__heading">From your agents</p>
+        <ul class="orbit-notifications__list" id="orbitAgentChangesList"></ul>
       </section>
       <section class="orbit-setup-tips" id="orbitSetupTips" aria-label="Finish your orbit" hidden>
         <p class="orbit-setup-tips__heading">Finish your orbit</p>
@@ -935,7 +941,7 @@
   <script src="js/tune-row.js?v=20261022-color"></script>
   <script src="js/explore-planet.js?v=20261109-artist-eye"></script>
   <script src="js/night-card.js?v=20261108-night-cards"></script>
-  <script src="js/orbiting-account.js?v=20261109-breakdown"></script>
+  <script src="js/orbiting-account.js?v=20261109-help"></script>
   <script src="js/friend-search.js?v=20261107-preview"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
@@ -943,9 +949,9 @@
   <script src="js/following-cosmos.js?v=20261108-night-cards"></script>
   <script src="js/friend-back.js?v=20261107-menu-heads"></script>
   <script src="js/wander-sky.js?v=20261020-dock"></script>
-  <script src="js/orbit-notifications.js?v=20261107-preview"></script>
+  <script src="js/orbit-notifications.js?v=20261109-agents2"></script>
   <script src="js/loading-lines.js?v=20261005-lines"></script>
-  <script src="js/orbit-menu.js?v=20261107-menu-heads"></script>
+  <script src="js/orbit-menu.js?v=20261109-agents"></script>
   <script src="js/orbit-feedback.js?v=20261107-two-menus"></script>
   <script src="js/orbit-guide.js?v=20261028-line"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
@@ -956,6 +962,7 @@
   <script src="js/preview-toggle.js?v=20261104-folded"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
   <script src="js/account-settings.js?v=20261105-names"></script>
+  <script src="js/agent-settings.js?v=20261109-help2"></script>
   <script src="js/ether-sources.js?v=20261105-picks45"></script>
   <script src="js/ether.js?v=20261027-try-words"></script>
   <script src="js/ether-drift.js?v=20261109-artist-eye"></script>

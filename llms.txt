@@ -1,0 +1,41 @@
+# Orbit
+
+> orbit is a world that orbits you. each person sits at the centre of their own sky, and the things they love circle them in rings: images and posts pulled from pinterest, are.na, cosmos, behance, substack, youtube, spotify and their own uploads. every orbit is one person's taste, kept by them.
+
+orbit is invite-only for now. people request an invite on the welcome page. anyone can visit the ether without an account.
+
+## what an agent can do here
+
+- explain what orbit is and send people to request an invite: https://whatorbitsyou.com/welcome.html
+- point people to the ether, a slow drift of art, space and images from are.na boards, NASA, SMK (national gallery of denmark), the V&A and other open collections: https://whatorbitsyou.com/ether.html
+- each person's orbit is private to them and their friends. do not try to read orbits by scraping the app; it needs a sign-in and shows nothing useful without one.
+
+## the orbit connector (for a person's own agent)
+
+each person can connect their own agent (claude, chatgpt, claude code, codex) to read their orbit, so it knows their taste. it is an MCP server:
+
+- url: https://pgaqkadenpocpoqoidln.supabase.co/functions/v1/orbit-mcp
+- sign in: OAuth 2.1 with dynamic client registration; the person says yes on orbit's own page
+- tools: `about_my_orbit` (title, bio, sources, rings, mood orbits) and `list_my_images` (images with links, credit, the person's own notes, and photo breakdowns of light, shape, colour, what it is and mood)
+- it never returns birth details, sky placements or hidden messages.
+- it only looks, unless the person switches the agent to "helps set up". then `save_image` saves straight into their orbit (with undo), and `suggest_source`, `suggest_title`, `suggest_photo_name` and `suggest_mood_orbit` wait in their notifications until they tap add. it can never delete, post, or touch their account or friends.
+
+## words orbit uses
+
+- orbit: your own sky, with you at the centre
+- rings: the paths your images travel on, one per source or mood
+- wander: a planet you can spin to look through your rings
+- the ether: a shared drift anyone can visit and pull images from
+- friends: people who follow each other back
+
+## main pages
+
+- [orbit](https://whatorbitsyou.com/): the app (sign in needed)
+- [welcome](https://whatorbitsyou.com/welcome.html): what orbit is, and where to request an invite
+- [the ether](https://whatorbitsyou.com/ether.html): open to everyone, no sign in
+- [privacy](https://whatorbitsyou.com/privacy.html): what orbit keeps and who sees it
+- [terms](https://whatorbitsyou.com/terms.html)
+
+## credit
+
+images in orbit belong to their makers and the places they came from. link to the source and credit the maker; never present them as orbit's own.

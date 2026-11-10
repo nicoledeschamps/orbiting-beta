@@ -1,0 +1,10 @@
+# orbit · whatorbitsyou.com
+# agents and search tools are welcome. start with /llms.txt.
+User-agent: *
+Allow: /
+Disallow: /account-access.html
+Disallow: /instagram.html
+Disallow: /login.html
+Disallow: /connect-agent.html
+
+Sitemap: https://whatorbitsyou.com/sitemap.xml
