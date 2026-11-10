@@ -26,8 +26,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/welcome.css?v=20261108-app-type">
+  <link rel="stylesheet" href="css/welcome.css?v=20261109-four-places">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
+  <link rel="stylesheet" href="css/four-places.css?v=20261109-four-places">
 </head>
 <body>
   <!-- The film: your orbit, Wander, the Ether, back to you. Decoration only. -->
@@ -37,6 +38,7 @@
   <header class="top">
     <span class="wordmark">Orbit</span>
     <nav>
+      <a class="quiet how-link" href="#how">how it works</a>
       <a class="quiet signin-top" href="login.html?signin" data-signin>sign in</a>
       <a class="ether-link" href="ether.html"><span><span class="ether-long">drift into </span>the ether</span><span class="arrow" aria-hidden="true">→</span></a>
     </nav>
@@ -69,6 +71,9 @@
     <a class="quiet signin-bottom" href="login.html?signin" data-signin>sign in</a>
   </footer>
   <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+  <!-- How it works, under the film: the four places, the same piece the app's guide uses. -->
+  <section class="how" id="how" aria-label="how orbit works"><div data-four-places></div></section>
 
   <!-- Sign in: the same sheet as the invite, signing in as the sign-in page does. -->
   <div class="sheet" id="signinSheet" role="dialog" aria-modal="true" aria-labelledby="signinHeading" hidden>
@@ -121,5 +126,6 @@
   <script src="js/orbit-preview-scene.js?v=20261027-film-spin"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
   <script src="js/welcome-film.js?v=20261030-tune-color"></script>
+  <script src="js/four-places.js?v=20261110-agent"></script>
 </body>
 </html>
