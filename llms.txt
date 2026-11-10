@@ -8,15 +8,19 @@ orbit is invite-only for now. people request an invite on the welcome page. anyo
 
 - explain what orbit is and send people to request an invite: https://whatorbitsyou.com/welcome.html
 - point people to the ether, a slow drift of art, space and images from are.na boards, NASA, SMK (national gallery of denmark), the V&A and other open collections: https://whatorbitsyou.com/ether.html
-- each person's orbit is private to them and their friends. do not try to read orbits by scraping the app; it needs a sign-in and shows nothing useful without one.
+- read the ether yourself, no sign in: https://whatorbitsyou.com/ether.md lists orbit's picked are.na channels with sample images, links and every block as json.
+- people's orbits need a sign-in. do not try to read them by scraping the app; it shows nothing useful without one. a connected agent can look at public orbits (below).
 
 ## the orbit connector (for a person's own agent)
 
-each person can connect their own agent (claude, chatgpt, claude code, codex) to read their orbit, so it knows their taste. it is an MCP server:
+each person can connect their own agent (claude, chatgpt, claude code, codex) to read their orbit, so it knows their taste. it is an MCP server.
+
+how a person connects: in their agent's connector settings (in claude: settings › connectors › add custom connector), add the url below. their agent then opens orbit's sign-in page, they sign in and say yes. the same link is in orbit under settings › your agents.
 
 - url: https://pgaqkadenpocpoqoidln.supabase.co/functions/v1/orbit-mcp
 - sign in: OAuth 2.1 with dynamic client registration; the person says yes on orbit's own page
 - tools: `about_my_orbit` (title, bio, sources, rings, mood orbits) and `list_my_images` (images with links, credit, the person's own notes, and photo breakdowns of light, shape, colour, what it is and mood)
+- looking around: `find_orbits` and `look_at_orbit` show other people's public orbits, exactly what orbit's public preview shows (rings shared with everyone, "anyone" mood orbits, title and bio), and only for people who leave "agents can look at my public orbit" on. blocks hide orbits both ways. `explore_the_ether` drifts through orbit's picks and people sharing in the ether.
 - it never returns birth details, sky placements or hidden messages.
 - it only looks, unless the person switches the agent to "helps set up". then `save_image` saves straight into their orbit (with undo), and `suggest_source`, `suggest_title`, `suggest_photo_name` and `suggest_mood_orbit` wait in their notifications until they tap add. it can never delete, post, or touch their account or friends.
 
