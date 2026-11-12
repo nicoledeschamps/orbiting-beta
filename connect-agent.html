@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/welcome.css?v=20261108-app-type">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/connect-agent.css?v=20261109-help">
+  <link rel="stylesheet" href="css/connect-agent.css?v=20261112-cultivate">
 </head>
 <body class="account-access">
   <!-- An agent asking to read someone's orbit (Supabase OAuth server → functions/orbit-mcp). The film page's sheet. -->
@@ -29,7 +29,8 @@
       <p class="body" id="agentStatus" role="status" aria-live="polite">checking the request…</p>
 
       <form class="form" id="agentSignin" novalidate hidden>
-        <label class="field">email<input class="input" id="agentEmail" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254"></label>
+        <p class="body agent-phone-note">on a phone this opens inside your agent’s app, so sign in here once, with your orbit email and password.</p>
+        <label class="field">email<input class="input" id="agentEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com" required maxlength="254"></label>
         <label class="field">password<input class="input" id="agentPassword" type="password" autocomplete="current-password" required></label>
         <p class="status" id="agentSigninStatus" role="status" aria-live="polite"></p>
         <div class="row"><button class="cta" id="agentSigninSend" type="submit">sign in</button></div>
@@ -40,21 +41,22 @@
           <li>your title, bio, sources and rings</li>
           <li>the images in your orbit, with their links and credit</li>
           <li>your own photos with the names and notes you wrote</li>
-          <li>photo breakdowns already made in orbit</li><li>other people’s public orbits and the ether, only what they share with everyone</li>
+          <li>photo breakdowns already made in orbit</li>
+          <li>other people’s public orbits and the ether, only what they share with everyone</li>
         </ul>
         <ul class="agent-list agent-list--never" aria-label="what it never sees">
           <li>never your birth details, sky or hidden messages</li>
           <li>never your friends’ private rings</li>
-          <li>it never deletes, posts, or touches your account or friends</li>
+          <li>it never deletes your images, posts, or touches your account or friends</li>
         </ul>
         <fieldset class="agent-mode">
           <legend>what can it do?</legend>
-          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="look" checked><span><strong>only look</strong><small>it reads your orbit and nothing else.</small></span></label>
-          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="help"><span><strong>help me set up</strong><small>it can save images to your orbit and suggest sources, a title, photo names and mood orbits. suggestions wait in notifications until you tap add.</small></span></label>
+          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="help"><span><strong>help me cultivate</strong><small>it can make mood orbits and add to them, put one on the front of your profile, and save images. everything it does shows in notifications with an undo. it can also suggest sources, a title and photo names for you to add.</small></span></label>
+          <label class="agent-mode__choice"><input type="radio" name="agentMode" value="look"><span><strong>only look</strong><small>it reads your orbit and changes nothing.</small></span></label>
         </fieldset>
         <p class="status" id="agentAskStatus" role="status" aria-live="polite"></p>
         <div class="row">
-          <button class="cta" id="agentAllow" type="button">yes, let it see</button>
+          <button class="cta" id="agentAllow" type="button" disabled>choose one above</button>
           <button class="quiet" id="agentDeny" type="button">not now</button>
         </div>
         <p class="legal">you can change this or disconnect it any time in settings › your agents.</p>
@@ -64,8 +66,8 @@
     </section>
   </div>
 
-  <script src="js/orbiting-account.js?v=20261109-help"></script>
+  <script src="js/orbiting-account.js?v=20261112-cultivate"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
-  <script src="js/connect-agent.js?v=20261109-help"></script>
+  <script src="js/connect-agent.js?v=20261112-cultivate"></script>
 </body>
 </html>
