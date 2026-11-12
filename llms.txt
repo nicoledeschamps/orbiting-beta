@@ -15,7 +15,7 @@ orbit is invite-only for now. people request an invite on the welcome page. anyo
 
 each person can connect their own agent (claude, chatgpt, claude code, codex) to read their orbit, so it knows their taste. it is an MCP server.
 
-how a person connects: in their agent's connector settings (in claude: settings › connectors › add custom connector), add the url below. their agent then opens orbit's sign-in page, they sign in and say yes. the same link is in orbit under settings › your agents.
+how a person connects: in their agent's connector settings (in claude: customize › connectors › add › add custom connector, at https://claude.ai/customize/connectors; in chatgpt: plugins › + › add custom MCP server), add the url below. on a phone, do this once in the phone's browser if the app won't add it; the apps use it after. their agent then opens orbit's sign-in page, they sign in and say yes. the same link is in orbit under settings › your agents.
 
 - url: https://pgaqkadenpocpoqoidln.supabase.co/functions/v1/orbit-mcp
 - sign in: OAuth 2.1 with dynamic client registration; the person says yes on orbit's own page
