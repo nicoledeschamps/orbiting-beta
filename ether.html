@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="css/guest-ether.css?v=20261029-signin">
 </head>
 <!-- The Ether for visitors without an account: open collections and Orbiting's picks only. No account code is loaded,
-     so other people's orbits can't reach this page. "request an invite" leads to the welcome page's invite sheet.
+     so other people's orbits can't reach this page. "pull into my orbit" leads to the welcome page's invite sheet, which says invites let you keep it.
      Shapes: drift, horizon (ether-drift.js) and planet (explore-planet.js, the same planet as in the app). -->
 <body class="is-ether is-explore is-guest-ether">
   <header class="guest-top">
@@ -62,7 +62,7 @@
           <strong id="etherDriftTitle"></strong>
           <span id="etherDriftSource"></span>
           <div class="ether-drift__actions">
-            <button class="ether-drift__add" id="etherDriftAdd" type="button" data-label="request an invite">request an invite</button>
+            <button class="ether-drift__add" id="etherDriftAdd" type="button" data-label="pull into my orbit">pull into my orbit</button>
             <button class="ether-drift__orbit" id="etherDriftOrbit" type="button" hidden></button>
             <a class="ether-drift__link" id="etherDriftLink" href="#" target="_blank" rel="noopener noreferrer" hidden>open source ↗</a>
           </div>
@@ -109,7 +109,7 @@
           <div class="song-preview" id="exploreSongPreview" hidden></div>
           <div class="explore-detail__nav"><button id="exploreDetailPrev" type="button" aria-label="Previous image">←</button><span>swipe along this layer · double-tap to zoom</span><button class="explore-detail__zoom" id="exploreDetailZoomOut" type="button" aria-label="Zoom out" hidden>⊖</button><button class="explore-detail__zoom" id="exploreDetailZoom" type="button" aria-label="Zoom in">⊕</button><button id="exploreDetailNext" type="button" aria-label="Next image">→</button></div>
           <div class="explore-detail__actions">
-            <button id="exploreAddToOrbit" type="button">request an invite</button>
+            <button id="exploreAddToOrbit" type="button">pull into my orbit</button>
             <button id="exploreEnterFriend" type="button" hidden></button>
             <a id="exploreSourceLink" href="#" target="_blank" rel="noopener noreferrer">open source ↗</a>
           </div>
@@ -120,11 +120,11 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
   <script src="js/image-thumbs.js?v=20261022-youtube"></script>
-  <script src="js/image-color.js?v=20261026-words"></script>
+  <script src="js/image-color.js?v=20261112-guest"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
-  <script src="js/explore-planet.js?v=20261106-smooth"></script>
-  <script src="js/ether-sources.js?v=20261105-picks45"></script>
-  <script src="js/ether-drift.js?v=20261028-brand"></script>
-  <script src="js/guest-ether.js?v=20261028-shapes"></script>
+  <script src="js/explore-planet.js?v=20261112-guest"></script>
+  <script src="js/ether-sources.js?v=20261112-guest"></script>
+  <script src="js/ether-drift.js?v=20261112-guest"></script>
+  <script src="js/guest-ether.js?v=20261112-guest"></script>
 </body>
 </html>
