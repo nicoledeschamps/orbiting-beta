@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261108-sky-words">
   <link rel="stylesheet" href="css/account-settings.css?v=20261110-card">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261108-quick-wins">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261112-captions">
   <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/settings-folds.css?v=20261013-folds">
@@ -182,6 +182,11 @@
             <input class="setup-file-input" id="setupAlbumInput" type="file" accept="image/*" multiple>
             <input class="setup-file-input" id="setupFolderInput" type="file" accept="image/*" webkitdirectory directory multiple>
             <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
+            <div class="photo-captions" id="photoCaptionsBox" hidden>
+              <h3>caption your photos</h3>
+              <p class="source-sharing-note">what it is, who made it, where it came from. friends see the caption when they open the photo. leave one blank to keep its file name.</p>
+              <ol class="photo-captions__list" id="photoCaptions"></ol>
+            </div>
             <button class="source-list-action" id="clearPhotos" type="button" hidden>remove all photos</button>
           </div>
             <div class="source-finish-actions">
@@ -958,7 +963,7 @@
   <script src="js/orbit-guide.js?v=20261109-four-places"></script>
   <!-- Before orbiting-prototype.js, so it hears the orbit open even when the profile loads instantly. -->
   <script src="js/page-memory.js?v=20261107-two-menus"></script>
-  <script src="js/orbiting-prototype.js?v=20261108-night-cards"></script>
+  <script src="js/orbiting-prototype.js?v=20261112-captions"></script>
   <script src="js/sky-words.js?v=20261108-night-cards"></script>
   <script src="js/depth-line.js?v=20261028-line"></script>
   <script src="js/preview-toggle.js?v=20261104-folded"></script>
