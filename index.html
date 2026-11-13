@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261108-sky-words">
   <link rel="stylesheet" href="css/account-settings.css?v=20261112-phone">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261112-remove-photo">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261113-friends-a11y">
   <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/setup-star.css?v=20261113-steps">
@@ -584,11 +584,16 @@
       <p id="followingCosmosStatus" role="status" aria-live="polite"></p>
       <button id="refreshFollowingCosmos" type="button">refresh your cosmos</button>
       <!-- Everyone you orbit: friends who were on lately circle you, the rest wait here (following-cosmos.js). -->
-      <button class="friends-list__toggle" id="friendsListToggle" type="button" aria-expanded="false" aria-controls="friendsList" hidden>all friends</button>
+      <div class="friends-tools" id="friendsTools">
+        <button class="friends-list__toggle" id="friendsListToggle" type="button" aria-expanded="false" aria-controls="friendsList" hidden>all friends</button>
+        <!-- Stills the stars and friends turning on this page; remembered on this device (friends-motion.js). -->
+        <button class="friends-list__toggle friends-motion" id="friendsMotionToggle" type="button">pause motion</button>
+      </div>
       <section class="friends-list" id="friendsList" aria-labelledby="friendsListTitle" hidden>
         <div class="friends-list__top"><strong id="friendsListTitle">All friends</strong><button id="friendsListClose" type="button" aria-label="Close friends list">×</button></div>
-        <label class="friends-list__find" id="friendsListFindLabel" for="friendsListFind" hidden>find a friend</label>
-        <input class="friends-list__find-input" id="friendsListFind" type="search" placeholder="find a friend" autocomplete="off" spellcheck="false" maxlength="20" hidden>
+        <label class="friends-list__find" id="friendsListFindLabel" for="friendsListFind" hidden>find a friend by name or username</label>
+        <input class="friends-list__find-input" id="friendsListFind" type="search" placeholder="find by name or @username" autocomplete="off" spellcheck="false" maxlength="40" aria-controls="friendsListGroups" hidden>
+        <p class="sr-only" id="friendsListStatus" role="status" aria-live="polite"></p>
         <div class="friends-list__groups" id="friendsListGroups"></div>
       </section>
     </section>
@@ -605,7 +610,7 @@
       <p class="friend-card__bio" id="friendCardBio"></p>
       <span class="friend-card__handle" id="friendCardHandle"></span>
       <p class="friend-card__rings" id="friendCardRings"></p>
-      <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">enter orbit</button><button class="op-link" id="friendCardUnfollow" type="button">stop orbiting</button></div>
+      <div class="friend-card__actions"><button class="op-solid" id="friendCardEnter" type="button">visit orbit</button><button class="op-link" id="friendCardUnfollow" type="button">stop orbiting</button></div>
       <p class="friend-card__status" id="friendCardStatus" role="status" aria-live="polite"></p>
       <button class="friend-card__safety-toggle" id="friendCardSafetyToggle" type="button" aria-expanded="false" aria-controls="friendCardSafety">report or block</button>
       <!-- Report goes to the admins; block takes both people out of each other’s sky (following-cosmos.js). -->
@@ -939,7 +944,7 @@
   <script src="js/photo-breakdown.js?v=20261112-analyze"></script>
   <script src="js/title-tidy.js?v=20261112-filler"></script>
   <script src="js/photo-crate.js?v=20261112-remove-photo"></script>
-  <script src="js/main.js?v=20261112-smooth"></script>
+  <script src="js/main.js?v=20261113-friends-a11y"></script>
   <script src="js/add-to-orbit.js?v=20261108-substack-wording"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261108-moves"></script>
   <script src="js/brandon-orbit-data.js?v=1"></script>
@@ -953,7 +958,8 @@
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
   <script src="js/portrait-centre.js?v=20261014-specks"></script>
-  <script src="js/following-cosmos.js?v=20261108-night-cards"></script>
+  <script src="js/friends-motion.js?v=20261113-friends-a11y"></script>
+  <script src="js/following-cosmos.js?v=20261113-friends-a11y"></script>
   <script src="js/friend-back.js?v=20261107-menu-heads"></script>
   <script src="js/wander-sky.js?v=20261020-dock"></script>
   <script src="js/orbit-notifications.js?v=20261112-agent-more"></script>
