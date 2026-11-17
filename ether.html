@@ -32,7 +32,9 @@
   <link rel="stylesheet" href="css/wander-dock.css?v=20261117-phone-fit">
   <link rel="stylesheet" href="css/tune-row.css?v=20261028-guest">
   <link rel="stylesheet" href="css/ether.css?v=20261028-guest">
-  <link rel="stylesheet" href="css/guest-ether.css?v=20261029-signin">
+  <link rel="stylesheet" href="css/guest-ether.css?v=20261117-calm">
+  <!-- Calm mode first, so every part of the page reads the calm answer (js/calm-mode.js). -->
+  <script src="js/calm-mode.js?v=20261117-calm"></script>
 </head>
 <!-- The Ether for visitors without an account: open collections and Orbiting's picks only. No account code is loaded,
      so other people's orbits can't reach this page. "pull into my orbit" leads to the welcome page's invite sheet, which says invites let you keep it.
@@ -41,6 +43,7 @@
   <header class="guest-top">
     <a class="guest-top__wordmark" href="welcome.html">Orbit</a>
     <nav>
+      <button class="guest-top__quiet guest-top__calm" type="button" data-calm-switch aria-pressed="false">calm mode</button>
       <a class="guest-top__quiet" href="login.html?signin">sign in</a>
       <a class="guest-top__request" href="welcome.html#invite">request an invite</a>
     </nav>

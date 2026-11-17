@@ -26,9 +26,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Archivo:wdth,wght@125,900&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/welcome.css?v=20261116-what">
+  <link rel="stylesheet" href="css/welcome.css?v=20261117-calm">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
   <link rel="stylesheet" href="css/four-places.css?v=20261113-descent">
+  <!-- Calm mode first, so every part of the page reads the calm answer (js/calm-mode.js). -->
+  <script src="js/calm-mode.js?v=20261117-calm"></script>
 </head>
 <body>
   <!-- The film: your orbit, Wander, the Ether, back to you. Decoration only. -->
@@ -68,6 +70,7 @@
   </main>
 
   <footer class="bottom">
+    <button class="quiet small calm-toggle" type="button" data-calm-switch aria-pressed="false">calm mode</button>
     <p class="credit">drifting in from the ether · are.na boards, NASA and SMK, National Gallery of Denmark</p>
     <a class="quiet signin-bottom" href="login.html?signin" data-signin>sign in</a>
   </footer>
