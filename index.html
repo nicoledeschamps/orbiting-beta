@@ -51,6 +51,7 @@
   <link rel="stylesheet" href="css/friend-back.css?v=20261107-two-menus">
   <link rel="stylesheet" href="css/phone-sizing.css?v=20261108-phone-sizing">
   <link rel="stylesheet" href="css/orbit-voice.css?v=20261124-star-sheet">
+  <link rel="stylesheet" href="css/chart-consent.css?v=20261125-my-chart">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500&family=Archivo:wdth,wght@125,900&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -313,6 +314,7 @@
           <section class="account-settings__group"><h2>Email</h2><p id="settingsEmail"></p><p id="settingsEmailStatus"></p><button id="settingsResendEmail" type="button" hidden>resend confirmation</button><small>Your email is used for login and account recovery.</small></section>
           <section class="account-settings__group"><h2>Password</h2><form id="passwordSettingsForm"><fieldset id="passwordSettingsFields" disabled><label for="settingsCurrentPassword">current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" required><label for="settingsNewPassword">new password</label><input id="settingsNewPassword" type="password" minlength="8" autocomplete="new-password" required><label for="settingsRepeatPassword">confirm new password</label><input id="settingsRepeatPassword" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Choose a password you don’t use elsewhere.</small><button type="submit">update password</button></fieldset></form></section>
           <section class="account-settings__group" id="etherSettingsGroup"><h2>The Ether</h2><label class="account-settings__check" for="settingsInEther"><input id="settingsInEther" type="checkbox" checked disabled> let my images drift into the ether</label><small>People outside your orbit may see images from the sources you share with everyone, and orbit you. Your private rings, photos, birth details and hidden messages never go there. Turn it off and your images leave the Ether right away.</small><p class="account-settings__ether-status" id="settingsInEtherStatus" role="status" aria-live="polite"></p><label class="account-settings__check" for="settingsEtherNudity"><input id="settingsEtherNudity" type="checkbox"> show nudity in the ether</label><small>Off unless you turn it on. A few picks show bare bodies; with this off they stay out of the Ether. It’s set for this device.</small></section>
+          <section class="account-settings__group" id="chartSettingsGroup"><h2>My chart, my ether</h2><label class="account-settings__check" for="settingsChartSteers"><input id="settingsChartSteers" type="checkbox" disabled> let my chart steer the ether</label><small>Your natal chart gently shapes which images drift to you. Only used for your own Ether, never shown to anyone. Turn it off any time and it stops right away.</small><p class="account-settings__ether-status" id="settingsChartStatus" role="status" aria-live="polite"></p></section>
           <section class="account-settings__group" id="calmSettingsGroup"><h2>Calm mode</h2><label class="account-settings__check" for="settingsCalm"><input id="settingsCalm" type="checkbox" data-calm-switch> slow everything down</label><small id="settingsCalmNote">Rings stop spinning, Friends, Wander and the Ether hold still, and the welcome film stops cutting. Photos and videos still play. It’s set for this device, and Orbit reloads to change it.</small></section>
           <section class="account-settings__group" id="blockedSettingsGroup"><h2>Blocked</h2><ul class="blocked-list" id="blockedList"></ul><p class="blocked-list__empty" id="blockedEmpty">no one. block someone from their card in friends.</p><small>Blocked people can’t find you, orbit you or see your images, and you won’t see theirs. They aren’t told.</small><p class="account-settings__ether-status" id="blockedStatus" role="status" aria-live="polite"></p></section>
           <section class="account-settings__group" id="exportSettingsGroup"><h2>Take your orbit with you</h2><p>One file with your sources, rings and images, their links and credit, and any photo breakdowns. Keep it, or hand it to any agent so it knows your taste.</p><button class="account-settings__quiet" id="exportOrbit" type="button">download my orbit</button><p class="account-settings__ether-status" id="exportStatus" role="status" aria-live="polite"></p></section>
@@ -954,7 +956,8 @@
   <script src="js/image-thumbs.js?v=20261118-ether-gifs"></script>
   <script src="js/photo-date.js?v=20261118-photo-dates"></script>
   <script src="js/photo-breakdown.js?v=20261123-one-card"></script>
-  <script src="js/photo-card.js?v=20261124-comet-delete"></script>
+  <script src="js/taste-events.js?v=20261125-taste-events"></script>
+  <script src="js/photo-card.js?v=20261125-taste-events"></script>
   <script src="js/orbit-stars.js?v=20261123-stars"></script>
   <script src="js/orbit-comets.js?v=20261124-comet-delete"></script>
   <script src="js/title-tidy.js?v=20261112-filler"></script>
@@ -968,7 +971,7 @@
   <script src="js/tune-row.js?v=20261022-color"></script>
   <script src="js/explore-planet.js?v=20261124-videos"></script>
   <script src="js/night-card.js?v=20261108-night-cards"></script>
-  <script src="js/orbiting-account.js?v=20261124-videos"></script>
+  <script src="js/orbiting-account.js?v=20261125-my-chart-videos"></script>
   <script src="js/friend-search.js?v=20261107-preview"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
@@ -996,16 +999,17 @@
   <script src="js/test-walk.js?v=20261118-steps"></script>
   <script src="js/password-eye.js?v=20261030-eye"></script>
   <script src="js/account-settings.js?v=20261105-names"></script>
+  <script src="js/chart-consent.js?v=20261125-my-chart"></script>
   <script src="js/agent-settings.js?v=20261112-cultivate"></script>
   <script src="js/ether-sources.js?v=20261124-picks-100"></script>
   <script src="js/ether.js?v=20261120-peoples-orbits"></script>
-  <script src="js/ether-drift.js?v=20261123-stars"></script>
+  <script src="js/ether-drift.js?v=20261125-taste-events"></script>
   <script src="js/beta-testers.js?v=20261108-quick-wins"></script>
   <script src="js/report-block.js?v=20261104-report-block"></script>
   <script src="js/test-walk-admin.js?v=20261118-still"></script>
-  <script src="js/voice-intent.js?v=20261119-star-arrange"></script>
+  <script src="js/voice-intent.js?v=20261125-my-chart"></script>
   <script src="js/ether-facets.js?v=20261113-ether-search"></script>
   <script src="js/ether-search.js?v=20261120-peoples-orbits"></script>
-  <script src="js/orbit-voice.js?v=20261123-one-card"></script>
+  <script src="js/orbit-voice.js?v=20261125-my-chart"></script>
 </body>
 </html>
