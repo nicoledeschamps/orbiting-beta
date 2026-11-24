@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="css/orbiting-prototype.css?v=20261113-ig-pick">
   <link rel="stylesheet" href="css/account-settings.css?v=20261112-phone">
   <link rel="stylesheet" href="css/password-eye.css?v=20261030-eye">
-  <link rel="stylesheet" href="css/orbit-plate.css?v=20261123-one-card">
+  <link rel="stylesheet" href="css/orbit-plate.css?v=20261124-videos">
   <link rel="stylesheet" href="css/report-block.css?v=20261104-report-block">
   <link rel="stylesheet" href="css/setup-refresh.css?v=20261009-setup6">
   <link rel="stylesheet" href="css/setup-star.css?v=20261120-louder">
@@ -175,20 +175,20 @@
             <button class="source-option" type="button" data-source="youtube" aria-expanded="false" aria-controls="sourceSharing"><span><strong>YouTube</strong><small>public playlist, channel or video</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="substack" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Substack</strong><small>newsletters + posts you liked</small></span><em>choose</em></button>
             <button class="source-option" type="button" data-source="instagram" aria-expanded="false" aria-controls="sourceSharing"><span><strong>Instagram</strong><small>public profile, post or Reel</small></span><em>choose</em></button>
-            <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>my photos</strong><small>files or a folder on this device</small></span><em id="albumLabel">choose</em></button>
+            <button class="source-option" id="photosSourceButton" type="button" aria-expanded="false" aria-controls="photoSharing"><span><strong>my photos</strong><small>photos or videos on this device</small></span><em id="albumLabel">choose</em></button>
           </div>
           <p class="setup-status" id="sourceAuthStatus" aria-live="polite">Paste a public link. We never sign in to your accounts or see anything private.</p>
           <button class="setup-text-action source-launch-empty" id="launchEmptySky" type="button">skip for now, launch with an empty sky</button>
           <div class="source-sharing" id="sourceSharing"></div>
           <div class="source-sharing-card photo-sharing" id="photoSharing" hidden>
-            <h2>Add your photos</h2>
-            <p class="source-input-hint">Choose individual images or a folder. Photos you add are saved with your orbit and shared, as this ring, with people who orbit you. Choose again to refresh after adding files to a folder.</p>
+            <h2>Add photos + videos</h2>
+            <p class="source-input-hint">Choose photos, videos (up to 50 MB each) or a folder. What you add is saved with your orbit and shared, as this ring, with people who orbit you. Choose again to refresh after adding files to a folder.</p>
             <div class="photo-sharing-actions">
               <button class="source-link-approve" id="choosePhotoFiles" type="button">choose files</button>
               <button class="source-link-approve source-link-approve--secondary" id="choosePhotoFolder" type="button">choose a folder</button>
             </div>
-            <input class="setup-file-input" id="setupAlbumInput" type="file" accept="image/*" multiple>
-            <input class="setup-file-input" id="setupFolderInput" type="file" accept="image/*" webkitdirectory directory multiple>
+            <input class="setup-file-input" id="setupAlbumInput" type="file" accept="image/*,video/mp4,video/quicktime,video/webm" multiple>
+            <input class="setup-file-input" id="setupFolderInput" type="file" accept="image/*,video/mp4,video/quicktime,video/webm" webkitdirectory directory multiple>
             <p class="source-sharing-note" id="photoSelectionStatus" aria-live="polite">No photos selected yet.</p>
             <div class="photo-captions" id="photoCaptionsBox" hidden>
               <h3>caption your photos</h3>
@@ -958,7 +958,7 @@
   <script src="js/orbit-stars.js?v=20261123-stars"></script>
   <script src="js/orbit-comets.js?v=20261124-comet-delete"></script>
   <script src="js/title-tidy.js?v=20261112-filler"></script>
-  <script src="js/photo-crate.js?v=20261124-comets"></script>
+  <script src="js/photo-crate.js?v=20261124-videos"></script>
   <script src="js/main.js?v=20261123-one-card"></script>
   <script src="js/add-to-orbit.js?v=20261120-added"></script>
   <script type="module" src="js/immersive-orbit.js?v=20261119-orbit2"></script>
@@ -966,9 +966,9 @@
   <script src="js/image-color.js?v=20261120-standout"></script>
   <script src="js/mood-orbits.js?v=20261123-stars"></script>
   <script src="js/tune-row.js?v=20261022-color"></script>
-  <script src="js/explore-planet.js?v=20261124-comets"></script>
+  <script src="js/explore-planet.js?v=20261124-videos"></script>
   <script src="js/night-card.js?v=20261108-night-cards"></script>
-  <script src="js/orbiting-account.js?v=20261124-comet-delete"></script>
+  <script src="js/orbiting-account.js?v=20261124-videos"></script>
   <script src="js/friend-search.js?v=20261107-preview"></script>
   <script src="js/real-sky.js?v=20261013-real-sky"></script>
   <script src="js/shared-sky.js?v=20261013-real-sky"></script>
@@ -987,7 +987,7 @@
   <script src="js/page-memory.js?v=20261107-two-menus"></script>
   <script src="js/orbit-fresh.js?v=20261123-one-card"></script>
   <script src="js/orbit-state.js?v=20261113-source-status"></script>
-  <script src="js/orbiting-prototype.js?v=20261124-comet-delete"></script>
+  <script src="js/orbiting-prototype.js?v=20261124-videos"></script>
   <script src="js/sky-words.js?v=20261108-night-cards"></script>
   <script src="js/depth-line.js?v=20261119-slide"></script>
   <script src="js/preview-toggle.js?v=20261104-folded"></script>
